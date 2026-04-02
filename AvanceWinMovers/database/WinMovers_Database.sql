@@ -27,81 +27,61 @@ USE WinMoversDB;
 GO
 
 
--- =====================================================================
--- TABLA 1: Ordenes_Trabajo
--- Modelo JS: OrdenTrabajo.model.js
--- Campos alineados 1:1 con el constructor del modelo
--- =====================================================================
-
 CREATE TABLE Ordenes_Trabajo (
     id_orden                INT IDENTITY(1,1) PRIMARY KEY,
-    numero_ot               NVARCHAR(20)    NOT NULL UNIQUE,      -- JS: numeroOT (ej: 037M-2026)
-    fecha_servicio          DATE            NULL,                  -- JS: fechaServicio
-    fecha                   DATE            NULL,                  -- JS: fecha (fecha de creación del formulario)
-    hora                    NVARCHAR(10)    NULL,                  -- JS: hora
-    nombre_cliente          NVARCHAR(150)   NOT NULL,              -- JS: nombreCliente
-    telefono_celular        NVARCHAR(30)    NULL,                  -- JS: telCelular
-    telefono_residencia     NVARCHAR(30)    NULL,                  -- JS: telResidencia
-    compania                NVARCHAR(150)   NULL,                  -- JS: compania
-    telefono_empresa        NVARCHAR(30)    NULL,                  -- JS: telEmpresa
-    contacto                NVARCHAR(150)   NULL,                  -- JS: contacto
-    direccion_origen        NVARCHAR(500)   NULL,                  -- JS: direccion
-    direccion_destino       NVARCHAR(500)   NULL,                  -- JS: direccionDestino
-    detalle_servicio        NVARCHAR(MAX)   NULL,                  -- JS: detalleServicio
-    materiales              NVARCHAR(MAX)   NULL,                  -- JS: materiales
-    facturar_a              NVARCHAR(150)   NULL,                  -- JS: facturarA
-    direccion_cobro         NVARCHAR(500)   NULL,                  -- JS: direccionCobro
-    hecho_por               NVARCHAR(100)   NULL,                  -- JS: hechoPor
-    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  -- JS: fechaCreacion
+    numero_ot               NVARCHAR(20)    NOT NULL UNIQUE, 
+    fecha_servicio          DATE            NULL,              
+    fecha                   DATE            NULL,
+    hora                    NVARCHAR(10)    NULL, 
+    nombre_cliente          NVARCHAR(150)   NOT NULL,           
+    telefono_celular        NVARCHAR(30)    NULL,              
+    telefono_residencia     NVARCHAR(30)    NULL,                
+    compania                NVARCHAR(150)   NULL,          
+    telefono_empresa        NVARCHAR(30)    NULL,              
+    contacto                NVARCHAR(150)   NULL,           
+    direccion_origen        NVARCHAR(500)   NULL,           
+    direccion_destino       NVARCHAR(500)   NULL,                  
+    detalle_servicio        NVARCHAR(MAX)   NULL,                 
+    materiales              NVARCHAR(MAX)   NULL,              
+    facturar_a              NVARCHAR(150)   NULL,                  
+    direccion_cobro         NVARCHAR(500)   NULL,                 
+    hecho_por               NVARCHAR(100)   NULL,                 
+    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  
     fecha_actualizacion     DATETIME2       NULL
 );
-GO
 
-
--- =====================================================================
--- TABLA 2: Control_Visitas
--- Modelo JS: ControlVisitas.model.js
--- Campos alineados 1:1 con el constructor del modelo
--- =====================================================================
 
 CREATE TABLE Control_Visitas (
     id_visita               INT IDENTITY(1,1) PRIMARY KEY,
-    fecha_llamada           DATE            NULL,                  -- JS: fechaLlamada
-    fecha_visita            DATE            NULL,                  -- JS: fechaVisita
-    hora                    NVARCHAR(10)    NULL,                  -- JS: hora
-    nombre_cliente          NVARCHAR(150)   NOT NULL,              -- JS: nombreCliente
-    telefono_habitacion     NVARCHAR(30)    NULL,                  -- JS: telHabitacion
-    telefono_celular        NVARCHAR(30)    NULL,                  -- JS: telCelular
-    empresa                 NVARCHAR(150)   NULL,                  -- JS: empresa
-    telefono_compania       NVARCHAR(30)    NULL,                  -- JS: telCompania
-    direccion_origen        NVARCHAR(500)   NULL,                  -- JS: direccionOrigen
-    direccion_destino       NVARCHAR(500)   NULL,                  -- JS: direccionDestino
-    observaciones           NVARCHAR(MAX)   NULL,                  -- JS: observaciones
+    fecha_llamada           DATE            NULL,                  
+    fecha_visita            DATE            NULL,                  
+    hora                    NVARCHAR(10)    NULL,                  
+    nombre_cliente          NVARCHAR(150)   NOT NULL,              
+    telefono_habitacion     NVARCHAR(30)    NULL,                  
+    telefono_celular        NVARCHAR(30)    NULL,                  
+    empresa                 NVARCHAR(150)   NULL,                  
+    telefono_compania       NVARCHAR(30)    NULL,                  
+    direccion_origen        NVARCHAR(500)   NULL,                  
+    direccion_destino       NVARCHAR(500)   NULL,                  
+    observaciones           NVARCHAR(MAX)   NULL,                  
     -- Tipo de servicio (en JS es un array, aquí como BIT individuales)
-    puerta_a_puerta         BIT             NOT NULL DEFAULT 0,    -- JS: tipoServicio incluye 'puertaPuerta'
-    puerta_a_puerto         BIT             NOT NULL DEFAULT 0,    -- JS: tipoServicio incluye 'puertaPuerto'
-    empaque                 BIT             NOT NULL DEFAULT 0,    -- JS: tipoServicio incluye 'empaque'
-    mudanza_local           BIT             NOT NULL DEFAULT 0,    -- JS: tipoServicio incluye 'mudanzaLocal'
+    puerta_a_puerta         BIT             NOT NULL DEFAULT 0,    
+    puerta_a_puerto         BIT             NOT NULL DEFAULT 0,   
+    empaque                 BIT             NOT NULL DEFAULT 0,    
+    mudanza_local           BIT             NOT NULL DEFAULT 0,    
     -- Campos de cotización
-    origen                  NVARCHAR(150)   NULL,                  -- JS: origen
-    tramites_aduana         NVARCHAR(100)   NULL,                  -- JS: tramitesAduana
-    flete                   NVARCHAR(100)   NULL,                  -- JS: flete
-    destino                 NVARCHAR(150)   NULL,                  -- JS: destino
-    tarifa_total            NVARCHAR(100)   NULL,                  -- JS: tarifaTotal
-    compania_maritima       NVARCHAR(100)   NULL,                  -- JS: companiaMaritima
-    corresponsal            NVARCHAR(100)   NULL,                  -- JS: corresponsal
-    hecho_por               NVARCHAR(100)   NULL,                  -- JS: hechoPor
-    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  -- JS: fechaCreacion
+    origen                  NVARCHAR(150)   NULL,                  
+    tramites_aduana         NVARCHAR(100)   NULL,                
+    flete                   NVARCHAR(100)   NULL,                 
+    destino                 NVARCHAR(150)   NULL,                  
+    tarifa_total            NVARCHAR(100)   NULL,                 
+    compania_maritima       NVARCHAR(100)   NULL,                 
+    corresponsal            NVARCHAR(100)   NULL,                  
+    hecho_por               NVARCHAR(100)   NULL,                  
+    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  
     fecha_actualizacion     DATETIME2       NULL
 );
-GO
-
-
--- =====================================================================
--- TABLA 3: Catalogo_Documentos
--- Almacena los documentos requeridos para checklists de embarque
--- Basado en las constantes DOCS_EXPORTACION_* y DOCS_IMPORTACION_*
--- =====================================================================
+G
 
 CREATE TABLE Catalogo_Documentos (
     id_tipo_documento       INT IDENTITY(1,1) PRIMARY KEY,
@@ -115,20 +95,13 @@ CREATE TABLE Catalogo_Documentos (
 );
 GO
 
-
--- =====================================================================
--- TABLA 4: Exportaciones
--- Modelo JS: Exportacion.model.js
--- Campos alineados con el constructor del modelo
--- =====================================================================
-
 CREATE TABLE Exportaciones (
     id_exportacion          INT IDENTITY(1,1) PRIMARY KEY,
-    nombre_cliente          NVARCHAR(150)   NOT NULL,              -- JS: nombreCliente
-    referencia              NVARCHAR(50)    NULL,                  -- JS: referencia
-    fecha                   DATE            NULL,                  -- JS: fecha
-    observaciones           NVARCHAR(MAX)   NULL,                  -- JS: observaciones
-    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  -- JS: fechaCreacion
+    nombre_cliente          NVARCHAR(150)   NOT NULL,         
+    referencia              NVARCHAR(50)    NULL,           
+    fecha                   DATE            NULL,           
+    observaciones           NVARCHAR(MAX)   NULL,           
+    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(), 
     fecha_actualizacion     DATETIME2       NULL
 );
 GO
@@ -140,7 +113,7 @@ CREATE TABLE Exportaciones_Documentos (
     id_exportacion          INT             NOT NULL,
     id_tipo_documento       INT             NOT NULL,
     tipo_checklist          NVARCHAR(20)    NOT NULL CHECK (tipo_checklist IN ('WinMovers', 'OtroAgente')),
-    completado              BIT             NOT NULL DEFAULT 0,    -- JS: true/false en el objeto
+    completado              BIT             NOT NULL DEFAULT 0,    
     fecha_completado        DATETIME2       NULL,
     observaciones           NVARCHAR(500)   NULL,
     CONSTRAINT FK_ExpDoc_Exportacion FOREIGN KEY (id_exportacion) REFERENCES Exportaciones(id_exportacion)
@@ -150,19 +123,17 @@ CREATE TABLE Exportaciones_Documentos (
 GO
 
 
--- =====================================================================
--- TABLA 5: Importaciones
 -- Modelo JS: Importacion.model.js
 -- Campos alineados con el constructor del modelo
--- =====================================================================
+
 
 CREATE TABLE Importaciones (
     id_importacion          INT IDENTITY(1,1) PRIMARY KEY,
-    nombre_cliente          NVARCHAR(150)   NOT NULL,              -- JS: nombreCliente
-    referencia              NVARCHAR(50)    NULL,                  -- JS: referencia
-    fecha                   DATE            NULL,                  -- JS: fecha
-    observaciones           NVARCHAR(MAX)   NULL,                  -- JS: observaciones
-    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  -- JS: fechaCreacion
+    nombre_cliente          NVARCHAR(150)   NOT NULL,         
+    referencia              NVARCHAR(50)    NULL,                
+    fecha                   DATE            NULL,             
+    observaciones           NVARCHAR(MAX)   NULL,             
+    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),
     fecha_actualizacion     DATETIME2       NULL
 );
 GO
@@ -183,13 +154,6 @@ CREATE TABLE Importaciones_Documentos (
 GO
 
 
--- =====================================================================
--- ██████  DATOS INICIALES: CATÁLOGO DE DOCUMENTOS
--- =====================================================================
--- Basado en las constantes del modelo JS:
--- DOCS_EXPORTACION_WINMOVERS (12 docs), DOCS_EXPORTACION_OTRO_AGENTE (8 docs)
--- DOCS_IMPORTACION_WINMOVERS (10 docs), DOCS_IMPORTACION_OTRO_AGENTE (8 docs)
--- =====================================================================
 
 INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion) VALUES
     ('Reporte de Visita Previa',            1, 0, 1, 1, 1),
@@ -207,20 +171,6 @@ INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion,
 GO
 
 
--- =====================================================================
--- ██████  PROCEDIMIENTOS ALMACENADOS (CRUD)
--- =====================================================================
--- Alineados con los métodos de cada modelo JS:
---   guardar()        → sp_*_Insertar / sp_*_Actualizar
---   obtenerTodas()   → sp_*_ObtenerTodos
---   obtenerPorId()   → sp_*_ObtenerPorId
---   eliminar()       → sp_*_Eliminar
--- =====================================================================
-
-
--- ═══════════════════════════════════════════════════════════════
--- CRUD: Ordenes_Trabajo (OrdenTrabajo.model.js)
--- ═══════════════════════════════════════════════════════════════
 
 CREATE PROCEDURE sp_OrdenTrabajo_Insertar
     @numero_ot              NVARCHAR(20),
