@@ -1,0 +1,147 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - WinMovers</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI';
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            position: fixed;
+        }
+
+            .sidebar h2 {
+                text-align: center;
+                padding: 20px;
+                background: #0f172a;
+            }
+
+            .sidebar ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            .sidebar li {
+                padding: 15px;
+                cursor: pointer;
+            }
+
+                .sidebar li:hover {
+                    background: #334155;
+                }
+
+            .sidebar i {
+                margin-right: 10px;
+            }
+
+        .main {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            background: #00bcd4;
+            color: white;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            background: red;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>WinMovers</h2>
+        <ul>
+            <li onclick="cargarVista('clientes')">
+                <i class="fas fa-users"></i> Clientes
+            </li>
+
+            <li onclick="cargarVista('cotizaciones')">
+                <i class="fas fa-file-invoice"></i> Cotizaciones
+            </li>
+
+            <li onclick="cargarVista('mudanzas')">
+                <i class="fas fa-truck"></i> Mudanzas
+            </li>
+
+            <li onclick="cargarVista('inventario')">
+                <i class="fas fa-boxes"></i> Inventario
+            </li>
+
+            <li onclick="cargarVista('empleados')">
+                <i class="fas fa-user-tie"></i> Empleados
+            </li>
+        </ul>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="main">
+
+        <div class="header">
+            <h1>Panel Administrativo</h1>
+            <p>Bienvenido al sistema WinMovers</p>
+        </div>
+
+        <!-- AQUÍ SE CARGA TODO -->
+        <div id="contenido">
+            <h2>Selecciona un módulo</h2>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        function cargarVista(vista) {
+            fetch('/Dashboards/CargarVista?nombre=' + vista)
+                .then(res => res.text())
+                .then(data => {
+                    document.getElementById('contenido').innerHTML = data;
+                });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\clientes.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\clientes.cshtml" />
+    <None Include="Views\Dashboards\Index.cshtml" />
+  </ItemGroup>
+
+</Project>
