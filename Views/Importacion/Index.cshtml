@@ -1,0 +1,68 @@
+@model IEnumerable<WinMovers.Models.Importacion>
+@{
+    ViewData["Title"] = "Importaciones";
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-file-import"></i> Embarques de Importación</h2>
+    <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Embarque</a>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Referencia</th>
+                <th>Fecha</th>
+                <th>Documentos WinMovers</th>
+                <th>Documentos Otro Agente</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6" class="no-data">No hay embarques registrados. <a asp-action="Create">Crear el primero</a>.</td></tr>
+            }
+            else
+            {
+                @foreach (var i in Model)
+                {
+                    var docsWM = i.Documentos.Where(d => d.TipoAgente == "WinMovers").ToList();
+                    var docsOA = i.Documentos.Where(d => d.TipoAgente == "OtroAgente").ToList();
+                    var wmOk   = docsWM.Count(d => d.Completado);
+                    var oaOk   = docsOA.Count(d => d.Completado);
+
+                    <tr>
+                        <td>@i.NombreCliente</td>
+                        <td>@(i.Referencia ?? "—")</td>
+                        <td>@(i.Fecha?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td>
+                            <span class="badge @(wmOk == docsWM.Count && docsWM.Count > 0 ? "badge-success" : "badge-warning")">
+                                @wmOk / @docsWM.Count
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge @(oaOk == docsOA.Count && docsOA.Count > 0 ? "badge-success" : "badge-warning")">
+                                @oaOk / @docsOA.Count
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-action="Checklist" asp-route-id="@i.IdImportacion" class="btn-icon edit" title="Gestionar Checklist">
+                                <i class="fas fa-tasks"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@i.IdImportacion" method="post" style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar este embarque?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-icon delete" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

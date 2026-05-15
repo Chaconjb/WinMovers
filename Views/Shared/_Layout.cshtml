@@ -1,74 +1,129 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - WinMovers</title>
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <!-- Estilos -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/winmovers.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/winmovers-components.css" asp-append-version="true" />
 </head>
+
+@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+}
 
 <body>
 
-    <!-- HEADER -->
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm">
-            <div class="container-fluid">
-
-                <!-- LOGO -->
-                <a class="navbar-brand fw-bold text-primary" asp-controller="Dashboards" asp-action="Index">
-                    <i class="fas fa-truck-moving"></i> WinMovers
-                </a>
-
-                <!-- BOTÓN RESPONSIVE -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <!-- MENÚ -->
-                <div class="collapse navbar-collapse justify-content-between" id="menu">
-
-                    <!-- IZQUIERDA -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Dashboards" asp-action="Index">
-                                <i class="fas fa-home"></i> Dashboard
-                            </a>
-                        </li>
-                    </ul>
-
-                    <!-- DERECHA (BOTÓN IMPORTANTE) -->
-                    <div class="d-flex">
-                        <a class="btn btn-info text-white" asp-controller="Dashboards" asp-action="Index">
-                            <i class="fas fa-home"></i> Ir al Dashboard
-                        </a>
-                    </div>
-
-                </div>
-
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <i class="fas fa-truck-moving sidebar-logo-icon"></i>
+                <h2>WinMovers</h2>
             </div>
-        </nav>
-    </header>
+            <span class="sidebar-subtitle">Local and International Relocations</span>
+        </div>
 
-    <!-- CONTENIDO -->
-    <div class="container mt-4">
-        @RenderBody()
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a asp-controller="Dashboards" asp-action="Index"
+                       class="sidebar-link @(ctrl == "Dashboards" ? "active" : "")">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="OrdenTrabajo" asp-action="Index"
+                       class="sidebar-link @(ctrl == "OrdenTrabajo" ? "active" : "")">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Órdenes de Trabajo</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="ControlVisita" asp-action="Index"
+                       class="sidebar-link @(ctrl == "ControlVisita" ? "active" : "")">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Control de Visitas</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Exportacion" asp-action="Index"
+                       class="sidebar-link @(ctrl == "Exportacion" ? "active" : "")">
+                        <i class="fas fa-file-export"></i>
+                        <span>Exportación</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Importacion" asp-action="Index"
+                       class="sidebar-link @(ctrl == "Importacion" ? "active" : "")">
+                        <i class="fas fa-file-import"></i>
+                        <span>Importación</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p><i class="fas fa-phone"></i> (506) 2215-3536</p>
+            <p><i class="fas fa-envelope"></i> sales@winmovers.com</p>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <header class="topbar">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title">
+                <i class="fas fa-truck-moving"></i>
+                @ViewData["Title"]
+            </h1>
+            <div class="topbar-right">
+                <span class="topbar-date" id="currentDate"></span>
+                <div class="topbar-user">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+
+            @* Mensajes de éxito *@
+            @if (TempData["Success"] != null)
+            {
+                <div class="toast show success" id="toastMsg">
+                    <i class="fas fa-check-circle"></i> @TempData["Success"]
+                </div>
+            }
+
+            @RenderBody()
+        </main>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="text-center mt-5 mb-3 text-muted">
-        © 2026 - WinMovers
-    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
-    <!-- SCRIPTS -->
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fecha en topbar
+        document.getElementById('currentDate').textContent =
+            new Date().toLocaleDateString('es-CR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Sidebar toggle (responsive)
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Auto-ocultar toast
+        setTimeout(() => {
+            const t = document.getElementById('toastMsg');
+            if (t) t.classList.remove('show');
+        }, 3500);
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

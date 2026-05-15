@@ -1,147 +1,100 @@
-﻿@{
+@model WinMovers.Models.ViewModels.DashboardViewModel
+@{
     ViewData["Title"] = "Dashboard";
-    Layout = null;
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard - WinMovers</title>
+<!-- Estadísticas -->
+<section class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon bg-blue"><i class="fas fa-clipboard-list"></i></div>
+        <div class="stat-info">
+            <h3>@Model.TotalOrdenes</h3>
+            <p>Órdenes de Trabajo</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-green"><i class="fas fa-calendar-check"></i></div>
+        <div class="stat-info">
+            <h3>@Model.TotalVisitas</h3>
+            <p>Visitas Registradas</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-orange"><i class="fas fa-file-export"></i></div>
+        <div class="stat-info">
+            <h3>@Model.TotalExportaciones</h3>
+            <p>Exportaciones</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-pink"><i class="fas fa-file-import"></i></div>
+        <div class="stat-info">
+            <h3>@Model.TotalImportaciones</h3>
+            <p>Importaciones</p>
+        </div>
+    </div>
+</section>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Accesos rápidos -->
+<section class="dashboard-actions">
+    <h2 class="content-title">Accesos Rápidos</h2>
+    <div class="actions-grid">
+        <a asp-controller="OrdenTrabajo" asp-action="Create" class="action-card">
+            <i class="fas fa-plus-circle"></i>
+            <h3>Nueva Orden de Trabajo</h3>
+            <p>Crear una orden de trabajo para un cliente</p>
+        </a>
+        <a asp-controller="ControlVisita" asp-action="Create" class="action-card">
+            <i class="fas fa-plus-circle"></i>
+            <h3>Nuevo Control de Visita</h3>
+            <p>Registrar una visita de inspección</p>
+        </a>
+        <a asp-controller="Exportacion" asp-action="Create" class="action-card">
+            <i class="fas fa-shipping-fast"></i>
+            <h3>Embarque Exportación</h3>
+            <p>Control de documentos de exportación</p>
+        </a>
+        <a asp-controller="Importacion" asp-action="Create" class="action-card">
+            <i class="fas fa-dolly"></i>
+            <h3>Embarque Importación</h3>
+            <p>Control de documentos de importación</p>
+        </a>
+    </div>
+</section>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI';
-            background: #f4f6f9;
-        }
-
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: #1e293b;
-            color: white;
-            position: fixed;
-        }
-
-            .sidebar h2 {
-                text-align: center;
-                padding: 20px;
-                background: #0f172a;
-            }
-
-            .sidebar ul {
-                list-style: none;
-                padding: 0;
-            }
-
-            .sidebar li {
-                padding: 15px;
-                cursor: pointer;
-            }
-
-                .sidebar li:hover {
-                    background: #334155;
+<!-- Órdenes recientes -->
+<section class="dashboard-recent">
+    <h2 class="content-title">Órdenes Recientes</h2>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>O.T. #</th>
+                    <th>Cliente</th>
+                    <th>Fecha Servicio</th>
+                    <th>Compañía</th>
+                    <th>Hecho por</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.OrdenesRecientes.Any())
+                {
+                    <tr><td colspan="5" class="no-data">No hay órdenes registradas aún.</td></tr>
                 }
-
-            .sidebar i {
-                margin-right: 10px;
-            }
-
-        .main {
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 8px 12px;
-            background: #00bcd4;
-            color: white;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-danger {
-            background: red;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-    </style>
-</head>
-
-<body>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <h2>WinMovers</h2>
-        <ul>
-            <li onclick="cargarVista('clientes')">
-                <i class="fas fa-users"></i> Clientes
-            </li>
-
-            <li onclick="cargarVista('cotizaciones')">
-                <i class="fas fa-file-invoice"></i> Cotizaciones
-            </li>
-
-            <li onclick="cargarVista('mudanzas')">
-                <i class="fas fa-truck"></i> Mudanzas
-            </li>
-
-            <li onclick="cargarVista('inventario')">
-                <i class="fas fa-boxes"></i> Inventario
-            </li>
-
-            <li onclick="cargarVista('empleados')">
-                <i class="fas fa-user-tie"></i> Empleados
-            </li>
-        </ul>
+                else
+                {
+                    @foreach (var o in Model.OrdenesRecientes)
+                    {
+                        <tr>
+                            <td><strong>@o.NumeroOT</strong></td>
+                            <td>@o.NombreCliente</td>
+                            <td>@(o.FechaServicio?.ToString("dd/MM/yyyy") ?? "—")</td>
+                            <td>@(o.Compania ?? "Particular")</td>
+                            <td>@(o.HechoPor ?? "—")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
     </div>
-
-    <!-- CONTENIDO -->
-    <div class="main">
-
-        <div class="header">
-            <h1>Panel Administrativo</h1>
-            <p>Bienvenido al sistema WinMovers</p>
-        </div>
-
-        <!-- AQUÍ SE CARGA TODO -->
-        <div id="contenido">
-            <h2>Selecciona un módulo</h2>
-        </div>
-
-    </div>
-
-    <!-- SCRIPT -->
-    <script>
-        function cargarVista(vista) {
-            fetch('/Dashboards/CargarVista?nombre=' + vista)
-                .then(res => res.text())
-                .then(data => {
-                    document.getElementById('contenido').innerHTML = data;
-                });
-        }
-    </script>
-
-</body>
-</html>
+</section>

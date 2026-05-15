@@ -1,0 +1,122 @@
+@model WinMovers.Models.OrdenTrabajo
+@{
+    ViewData["Title"] = "Nueva Orden de Trabajo";
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-clipboard-list"></i> Nueva Orden de Trabajo</h2>
+    <a asp-action="Index" class="btn btn-outline">
+        <i class="fas fa-list"></i> Ver Listado
+    </a>
+</div>
+
+<form asp-action="Create" method="post" class="form-card">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="NumeroOT"></label>
+            <input asp-for="NumeroOT" class="form-control" placeholder="Ej: 037M-2026" />
+            <span asp-validation-for="NumeroOT" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="FechaServicio"></label>
+            <input asp-for="FechaServicio" type="date" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Fecha">Fecha</label>
+            <input asp-for="Fecha" type="date" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label asp-for="Hora"></label>
+            <input asp-for="Hora" type="time" class="form-control" style="max-width:200px" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="NombreCliente"></label>
+            <input asp-for="NombreCliente" class="form-control" placeholder="Nombre completo" />
+            <span asp-validation-for="NombreCliente" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="TelefonoCelular"></label>
+            <input asp-for="TelefonoCelular" class="form-control" placeholder="Ej: 8842-5454" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="TelefonoResidencia"></label>
+            <input asp-for="TelefonoResidencia" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Compania"></label>
+            <input asp-for="Compania" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="TelefonoEmpresa"></label>
+            <input asp-for="TelefonoEmpresa" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Contacto"></label>
+            <input asp-for="Contacto" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DireccionOrigen"></label>
+        <textarea asp-for="DireccionOrigen" class="form-control" rows="2" placeholder="Dirección completa de origen"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DireccionDestino"></label>
+        <textarea asp-for="DireccionDestino" class="form-control" rows="2" placeholder="Dirección de destino"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DetalleServicio"></label>
+        <textarea asp-for="DetalleServicio" class="form-control" rows="3" placeholder="Descripción detallada del servicio"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Materiales"></label>
+        <textarea asp-for="Materiales" class="form-control" rows="2" placeholder="Materiales, personal, etc."></textarea>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="FacturarA"></label>
+            <input asp-for="FacturarA" class="form-control" placeholder="Nombre para facturación" />
+        </div>
+        <div class="form-group">
+            <label asp-for="DireccionCobro"></label>
+            <input asp-for="DireccionCobro" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="HechoPor"></label>
+        <input asp-for="HechoPor" class="form-control" placeholder="Nombre de quien elabora" />
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Guardar Orden
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

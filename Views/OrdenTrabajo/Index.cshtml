@@ -1,0 +1,57 @@
+@model IEnumerable<WinMovers.Models.OrdenTrabajo>
+@{
+    ViewData["Title"] = "Órdenes de Trabajo";
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-clipboard-list"></i> Órdenes de Trabajo</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nueva Orden
+    </a>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>O.T. #</th>
+                <th>Cliente</th>
+                <th>Fecha Servicio</th>
+                <th>Compañía</th>
+                <th>Hecho Por</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6" class="no-data">No hay órdenes registradas. <a asp-action="Create">Crear la primera</a>.</td></tr>
+            }
+            else
+            {
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td><strong>@o.NumeroOT</strong></td>
+                        <td>@o.NombreCliente</td>
+                        <td>@(o.FechaServicio?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td>@(o.Compania ?? "Particular")</td>
+                        <td>@(o.HechoPor ?? "—")</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@o.IdOrden" class="btn-icon edit" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@o.IdOrden" method="post" style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar esta orden de trabajo?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-icon delete" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

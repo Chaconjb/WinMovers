@@ -1,0 +1,129 @@
+@model WinMovers.Models.ControlVisita
+@{
+    ViewData["Title"] = "Editar Control de Visita";
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-edit"></i> Editar Visita — @Model.NombreCliente</h2>
+    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-list"></i> Volver</a>
+</div>
+
+<form asp-action="Edit" method="post" class="form-card">
+    @Html.AntiForgeryToken()
+    <input asp-for="IdVisita" type="hidden" />
+    <input asp-for="FechaCreacion" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="FechaLlamada"></label>
+            <input asp-for="FechaLlamada" type="date" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="FechaVisita"></label>
+            <input asp-for="FechaVisita" type="date" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Hora"></label>
+            <input asp-for="Hora" type="time" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="NombreCliente"></label>
+            <input asp-for="NombreCliente" class="form-control" />
+            <span asp-validation-for="NombreCliente" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="TelefonoCelular"></label>
+            <input asp-for="TelefonoCelular" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="TelefonoHabitacion"></label>
+            <input asp-for="TelefonoHabitacion" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Empresa"></label>
+            <input asp-for="Empresa" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DireccionOrigen"></label>
+        <textarea asp-for="DireccionOrigen" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DireccionDestino"></label>
+        <textarea asp-for="DireccionDestino" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Observaciones"></label>
+        <textarea asp-for="Observaciones" class="form-control" rows="2"></textarea>
+    </div>
+
+    <p class="form-subtitle">Tipo de Servicio</p>
+    <div class="checkbox-group">
+        <label class="checkbox-label"><input asp-for="PuertaAPuerta" type="checkbox" /> Puerta a Puerta</label>
+        <label class="checkbox-label"><input asp-for="PuertaAPuerto" type="checkbox" /> Puerta a Puerto</label>
+        <label class="checkbox-label"><input asp-for="Empaque" type="checkbox" /> Empaque</label>
+        <label class="checkbox-label"><input asp-for="MudanzaLocal" type="checkbox" /> Mudanza Local</label>
+    </div>
+
+    <p class="form-subtitle">Cotización</p>
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="Origen"></label>
+            <input asp-for="Origen" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Destino"></label>
+            <input asp-for="Destino" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="TramitesAduana"></label>
+            <input asp-for="TramitesAduana" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Flete"></label>
+            <input asp-for="Flete" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="TarifaTotal"></label>
+            <input asp-for="TarifaTotal" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="CompaniaMaritima"></label>
+            <input asp-for="CompaniaMaritima" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Corresponsal"></label>
+            <input asp-for="Corresponsal" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="HechoPor"></label>
+        <input asp-for="HechoPor" class="form-control" />
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>
+        <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,86 @@
+@model WinMovers.Models.Exportacion
+@{
+    ViewData["Title"] = "Checklist de Exportación";
+    var docsWM = Model.Documentos.Where(d => d.TipoAgente == "WinMovers").ToList();
+    var docsOA = Model.Documentos.Where(d => d.TipoAgente == "OtroAgente").ToList();
+    var wmOk   = docsWM.Count(d => d.Completado);
+    var oaOk   = docsOA.Count(d => d.Completado);
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-tasks"></i> Checklist — @Model.NombreCliente</h2>
+    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-list"></i> Volver</a>
+</div>
+
+<div class="form-card" style="margin-bottom:20px">
+    <div class="form-row three-cols">
+        <div><strong>Cliente:</strong> @Model.NombreCliente</div>
+        <div><strong>Referencia:</strong> @(Model.Referencia ?? "—")</div>
+        <div><strong>Fecha:</strong> @(Model.Fecha?.ToString("dd/MM/yyyy") ?? "—")</div>
+    </div>
+    @if (!string.IsNullOrEmpty(Model.Observaciones))
+    {
+        <p style="margin-top:10px;color:var(--text-light)">@Model.Observaciones</p>
+    }
+</div>
+
+<form asp-action="Checklist" asp-route-id="@Model.IdExportacion" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- Embarque WinMovers -->
+    <div class="checklist-section">
+        <div class="checklist-title">
+            <i class="fas fa-truck-moving"></i>
+            Embarque de WinMovers
+            <span style="margin-left:auto;font-weight:400">@wmOk / @docsWM.Count completados</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: @(docsWM.Count > 0 ? (wmOk * 100 / docsWM.Count) : 0)%"></div>
+        </div>
+        <div class="checklist-grid">
+            @foreach (var doc in docsWM)
+            {
+                <div class="checklist-item @(doc.Completado ? "checked" : "")">
+                    <input type="checkbox" name="documentosCompletados" value="@doc.IdDocumento"
+                           id="doc_@doc.IdDocumento" @(doc.Completado ? "checked" : "") />
+                    <label for="doc_@doc.IdDocumento">@doc.NombreDocumento</label>
+                    <span class="doc-status @(doc.Completado ? "complete" : "pending")">
+                        @(doc.Completado ? "Completado" : "Pendiente")
+                    </span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Embarque Otro Agente -->
+    <div class="checklist-section" style="margin-top:20px">
+        <div class="checklist-title">
+            <i class="fas fa-handshake"></i>
+            Embarque Asignado por Otro Agente
+            <span style="margin-left:auto;font-weight:400">@oaOk / @docsOA.Count completados</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: @(docsOA.Count > 0 ? (oaOk * 100 / docsOA.Count) : 0)%"></div>
+        </div>
+        <div class="checklist-grid">
+            @foreach (var doc in docsOA)
+            {
+                <div class="checklist-item @(doc.Completado ? "checked" : "")">
+                    <input type="checkbox" name="documentosCompletados" value="@doc.IdDocumento"
+                           id="doc_@doc.IdDocumento" @(doc.Completado ? "checked" : "") />
+                    <label for="doc_@doc.IdDocumento">@doc.NombreDocumento</label>
+                    <span class="doc-status @(doc.Completado ? "complete" : "pending")">
+                        @(doc.Completado ? "Completado" : "Pendiente")
+                    </span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:20px">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Guardar Checklist
+        </button>
+        <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+    </div>
+</form>

@@ -1,36 +1,34 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WinMovers.Data;
+using WinMovers.Models.ViewModels;
 
 namespace WinMovers.Controllers
 {
     public class DashboardsController : Controller
     {
-        public IActionResult Index()
+        private readonly WinMoversContext _context;
+
+        public DashboardsController(WinMoversContext context)
         {
-            return View();
+            _context = context;
         }
 
-        public IActionResult CargarVista(string nombre)
+        public async Task<IActionResult> Index()
         {
-            switch (nombre)
+            var viewModel = new DashboardViewModel
             {
-                case "clientes":
-                    return PartialView("~/Views/Dashboards/_Clientes.cshtml");
+                TotalOrdenes       = await _context.OrdenesTrabajo.CountAsync(),
+                TotalVisitas       = await _context.ControlVisitas.CountAsync(),
+                TotalExportaciones = await _context.Exportaciones.CountAsync(),
+                TotalImportaciones = await _context.Importaciones.CountAsync(),
+                OrdenesRecientes   = await _context.OrdenesTrabajo
+                                        .OrderByDescending(o => o.FechaCreacion)
+                                        .Take(5)
+                                        .ToListAsync()
+            };
 
-                case "cotizaciones":
-                    return PartialView("~/Views/Dashboards/_Cotizaciones.cshtml");
-
-                case "mudanzas":
-                    return PartialView("~/Views/Dashboards/_Mudanzas.cshtml");
-
-                case "inventario":
-                    return PartialView("~/Views/Dashboards/_Inventario.cshtml");
-
-                case "empleados":
-                    return PartialView("~/Views/Dashboards/_Empleados.cshtml");
-
-                default:
-                    return Content("Vista no encontrada");
-            }
+            return View(viewModel);
         }
     }
 }

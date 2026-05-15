@@ -1,0 +1,72 @@
+@model IEnumerable<WinMovers.Models.ControlVisita>
+@{
+    ViewData["Title"] = "Control de Visitas";
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-calendar-check"></i> Control de Visitas</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nueva Visita
+    </a>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Fecha Visita</th>
+                <th>Tipo de Servicio</th>
+                <th>Tarifa Total</th>
+                <th>Hecho Por</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6" class="no-data">No hay visitas registradas. <a asp-action="Create">Registrar la primera</a>.</td></tr>
+            }
+            else
+            {
+                @foreach (var v in Model)
+                {
+                    var servicios = new List<string>();
+                    if (v.PuertaAPuerta) servicios.Add("Puerta a Puerta");
+                    if (v.PuertaAPuerto) servicios.Add("Puerta a Puerto");
+                    if (v.Empaque) servicios.Add("Empaque");
+                    if (v.MudanzaLocal) servicios.Add("Mudanza Local");
+
+                    <tr>
+                        <td>@v.NombreCliente</td>
+                        <td>@(v.FechaVisita?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td>
+                            @if (servicios.Any())
+                            {
+                                @foreach (var s in servicios)
+                                {
+                                    <span class="badge badge-info">@s</span>
+                                }
+                            }
+                            else { <span>—</span> }
+                        </td>
+                        <td>@(v.TarifaTotal ?? "—")</td>
+                        <td>@(v.HechoPor ?? "—")</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@v.IdVisita" class="btn-icon edit" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@v.IdVisita" method="post" style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar este registro de visita?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-icon delete" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

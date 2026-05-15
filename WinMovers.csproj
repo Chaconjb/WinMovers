@@ -7,12 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Views\clientes.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Views\clientes.cshtml" />
-    <None Include="Views\Dashboards\Index.cshtml" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
