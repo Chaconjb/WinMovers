@@ -46,7 +46,6 @@ namespace WinMovers.Controllers
             return View();
         }
 
-        // POST: /Exportacion/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Exportacion exportacion)
@@ -55,19 +54,15 @@ namespace WinMovers.Controllers
             {
                 exportacion.FechaCreacion = DateTime.Now;
 
-                // Crear documentos predeterminados para WinMovers
-                foreach (var doc in DocsWinMovers)
-                    exportacion.Documentos.Add(new ExportacionDocumento { NombreDocumento = doc, TipoAgente = "WinMovers" });
-
-                // Crear documentos predeterminados para Otro Agente
-                foreach (var doc in DocsOtroAgente)
-                    exportacion.Documentos.Add(new ExportacionDocumento { NombreDocumento = doc, TipoAgente = "OtroAgente" });
-
                 _context.Exportaciones.Add(exportacion);
+
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Embarque de Exportación creado. Ahora puede gestionar el checklist de documentos.";
-                return RedirectToAction(nameof(Checklist), new { id = exportacion.IdExportacion });
+
+                TempData["Success"] = "Exportación creada correctamente.";
+
+                return RedirectToAction(nameof(Index));
             }
+
             return View(exportacion);
         }
 
@@ -94,7 +89,7 @@ namespace WinMovers.Controllers
             if (exportacion == null) return NotFound();
 
             foreach (var doc in exportacion.Documentos)
-                doc.Completado = documentosCompletados.Contains(doc.IdDocumento);
+                doc.Completado = documentosCompletados.Contains(doc.IdExpDoc);
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Checklist actualizado correctamente.";

@@ -9,22 +9,7 @@ namespace WinMovers.Controllers
     {
         private readonly WinMoversContext _context;
 
-        private static readonly string[] DocsWinMovers =
-        {
-            "Cotización", "Lista de inventario para el seguro",
-            "Cotización con firma de aceptación", "Hoja de Trabajo",
-            "Instrucciones del Embarque", "Carte de porte, AWA o B-L",
-            "Certificado del seguro", "Lista de empaque firmada",
-            "Factura", "Confirmación de Entrega"
-        };
-
-        private static readonly string[] DocsOtroAgente =
-        {
-            "Lista de inventario para el seguro", "Hoja de Trabajo",
-            "Instrucciones del Embarque", "Carte de porte, AWA o B-L",
-            "Certificado del seguro", "Lista de empaque firmada",
-            "Factura", "Confirmación de Entrega"
-        };
+        
 
         public ImportacionController(WinMoversContext context)
         {
@@ -47,7 +32,6 @@ namespace WinMovers.Controllers
             return View();
         }
 
-        // POST: /Importacion/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Importacion importacion)
@@ -56,17 +40,15 @@ namespace WinMovers.Controllers
             {
                 importacion.FechaCreacion = DateTime.Now;
 
-                foreach (var doc in DocsWinMovers)
-                    importacion.Documentos.Add(new ImportacionDocumento { NombreDocumento = doc, TipoAgente = "WinMovers" });
-
-                foreach (var doc in DocsOtroAgente)
-                    importacion.Documentos.Add(new ImportacionDocumento { NombreDocumento = doc, TipoAgente = "OtroAgente" });
-
                 _context.Importaciones.Add(importacion);
+
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Embarque de Importación creado. Ahora puede gestionar el checklist de documentos.";
-                return RedirectToAction(nameof(Checklist), new { id = importacion.IdImportacion });
+
+                TempData["Success"] = "Importación creada correctamente.";
+
+                return RedirectToAction(nameof(Index));
             }
+
             return View(importacion);
         }
 
@@ -93,7 +75,7 @@ namespace WinMovers.Controllers
             if (importacion == null) return NotFound();
 
             foreach (var doc in importacion.Documentos)
-                doc.Completado = documentosCompletados.Contains(doc.IdDocumento);
+                doc.Completado = documentosCompletados.Contains(doc.IdImpDoc);
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Checklist actualizado correctamente.";

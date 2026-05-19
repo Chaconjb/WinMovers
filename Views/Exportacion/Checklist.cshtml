@@ -1,8 +1,8 @@
 @model WinMovers.Models.Exportacion
 @{
     ViewData["Title"] = "Checklist de Exportación";
-    var docsWM = Model.Documentos.Where(d => d.TipoAgente == "WinMovers").ToList();
-    var docsOA = Model.Documentos.Where(d => d.TipoAgente == "OtroAgente").ToList();
+    var docsWM = Model.Documentos.Where(d => d.TipoChecklist == "WinMovers").ToList();
+    var docsOA = Model.Documentos.Where(d => d.TipoChecklist == "OtroAgente").ToList();
     var wmOk   = docsWM.Count(d => d.Completado);
     var oaOk   = docsOA.Count(d => d.Completado);
 }
@@ -41,9 +41,9 @@
             @foreach (var doc in docsWM)
             {
                 <div class="checklist-item @(doc.Completado ? "checked" : "")">
-                    <input type="checkbox" name="documentosCompletados" value="@doc.IdDocumento"
-                           id="doc_@doc.IdDocumento" @(doc.Completado ? "checked" : "") />
-                    <label for="doc_@doc.IdDocumento">@doc.NombreDocumento</label>
+                    <input type="checkbox" name="documentosCompletados" value="@doc.IdExpDoc"
+                           id="doc_@doc.IdExpDoc" @(doc.Completado ? "checked" : "") />
+                    <label for="doc_@doc.IdExpDoc">@doc.IdTipoDocumento</label>
                     <span class="doc-status @(doc.Completado ? "complete" : "pending")">
                         @(doc.Completado ? "Completado" : "Pendiente")
                     </span>
@@ -66,9 +66,9 @@
             @foreach (var doc in docsOA)
             {
                 <div class="checklist-item @(doc.Completado ? "checked" : "")">
-                    <input type="checkbox" name="documentosCompletados" value="@doc.IdDocumento"
-                           id="doc_@doc.IdDocumento" @(doc.Completado ? "checked" : "") />
-                    <label for="doc_@doc.IdDocumento">@doc.NombreDocumento</label>
+                    <input type="checkbox" name="documentosCompletados" value="@doc.IdExpDoc"
+                           id="doc_@doc.IdExpDoc" @(doc.Completado ? "checked" : "") />
+                    <label for="doc_@doc.IdExpDoc">@doc.IdTipoDocumento</label>
                     <span class="doc-status @(doc.Completado ? "complete" : "pending")">
                         @(doc.Completado ? "Completado" : "Pendiente")
                     </span>

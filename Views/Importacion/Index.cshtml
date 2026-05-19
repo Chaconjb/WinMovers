@@ -29,8 +29,8 @@
             {
                 @foreach (var i in Model)
                 {
-                    var docsWM = i.Documentos.Where(d => d.TipoAgente == "WinMovers").ToList();
-                    var docsOA = i.Documentos.Where(d => d.TipoAgente == "OtroAgente").ToList();
+                    var docsWM = i.Documentos.Where(d => d.TipoChecklist == "WinMovers").ToList();
+                    var docsOA = i.Documentos.Where(d => d.TipoChecklist == "OtroAgente").ToList();
                     var wmOk   = docsWM.Count(d => d.Completado);
                     var oaOk   = docsOA.Count(d => d.Completado);
 
