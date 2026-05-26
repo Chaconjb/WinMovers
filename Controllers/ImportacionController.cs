@@ -36,6 +36,13 @@ namespace WinMovers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Importacion importacion)
         {
+            // VALIDACION DEL PAIS
+            if (string.IsNullOrWhiteSpace(importacion.Pais))
+            {
+                ModelState.AddModelError("Pais",
+                    "El país es obligatorio");
+            }
+
             if (ModelState.IsValid)
             {
                 importacion.FechaCreacion = DateTime.Now;
@@ -44,7 +51,8 @@ namespace WinMovers.Controllers
 
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "Importación creada correctamente.";
+                TempData["Success"] =
+                    "Importación creada correctamente.";
 
                 return RedirectToAction(nameof(Index));
             }

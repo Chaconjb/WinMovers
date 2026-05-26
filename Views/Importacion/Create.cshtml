@@ -1,45 +1,134 @@
 @model WinMovers.Models.Importacion
+
 @{
     ViewData["Title"] = "Nuevo Embarque de Importación";
 }
 
 <div class="form-header">
-    <h2 class="content-title"><i class="fas fa-file-import"></i> Nuevo Embarque de Importación</h2>
-    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-list"></i> Ver Listado</a>
+
+    <h2 class="content-title">
+        <i class="fas fa-file-import"></i>
+        Nuevo Embarque de Importación
+    </h2>
+
+    <a asp-action="Index" class="btn btn-outline">
+
+        <i class="fas fa-list"></i>
+        Ver Listado
+
+    </a>
+
 </div>
 
 <form asp-action="Create" method="post" class="form-card">
+
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger mb-3"></div>
+
+    <!-- NOMBRE CLIENTE + PAIS -->
     <div class="form-row two-cols">
+
+        <!-- CLIENTE -->
         <div class="form-group">
+
             <label asp-for="NombreCliente"></label>
-            <input asp-for="NombreCliente" class="form-control" placeholder="Nombre del cliente" />
-            <span asp-validation-for="NombreCliente" class="text-danger"></span>
+
+            <input asp-for="NombreCliente"
+                   class="form-control"
+                   placeholder="Nombre del cliente" />
+
+            <span asp-validation-for="NombreCliente"
+                  class="text-danger"></span>
+
         </div>
+
+        <!-- PAIS -->
         <div class="form-group">
-            <label asp-for="Referencia"></label>
-            <input asp-for="Referencia" class="form-control" placeholder="Ej: IMP-2026-001" />
+
+            <label asp-for="Pais"></label>
+
+            <input asp-for="Pais"
+                   class="form-control"
+                   placeholder="Ingrese el país" />
+
+            <span asp-validation-for="Pais"
+                  class="text-danger"></span>
+
         </div>
+
     </div>
 
+    <!-- REFERENCIA -->
     <div class="form-row two-cols">
+
         <div class="form-group">
-            <label asp-for="Fecha"></label>
-            <input asp-for="Fecha" type="date" class="form-control" />
+
+            <label asp-for="Referencia"></label>
+
+            <input asp-for="Referencia"
+                   class="form-control"
+                   placeholder="Ej: IMP-2026-001" />
+
         </div>
+
     </div>
 
+    <!-- FECHA -->
+    <div class="form-row two-cols">
+
+        <div class="form-group">
+
+            <label asp-for="Fecha"></label>
+
+            <input asp-for="Fecha"
+                   type="date"
+                   class="form-control" />
+
+        </div>
+
+    </div>
+
+    <!-- OBSERVACIONES -->
     <div class="form-group">
+
         <label asp-for="Observaciones"></label>
-        <textarea asp-for="Observaciones" class="form-control" rows="3" placeholder="Observaciones adicionales..."></textarea>
+
+        <textarea asp-for="Observaciones"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Observaciones adicionales..."></textarea>
+
     </div>
 
+    <!-- BOTONES -->
     <div class="form-actions">
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save"></i> Crear Embarque y Configurar Checklist
+
+        <button type="submit"
+                class="btn btn-primary">
+
+            <i class="fas fa-save"></i>
+            Crear Embarque y Configurar Checklist
+
         </button>
-        <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+
+            <i class="fas fa-times"></i>
+            Cancelar
+
+        </a>
+
     </div>
+
 </form>
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

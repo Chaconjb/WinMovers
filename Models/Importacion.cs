@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WinMovers.Models
 {
@@ -11,10 +12,19 @@ namespace WinMovers.Models
         [StringLength(150)]
         public string NombreCliente { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "El país es obligatorio")]
         [StringLength(100)]
+        [RegularExpression(@"^[a-zA-ZÀ-ÿ\s]+$",
+             ErrorMessage = "El país solo puede contener letras")]
+        [Column("pais")]
+        public string Pais { get; set; } = string.Empty;
+
+
+        
         public string? Referencia { get; set; }
 
-        [DataType(DataType.Date)]
+
+       
         public DateTime? Fecha { get; set; }
 
         public string? Observaciones { get; set; }

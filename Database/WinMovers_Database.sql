@@ -81,7 +81,7 @@ CREATE TABLE Control_Visitas (
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  
     fecha_actualizacion     DATETIME2       NULL
 );
-G
+GO
 
 CREATE TABLE Catalogo_Documentos (
     id_tipo_documento       INT IDENTITY(1,1) PRIMARY KEY,

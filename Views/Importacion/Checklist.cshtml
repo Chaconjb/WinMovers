@@ -16,6 +16,10 @@
     <div class="form-row three-cols">
         <div><strong>Cliente:</strong> @Model.NombreCliente</div>
         <div><strong>Referencia:</strong> @(Model.Referencia ?? "—")</div>
+        <div>
+            <strong>País:</strong>
+            @Model.Pais
+        </div>
         <div><strong>Fecha:</strong> @(Model.Fecha?.ToString("dd/MM/yyyy") ?? "—")</div>
     </div>
     @if (!string.IsNullOrEmpty(Model.Observaciones))

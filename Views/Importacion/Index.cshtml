@@ -18,6 +18,7 @@
                 <th>Documentos WinMovers</th>
                 <th>Documentos Otro Agente</th>
                 <th>Acciones</th>
+                <th>País</th>
             </tr>
         </thead>
         <tbody>
@@ -36,6 +37,7 @@
 
                     <tr>
                         <td>@i.NombreCliente</td>
+                        <td>@i.Pais</td>
                         <td>@(i.Referencia ?? "—")</td>
                         <td>@(i.Fecha?.ToString("dd/MM/yyyy") ?? "—")</td>
                         <td>

@@ -9,8 +9,7 @@ namespace WinMovers.Models
         public int IdImportacion { get; set; }
 
         [Display(Name = "Tipo Documento")]
-        public int IdTipoDocumento { get; set; }
-
+        public int? IdTipoDocumento { get; set; } /// cambiado
         [Display(Name = "Tipo Checklist")]
         [StringLength(100)]
         public string? TipoChecklist { get; set; }
