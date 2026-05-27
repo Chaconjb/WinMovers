@@ -4,6 +4,9 @@
 }
 
 <!-- Estadísticas -->
+
+
+<!--estadisticas -->
 <section class="dashboard-stats">
     <div class="stat-card">
         <div class="stat-icon bg-blue"><i class="fas fa-clipboard-list"></i></div>
@@ -12,6 +15,7 @@
             <p>Órdenes de Trabajo</p>
         </div>
     </div>
+
     <div class="stat-card">
         <div class="stat-icon bg-green"><i class="fas fa-calendar-check"></i></div>
         <div class="stat-info">
@@ -19,6 +23,7 @@
             <p>Visitas Registradas</p>
         </div>
     </div>
+
     <div class="stat-card">
         <div class="stat-icon bg-orange"><i class="fas fa-file-export"></i></div>
         <div class="stat-info">
@@ -26,6 +31,7 @@
             <p>Exportaciones</p>
         </div>
     </div>
+
     <div class="stat-card">
         <div class="stat-icon bg-pink"><i class="fas fa-file-import"></i></div>
         <div class="stat-info">
@@ -35,25 +41,29 @@
     </div>
 </section>
 
-<!-- Accesos rápidos -->
+<!-- acceso rapido -->
 <section class="dashboard-actions">
     <h2 class="content-title">Accesos Rápidos</h2>
+
     <div class="actions-grid">
         <a asp-controller="OrdenTrabajo" asp-action="Create" class="action-card">
             <i class="fas fa-plus-circle"></i>
             <h3>Nueva Orden de Trabajo</h3>
             <p>Crear una orden de trabajo para un cliente</p>
         </a>
+
         <a asp-controller="ControlVisita" asp-action="Create" class="action-card">
             <i class="fas fa-plus-circle"></i>
             <h3>Nuevo Control de Visita</h3>
             <p>Registrar una visita de inspección</p>
         </a>
+
         <a asp-controller="Exportacion" asp-action="Create" class="action-card">
             <i class="fas fa-shipping-fast"></i>
             <h3>Embarque Exportación</h3>
             <p>Control de documentos de exportación</p>
         </a>
+
         <a asp-controller="Importacion" asp-action="Create" class="action-card">
             <i class="fas fa-dolly"></i>
             <h3>Embarque Importación</h3>
@@ -62,9 +72,10 @@
     </div>
 </section>
 
-<!-- Órdenes recientes -->
+<!-- ordenes recientes -->
 <section class="dashboard-recent">
     <h2 class="content-title">Órdenes Recientes</h2>
+
     <div class="table-container">
         <table class="data-table">
             <thead>
@@ -76,14 +87,19 @@
                     <th>Hecho por</th>
                 </tr>
             </thead>
+
             <tbody>
                 @if (!Model.OrdenesRecientes.Any())
                 {
-                    <tr><td colspan="5" class="no-data">No hay órdenes registradas aún.</td></tr>
+                    <tr>
+                        <td colspan="5" class="no-data">
+                            No hay órdenes registradas aún.
+                        </td>
+                    </tr>
                 }
                 else
                 {
-                    @foreach (var o in Model.OrdenesRecientes)
+                    foreach (var o in Model.OrdenesRecientes)
                     {
                         <tr>
                             <td><strong>@o.NumeroOT</strong></td>

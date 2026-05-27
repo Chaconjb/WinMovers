@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
+using WinMovers.Models;
 using WinMovers.Models.ViewModels;
 
 namespace WinMovers.Controllers
@@ -14,6 +15,7 @@ namespace WinMovers.Controllers
             _context = context;
         }
 
+        // DASHBOARD
         public async Task<IActionResult> Index()
         {
             var viewModel = new DashboardViewModel
@@ -23,9 +25,9 @@ namespace WinMovers.Controllers
                 TotalExportaciones = await _context.Exportaciones.CountAsync(),
                 TotalImportaciones = await _context.Importaciones.CountAsync(),
                 OrdenesRecientes   = await _context.OrdenesTrabajo
-                                        .OrderByDescending(o => o.FechaCreacion)
-                                        .Take(5)
-                                        .ToListAsync()
+                    .OrderByDescending(o => o.FechaCreacion)
+                    .Take(5)
+                    .ToListAsync()
             };
 
             return View(viewModel);

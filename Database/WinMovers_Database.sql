@@ -151,9 +151,10 @@ CREATE TABLE Importaciones_Documentos (
         ON DELETE CASCADE,
     CONSTRAINT FK_ImpDoc_TipoDoc FOREIGN KEY (id_tipo_documento) REFERENCES Catalogo_Documentos(id_tipo_documento)
 );
-GO
 
 
+ALTER TABLE [dbo].[Importaciones]
+ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
 
 INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion) VALUES
     ('Reporte de Visita Previa',            1, 0, 1, 1, 1),
