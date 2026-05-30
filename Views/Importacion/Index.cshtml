@@ -15,10 +15,12 @@
                 <th>Cliente</th>
                 <th>Referencia</th>
                 <th>Fecha</th>
+                <th>Cajas</th>
+                <th>Kilos</th>
                 <th>Documentos WinMovers</th>
                 <th>Documentos Otro Agente</th>
-                <th>Acciones</th>
                 <th>País</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -37,9 +39,10 @@
 
                     <tr>
                         <td>@i.NombreCliente</td>
-                        <td>@i.Pais</td>
                         <td>@(i.Referencia ?? "—")</td>
                         <td>@(i.Fecha?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td>@i.Cajas</td>
+                        <td>@i.Kilos.ToString("N2")</td>
                         <td>
                             <span class="badge @(wmOk == docsWM.Count && docsWM.Count > 0 ? "badge-success" : "badge-warning")">
                                 @wmOk / @docsWM.Count
@@ -50,6 +53,7 @@
                                 @oaOk / @docsOA.Count
                             </span>
                         </td>
+                        <td>@i.Pais</td>
                         <td>
                             <a asp-action="Checklist" asp-route-id="@i.IdImportacion" class="btn-icon edit" title="Gestionar Checklist">
                                 <i class="fas fa-tasks"></i>

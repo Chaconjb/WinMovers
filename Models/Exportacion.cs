@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WinMovers.Models
 {
@@ -16,6 +17,15 @@ namespace WinMovers.Models
 
         [DataType(DataType.Date)]
         public DateTime? Fecha { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "Las cajas no pueden tener un valor negativo")]
+        [Column("cajas")]
+        public int Cajas { get; set; }
+
+
+        [Range(0, double.MaxValue, ErrorMessage = "Los kilos no pueden ser negativos")]
+        [Column("kilos", TypeName = "decimal(18,2)")]
+        public decimal Kilos { get; set; }
 
         public string? Observaciones { get; set; }
 

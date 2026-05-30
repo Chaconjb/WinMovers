@@ -99,7 +99,9 @@ CREATE TABLE Exportaciones (
     id_exportacion          INT IDENTITY(1,1) PRIMARY KEY,
     nombre_cliente          NVARCHAR(150)   NOT NULL,         
     referencia              NVARCHAR(50)    NULL,           
-    fecha                   DATE            NULL,           
+    fecha                   DATE            NULL,   
+	cajas INT NOT NULL CHECK (cajas >= 0),
+	kilos DECIMAL(18,2) NOT NULL CHECK (kilos >= 0),
     observaciones           NVARCHAR(MAX)   NULL,           
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(), 
     fecha_actualizacion     DATETIME2       NULL
@@ -129,9 +131,12 @@ GO
 
 CREATE TABLE Importaciones (
     id_importacion          INT IDENTITY(1,1) PRIMARY KEY,
-    nombre_cliente          NVARCHAR(150)   NOT NULL,         
+    nombre_cliente          NVARCHAR(150)   NOT NULL,      
+	pais NVARCHAR(100) NULL,
     referencia              NVARCHAR(50)    NULL,                
-    fecha                   DATE            NULL,             
+    fecha                   DATE            NULL,
+	cajas INT NOT NULL CHECK (cajas >= 0),
+	kilos DECIMAL(18,2) NOT NULL CHECK (kilos >= 0),
     observaciones           NVARCHAR(MAX)   NULL,             
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),
     fecha_actualizacion     DATETIME2       NULL

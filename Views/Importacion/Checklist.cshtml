@@ -21,6 +21,15 @@
             @Model.Pais
         </div>
         <div><strong>Fecha:</strong> @(Model.Fecha?.ToString("dd/MM/yyyy") ?? "—")</div>
+
+        <div>
+            <strong>Cajas:</strong> @Model.Cajas
+        </div>
+
+        <div>
+            <strong>Kilos:</strong> @Model.Kilos.ToString("N2")
+        </div>
+
     </div>
     @if (!string.IsNullOrEmpty(Model.Observaciones))
     {
