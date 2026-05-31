@@ -96,6 +96,48 @@ namespace WinMovers.Controllers
             return RedirectToAction(nameof(Checklist), new { id });
         }
 
+        // GET: /Exportacion/Edit
+        public async Task<IActionResult> Edit(int id)
+        {
+            var importacion = await _context.Exportaciones
+                .FirstOrDefaultAsync(i => i.IdExportacion == id);
+
+            if (importacion == null)
+                return NotFound();
+
+            return View(importacion);
+        }
+
+        // POST: /Exportacion/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Exportacion exportacion)
+        {
+            if (id != exportacion.IdExportacion)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return View(exportacion);
+
+            var embarque = await _context.Exportaciones
+                .FirstOrDefaultAsync(i => i.IdExportacion == id);
+
+            if (embarque == null)
+                return NotFound();
+
+            embarque.NombreCliente = exportacion.NombreCliente;
+            embarque.Referencia = exportacion.Referencia;
+            embarque.Fecha = exportacion.Fecha;
+            embarque.Cajas = exportacion.Cajas;
+            embarque.Kilos = exportacion.Kilos;
+            embarque.Observaciones = exportacion.Observaciones;
+            embarque.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Checklist), new { id });
+        }
+
         // POST: /Exportacion/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -55,6 +55,12 @@
                         </td>
                         <td>@i.Pais</td>
                         <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@i.IdImportacion"
+                               class="btn-icon edit"
+                               title="Editar">
+                                <i class="fas fa-pen"></i>
+                            </a>
                             <a asp-action="Checklist" asp-route-id="@i.IdImportacion" class="btn-icon edit" title="Gestionar Checklist">
                                 <i class="fas fa-tasks"></i>
                             </a>

@@ -90,6 +90,49 @@ namespace WinMovers.Controllers
             return RedirectToAction(nameof(Checklist), new { id });
         }
 
+        // GET: /Importacion/Edit
+        public async Task<IActionResult> Edit(int id)
+        {
+            var importacion = await _context.Importaciones
+                .FirstOrDefaultAsync(i => i.IdImportacion == id);
+
+            if (importacion == null)
+                return NotFound();
+
+            return View(importacion);
+        }
+
+        // POST: /Importacion/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Importacion importacion)
+        {
+            if (id != importacion.IdImportacion)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return View(importacion);
+
+            var embarque = await _context.Importaciones
+                .FirstOrDefaultAsync(i => i.IdImportacion == id);
+
+            if (embarque == null)
+                return NotFound();
+
+            embarque.NombreCliente = importacion.NombreCliente;
+            embarque.Pais = importacion.Pais;
+            embarque.Referencia = importacion.Referencia;
+            embarque.Fecha = importacion.Fecha;
+            embarque.Cajas = importacion.Cajas;
+            embarque.Kilos = importacion.Kilos;
+            embarque.Observaciones = importacion.Observaciones;
+            embarque.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Checklist), new { id });
+        }
+
         // POST: /Importacion/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -53,6 +53,12 @@
                             </span>
                         </td>
                         <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@e.IdExportacion"
+                               class="btn-icon edit"
+                               title="Editar">
+                                <i class="fas fa-pen"></i>
+                            </a>
                             <a asp-action="Checklist" asp-route-id="@e.IdExportacion" class="btn-icon edit" title="Gestionar Checklist">
                                 <i class="fas fa-tasks"></i>
                             </a>
