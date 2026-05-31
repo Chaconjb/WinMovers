@@ -36,23 +36,25 @@ namespace WinMovers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Importacion importacion)
         {
-            // VALIDACION DEL PAIS
             if (string.IsNullOrWhiteSpace(importacion.Pais))
             {
-                ModelState.AddModelError("Pais",
-                    "El país es obligatorio");
+                ModelState.AddModelError("Pais", "El país es obligatorio");
             }
 
             if (ModelState.IsValid)
             {
-                importacion.FechaCreacion = DateTime.Now;
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC sp_Importacion_Insertar @p0, @p1, @p2, @p3, @p4, @p5, @p6",
+                    importacion.NombreCliente,
+                    importacion.Pais,
+                    importacion.Cajas,
+                    importacion.Kilos,
+                    importacion.Referencia,
+                    importacion.Fecha,
+                    importacion.Observaciones
+                );
 
-                _context.Importaciones.Add(importacion);
-
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] =
-                    "Importación creada correctamente.";
+                TempData["Success"] = "Importación creada correctamente.";
 
                 return RedirectToAction(nameof(Index));
             }
@@ -65,6 +67,7 @@ namespace WinMovers.Controllers
         {
             var importacion = await _context.Importaciones
                 .Include(i => i.Documentos)
+                .ThenInclude(d => d.TipoDocumento)
                 .FirstOrDefaultAsync(i => i.IdImportacion == id);
 
             if (importacion == null) return NotFound();
@@ -78,6 +81,7 @@ namespace WinMovers.Controllers
         {
             var importacion = await _context.Importaciones
                 .Include(i => i.Documentos)
+                .ThenInclude(d => d.TipoDocumento)
                 .FirstOrDefaultAsync(i => i.IdImportacion == id);
 
             if (importacion == null) return NotFound();

@@ -50,7 +50,7 @@
                 <div class="checklist-item @(doc.Completado ? "checked" : "")">
                     <input type="checkbox" name="documentosCompletados" value="@doc.IdExpDoc"
                            id="doc_@doc.IdExpDoc" @(doc.Completado ? "checked" : "") />
-                    <label for="doc_@doc.IdExpDoc">@doc.IdTipoDocumento</label>
+                    <label for="doc_@doc.IdExpDoc">@doc.TipoDocumento?.Nombre</label>
                     <span class="doc-status @(doc.Completado ? "complete" : "pending")">
                         @(doc.Completado ? "Completado" : "Pendiente")
                     </span>
@@ -75,7 +75,7 @@
                 <div class="checklist-item @(doc.Completado ? "checked" : "")">
                     <input type="checkbox" name="documentosCompletados" value="@doc.IdExpDoc"
                            id="doc_@doc.IdExpDoc" @(doc.Completado ? "checked" : "") />
-                    <label for="doc_@doc.IdExpDoc">@doc.IdTipoDocumento</label>
+                    <label for="doc_@doc.IdExpDoc">@doc.TipoDocumento?.Nombre</label>
                     <span class="doc-status @(doc.Completado ? "complete" : "pending")">
                         @(doc.Completado ? "Completado" : "Pendiente")
                     </span>

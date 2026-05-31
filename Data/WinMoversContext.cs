@@ -11,6 +11,7 @@ namespace WinMovers.Data
         }
         public DbSet<OrdenTrabajo> OrdenesTrabajo { get; set; }
         public DbSet<ControlVisita> ControlVisitas { get; set; }
+        public DbSet<CatalogoDocumento> CatalogoDocumentos { get; set; }
         public DbSet<Exportacion> Exportaciones { get; set; }
         public DbSet<ExportacionDocumento> ExportacionesDocumentos { get; set; }
         public DbSet<Importacion> Importaciones { get; set; }
@@ -183,6 +184,41 @@ namespace WinMovers.Data
             });
 
             // =========================================================
+            // CATALOGO DOCUMENTOS
+            // =========================================================
+            modelBuilder.Entity<CatalogoDocumento>(e =>
+            {
+                e.ToTable("Catalogo_Documentos");
+
+                e.HasKey(x => x.IdTipoDocumento);
+
+                e.Property(x => x.IdTipoDocumento)
+                    .HasColumnName("id_tipo_documento");
+
+                e.Property(x => x.Nombre)
+                    .HasColumnName("nombre")
+                    .IsRequired();
+
+                e.Property(x => x.AplicaExportacion)
+                    .HasColumnName("aplica_exportacion");
+
+                e.Property(x => x.AplicaImportacion)
+                    .HasColumnName("aplica_importacion");
+
+                e.Property(x => x.AplicaWinMovers)
+                    .HasColumnName("aplica_winmovers");
+
+                e.Property(x => x.AplicaOtroAgente)
+                    .HasColumnName("aplica_otro_agente");
+
+                e.Property(x => x.OrdenPresentacion)
+                    .HasColumnName("orden_presentacion");
+
+                e.Property(x => x.Activo)
+                    .HasColumnName("activo");
+            });
+
+            // =========================================================
             // EXPORTACIONES
             // =========================================================
             modelBuilder.Entity<Exportacion>(e =>
@@ -249,6 +285,11 @@ namespace WinMovers.Data
 
                 e.Property(x => x.Observaciones)
                     .HasColumnName("observaciones");
+                //Relación con TipoDocumento
+                e.HasOne(x => x.TipoDocumento)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdTipoDocumento)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // =========================================================
@@ -318,6 +359,11 @@ namespace WinMovers.Data
 
                 e.Property(x => x.Observaciones)
                     .HasColumnName("observaciones");
+                //Relación con TipoDocumento
+                e.HasOne(x => x.TipoDocumento)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdTipoDocumento)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

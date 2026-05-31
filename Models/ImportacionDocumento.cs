@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WinMovers.Models
 {
@@ -6,12 +7,13 @@ namespace WinMovers.Models
     {
         public int IdImpDoc { get; set; }
 
+        [Column("id_importacion")]
         public int IdImportacion { get; set; }
 
         [Display(Name = "Tipo Documento")]
-        public int? IdTipoDocumento { get; set; } /// cambiado
+        public int IdTipoDocumento { get; set; }
         [Display(Name = "Tipo Checklist")]
-        [StringLength(100)]
+        [StringLength(20)]
         public string? TipoChecklist { get; set; }
 
         [Display(Name = "Completado")]
@@ -23,5 +25,7 @@ namespace WinMovers.Models
         public string? Observaciones { get; set; }
 
         public Importacion? Importacion { get; set; }
+
+        public CatalogoDocumento? TipoDocumento { get; set; }
     }
 }

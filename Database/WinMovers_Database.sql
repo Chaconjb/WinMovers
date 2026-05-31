@@ -438,32 +438,53 @@ GO
 
 CREATE PROCEDURE sp_Exportacion_Insertar
     @nombre_cliente     NVARCHAR(150),
+    @cajas              INT,
+    @kilos              DECIMAL(18,2),
     @referencia         NVARCHAR(50) = NULL,
     @fecha              DATE = NULL,
     @observaciones      NVARCHAR(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO Exportaciones (nombre_cliente, referencia, fecha, observaciones)
-    VALUES (@nombre_cliente, @referencia, @fecha, @observaciones);
+
+    INSERT INTO Exportaciones
+    (
+        nombre_cliente,
+        cajas,
+        kilos,
+        referencia,
+        fecha,
+        observaciones,
+        fecha_creacion
+    )
+    VALUES
+    (
+        @nombre_cliente,
+        @cajas,
+        @kilos,
+        @referencia,
+        @fecha,
+        @observaciones,
+        GETDATE()
+    );
 
     DECLARE @id_exportacion INT = SCOPE_IDENTITY();
 
-    -- Generar checklist WinMovers automáticamente (JS: docsWinMovers)
-    INSERT INTO Exportaciones_Documentos (id_exportacion, id_tipo_documento, tipo_checklist)
+    INSERT INTO Exportaciones_Documentos
+        (id_exportacion, id_tipo_documento, tipo_checklist)
     SELECT @id_exportacion, id_tipo_documento, 'WinMovers'
     FROM Catalogo_Documentos
-    WHERE aplica_exportacion = 1 AND aplica_winmovers = 1 AND activo = 1
-    ORDER BY orden_presentacion;
+    WHERE aplica_exportacion = 1
+      AND aplica_winmovers = 1
+      AND activo = 1;
 
-    -- Generar checklist Otro Agente automáticamente (JS: docsOtroAgente)
-    INSERT INTO Exportaciones_Documentos (id_exportacion, id_tipo_documento, tipo_checklist)
+    INSERT INTO Exportaciones_Documentos
+        (id_exportacion, id_tipo_documento, tipo_checklist)
     SELECT @id_exportacion, id_tipo_documento, 'OtroAgente'
     FROM Catalogo_Documentos
-    WHERE aplica_exportacion = 1 AND aplica_otro_agente = 1 AND activo = 1
-    ORDER BY orden_presentacion;
-
-    SELECT @id_exportacion AS id_exportacion;
+    WHERE aplica_exportacion = 1
+      AND aplica_otro_agente = 1
+      AND activo = 1;
 END
 GO
 
@@ -550,30 +571,64 @@ GO
 
 CREATE PROCEDURE sp_Importacion_Insertar
     @nombre_cliente     NVARCHAR(150),
+    @pais               NVARCHAR(100),
+    @cajas              INT,
+    @kilos              DECIMAL(18,2),
     @referencia         NVARCHAR(50) = NULL,
     @fecha              DATE = NULL,
     @observaciones      NVARCHAR(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO Importaciones (nombre_cliente, referencia, fecha, observaciones)
-    VALUES (@nombre_cliente, @referencia, @fecha, @observaciones);
+
+    INSERT INTO Importaciones
+    (
+        nombre_cliente,
+        pais,
+        cajas,
+        kilos,
+        referencia,
+        fecha,
+        observaciones,
+        fecha_creacion
+    )
+    VALUES
+    (
+        @nombre_cliente,
+        @pais,
+        @cajas,
+        @kilos,
+        @referencia,
+        @fecha,
+        @observaciones,
+        GETDATE()
+    );
 
     DECLARE @id_importacion INT = SCOPE_IDENTITY();
 
-    -- Generar checklist WinMovers automáticamente (JS: docsWinMovers)
-    INSERT INTO Importaciones_Documentos (id_importacion, id_tipo_documento, tipo_checklist)
-    SELECT @id_importacion, id_tipo_documento, 'WinMovers'
+    -- Checklist WinMovers
+    INSERT INTO Importaciones_Documentos
+        (id_importacion, id_tipo_documento, tipo_checklist)
+    SELECT
+        @id_importacion,
+        id_tipo_documento,
+        'WinMovers'
     FROM Catalogo_Documentos
-    WHERE aplica_importacion = 1 AND aplica_winmovers = 1 AND activo = 1
-    ORDER BY orden_presentacion;
+    WHERE aplica_importacion = 1
+      AND aplica_winmovers = 1
+      AND activo = 1;
 
-    -- Generar checklist Otro Agente automáticamente (JS: docsOtroAgente)
-    INSERT INTO Importaciones_Documentos (id_importacion, id_tipo_documento, tipo_checklist)
-    SELECT @id_importacion, id_tipo_documento, 'OtroAgente'
+    -- Checklist Otro Agente
+    INSERT INTO Importaciones_Documentos
+        (id_importacion, id_tipo_documento, tipo_checklist)
+    SELECT
+        @id_importacion,
+        id_tipo_documento,
+        'OtroAgente'
     FROM Catalogo_Documentos
-    WHERE aplica_importacion = 1 AND aplica_otro_agente = 1 AND activo = 1
-    ORDER BY orden_presentacion;
+    WHERE aplica_importacion = 1
+      AND aplica_otro_agente = 1
+      AND activo = 1;
 
     SELECT @id_importacion AS id_importacion;
 END

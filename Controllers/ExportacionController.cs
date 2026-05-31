@@ -9,22 +9,6 @@ namespace WinMovers.Controllers
     {
         private readonly WinMoversContext _context;
 
-        private static readonly string[] DocsWinMovers =
-        {
-            "Reporte de Visita Previa", "Cotización", "Lista de inventario para el seguro",
-            "Cotización con firma de aceptación", "Hoja de Trabajo", "Pre-Aviso al agente de destino",
-            "Instrucciones del Embarque", "Carte de porte, AWA o B-L",
-            "Certificado del seguro", "Lista de empaque firmada", "Factura", "Confirmación de Entrega"
-        };
-
-        private static readonly string[] DocsOtroAgente =
-        {
-            "Reporte de Visita Previa", "Lista de inventario para el seguro",
-            "Pre-Aviso al agente de destino", "Instrucciones del Embarque",
-            "Carte de porte, AWA o B-L", "Certificado del seguro",
-            "Lista de empaque firmada", "Factura"
-        };
-
         public ExportacionController(WinMoversContext context)
         {
             _context = context;
@@ -56,7 +40,15 @@ namespace WinMovers.Controllers
 
                 _context.Exportaciones.Add(exportacion);
 
-                await _context.SaveChangesAsync();
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC sp_Exportacion_Insertar @p0, @p1, @p2, @p3, @p4, @p5",
+                    exportacion.NombreCliente,
+                    exportacion.Cajas,
+                    exportacion.Kilos,
+                    exportacion.Referencia,
+                    exportacion.Fecha,
+                    exportacion.Observaciones
+                );
 
                 TempData["Success"] = "Exportación creada correctamente.";
 
@@ -71,6 +63,7 @@ namespace WinMovers.Controllers
         {
             var exportacion = await _context.Exportaciones
                 .Include(e => e.Documentos)
+                .ThenInclude(d => d.TipoDocumento)
                 .FirstOrDefaultAsync(e => e.IdExportacion == id);
 
             if (exportacion == null) return NotFound();
@@ -84,6 +77,7 @@ namespace WinMovers.Controllers
         {
             var exportacion = await _context.Exportaciones
                 .Include(e => e.Documentos)
+                .ThenInclude(d => d.TipoDocumento)
                 .FirstOrDefaultAsync(e => e.IdExportacion == id);
 
             if (exportacion == null) return NotFound();
