@@ -8,6 +8,44 @@
     <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Embarque</a>
 </div>
 
+<div class="form-card" style="margin-bottom:20px;">
+    <form asp-action="Index" method="get">
+
+        <div class="form-row three-cols">
+
+            <div class="form-group">
+                <label>Cliente</label>
+                <input type="text"
+                       name="cliente"
+                       value="@ViewBag.Cliente"
+                       class="form-control"
+                       placeholder="Buscar por cliente" />
+            </div>
+
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date"
+                       name="fecha"
+                       value="@ViewBag.Fecha"
+                       class="form-control" />
+            </div>
+
+            <div class="form-group" style="align-self:end;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    Buscar
+                </button>
+
+                <a asp-action="Index" class="btn btn-secondary">
+                    Limpiar
+                </a>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
 <div class="table-container">
     <table class="data-table">
         <thead>

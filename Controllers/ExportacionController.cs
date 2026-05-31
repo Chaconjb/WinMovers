@@ -31,13 +31,29 @@ namespace WinMovers.Controllers
         }
 
         // GET: /Exportacion
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string cliente, DateTime? fecha)
         {
-            var exportaciones = await _context.Exportaciones
+            var exportaciones = _context.Exportaciones
                 .Include(e => e.Documentos)
-                .OrderByDescending(e => e.FechaCreacion)
-                .ToListAsync();
-            return View(exportaciones);
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(cliente))
+            {
+                exportaciones = exportaciones.Where(e =>
+                    e.NombreCliente.Contains(cliente));
+            }
+
+            if (fecha.HasValue)
+            {
+                exportaciones = exportaciones.Where(e =>
+                    e.Fecha.HasValue &&
+                    e.Fecha.Value.Date == fecha.Value.Date);
+            }
+
+            ViewBag.Cliente = cliente;
+            ViewBag.Fecha = fecha?.ToString("yyyy-MM-dd");
+
+            return View(await exportaciones.ToListAsync());
         }
 
         // GET: /Exportacion/Create
@@ -100,7 +116,7 @@ namespace WinMovers.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var importacion = await _context.Exportaciones
-                .FirstOrDefaultAsync(i => i.IdExportacion == id);
+                .FirstOrDefaultAsync(e => e.IdExportacion == id);
 
             if (importacion == null)
                 return NotFound();
@@ -120,7 +136,7 @@ namespace WinMovers.Controllers
                 return View(exportacion);
 
             var embarque = await _context.Exportaciones
-                .FirstOrDefaultAsync(i => i.IdExportacion == id);
+                .FirstOrDefaultAsync(e => e.IdExportacion == id);
 
             if (embarque == null)
                 return NotFound();

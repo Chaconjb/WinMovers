@@ -17,13 +17,29 @@ namespace WinMovers.Controllers
         }
 
         // GET: /Importacion
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string cliente, DateTime? fecha)
         {
-            var importaciones = await _context.Importaciones
+            var importaciones = _context.Importaciones
                 .Include(i => i.Documentos)
-                .OrderByDescending(i => i.FechaCreacion)
-                .ToListAsync();
-            return View(importaciones);
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(cliente))
+            {
+                importaciones = importaciones.Where(i =>
+                    i.NombreCliente.Contains(cliente));
+            }
+
+            if (fecha.HasValue)
+            {
+                importaciones = importaciones.Where(i =>
+                    i.Fecha.HasValue &&
+                    i.Fecha.Value.Date == fecha.Value.Date);
+            }
+
+            ViewBag.Cliente = cliente;
+            ViewBag.Fecha = fecha?.ToString("yyyy-MM-dd");
+
+            return View(await importaciones.ToListAsync());
         }
 
         // GET: /Importacion/Create
