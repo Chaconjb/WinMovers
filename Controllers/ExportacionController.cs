@@ -15,13 +15,29 @@ namespace WinMovers.Controllers
         }
 
         // GET: /Exportacion
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string cliente, DateTime? fecha)
         {
-            var exportaciones = await _context.Exportaciones
+            var exportaciones = _context.Exportaciones
                 .Include(e => e.Documentos)
-                .OrderByDescending(e => e.FechaCreacion)
-                .ToListAsync();
-            return View(exportaciones);
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(cliente))
+            {
+                exportaciones = exportaciones.Where(e =>
+                    e.NombreCliente.Contains(cliente));
+            }
+
+            if (fecha.HasValue)
+            {
+                exportaciones = exportaciones.Where(e =>
+                    e.Fecha.HasValue &&
+                    e.Fecha.Value.Date == fecha.Value.Date);
+            }
+
+            ViewBag.Cliente = cliente;
+            ViewBag.Fecha = fecha?.ToString("yyyy-MM-dd");
+
+            return View(await exportaciones.ToListAsync());
         }
 
         // GET: /Exportacion/Create
@@ -87,6 +103,48 @@ namespace WinMovers.Controllers
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Checklist actualizado correctamente.";
+            return RedirectToAction(nameof(Checklist), new { id });
+        }
+
+        // GET: /Exportacion/Edit
+        public async Task<IActionResult> Edit(int id)
+        {
+            var importacion = await _context.Exportaciones
+                .FirstOrDefaultAsync(e => e.IdExportacion == id);
+
+            if (importacion == null)
+                return NotFound();
+
+            return View(importacion);
+        }
+
+        // POST: /Exportacion/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Exportacion exportacion)
+        {
+            if (id != exportacion.IdExportacion)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return View(exportacion);
+
+            var embarque = await _context.Exportaciones
+                .FirstOrDefaultAsync(e => e.IdExportacion == id);
+
+            if (embarque == null)
+                return NotFound();
+
+            embarque.NombreCliente = exportacion.NombreCliente;
+            embarque.Referencia = exportacion.Referencia;
+            embarque.Fecha = exportacion.Fecha;
+            embarque.Cajas = exportacion.Cajas;
+            embarque.Kilos = exportacion.Kilos;
+            embarque.Observaciones = exportacion.Observaciones;
+            embarque.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Checklist), new { id });
         }
 
