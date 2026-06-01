@@ -8,12 +8,17 @@ namespace WinMovers.Controllers
     public class ImportacionController : Controller
     {
         private readonly WinMoversContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        
+        // Límite y tipos permitidos
+        private const long MaxBytes = 10 * 1024 * 1024; // 10 MB
+        private static readonly string[] TiposPermitidos =
+            ["application/pdf", "image/jpeg", "image/png", "image/webp"];
 
-        public ImportacionController(WinMoversContext context)
+        public ImportacionController(WinMoversContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: /Importacion
@@ -84,6 +89,7 @@ namespace WinMovers.Controllers
             var importacion = await _context.Importaciones
                 .Include(i => i.Documentos)
                 .ThenInclude(d => d.TipoDocumento)
+                .Include(i => i.Archivos)
                 .FirstOrDefaultAsync(i => i.IdImportacion == id);
 
             if (importacion == null) return NotFound();
@@ -166,6 +172,94 @@ namespace WinMovers.Controllers
                 TempData["Success"] = "Embarque eliminado.";
             }
             return RedirectToAction(nameof(Index));
+        }
+        //Métodos para subir archivos
+
+        // POST: /Importacion/SubirArchivo
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubirArchivo(int idImportacion, IFormFile archivo)
+        {
+            // Escenario 2: tamaño excedido
+            if (archivo == null || archivo.Length == 0)
+                return Json(new { ok = false, mensaje = "No se recibió ningún archivo." });
+
+            if (archivo.Length > MaxBytes)
+                return Json(new { ok = false, mensaje = "El archivo supera el límite de 10 MB permitido." });
+
+            // Validar tipo MIME
+            if (!TiposPermitidos.Contains(archivo.ContentType))
+                return Json(new { ok = false, mensaje = "Solo se permiten archivos PDF o imágenes (JPG, PNG, WEBP)." });
+
+            // Escenario 1: guardar en disco
+            var extension = Path.GetExtension(archivo.FileName);
+            var nombreGuid = $"{Guid.NewGuid()}{extension}";
+            var rutaCarpeta = Path.Combine(_env.WebRootPath, "uploads", "importaciones");
+
+            Directory.CreateDirectory(rutaCarpeta); // no falla si ya existe
+
+            var rutaCompleta = Path.Combine(rutaCarpeta, nombreGuid);
+
+            using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+                await archivo.CopyToAsync(stream);
+
+            // Guardar en BD usando EF (igual que el resto del controller)
+            var registro = new ImportacionArchivo
+            {
+                IdImportacion = idImportacion,
+                NombreOriginal = archivo.FileName,
+                NombreGuardado = nombreGuid,
+                TipoMime = archivo.ContentType,
+                TamanioBytes = archivo.Length,
+                FechaCarga = DateTime.Now
+            };
+
+            _context.ImportacionesArchivos.Add(registro);
+            await _context.SaveChangesAsync();
+
+            return Json(new { ok = true, mensaje = "Documento cargado correctamente." });
+        }
+
+        // POST: /Importacion/EliminarArchivo
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarArchivo(int idArchivo)
+        {
+            // Escenario 3: eliminar
+            var archivo = await _context.ImportacionesArchivos
+                .FirstOrDefaultAsync(a => a.IdArchivo == idArchivo);
+
+            if (archivo == null)
+                return Json(new { ok = false, mensaje = "El archivo no existe." });
+
+            // Primero eliminar físicamente del disco
+            var rutaCompleta = Path.Combine(_env.WebRootPath, "uploads", "importaciones", archivo.NombreGuardado);
+
+            if (System.IO.File.Exists(rutaCompleta))
+                System.IO.File.Delete(rutaCompleta);
+
+            // Luego eliminar de la BD
+            _context.ImportacionesArchivos.Remove(archivo);
+            await _context.SaveChangesAsync();
+
+            return Json(new { ok = true, mensaje = "Documento eliminado correctamente." });
+        }
+
+        // GET: /Importacion/DescargarArchivo/5
+        [HttpGet]
+        public async Task<IActionResult> DescargarArchivo(int idArchivo)
+        {
+            var archivo = await _context.ImportacionesArchivos
+                .FirstOrDefaultAsync(a => a.IdArchivo == idArchivo);
+
+            if (archivo == null) return NotFound();
+
+            var rutaCompleta = Path.Combine(_env.WebRootPath, "uploads", "importaciones", archivo.NombreGuardado);
+
+            if (!System.IO.File.Exists(rutaCompleta)) return NotFound();
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(rutaCompleta);
+            return File(bytes, archivo.TipoMime, archivo.NombreOriginal);
         }
     }
 }

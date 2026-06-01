@@ -16,7 +16,9 @@ namespace WinMovers.Data
         public DbSet<ExportacionDocumento> ExportacionesDocumentos { get; set; }
         public DbSet<Importacion> Importaciones { get; set; }
         public DbSet<ImportacionDocumento> ImportacionesDocumentos { get; set; }
-
+        public DbSet<ImportacionArchivo> ImportacionesArchivos { get; set; }
+        public DbSet<ExportacionArchivo> ExportacionesArchivos { get; set; }
+        public DbSet<OrdenTrabajoArchivo> OrdenesTrabajosArchivos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -92,7 +94,26 @@ namespace WinMovers.Data
         e.Property(x => x.FechaActualizacion)
             .HasColumnName("fecha_actualizacion");
     });
+            // =========================================================
+            // ORDENES TRABAJO ARCHIVOS
+            // =========================================================
+            modelBuilder.Entity<OrdenTrabajoArchivo>(e =>
+            {
+                e.ToTable("OrdenesTrabajo_Archivos");
+                e.HasKey(x => x.IdArchivo);
+                e.Property(x => x.IdArchivo).HasColumnName("id_archivo");
+                e.Property(x => x.IdOrden).HasColumnName("id_orden");
+                e.Property(x => x.NombreOriginal).HasColumnName("nombre_original").IsRequired();
+                e.Property(x => x.NombreGuardado).HasColumnName("nombre_guardado").IsRequired();
+                e.Property(x => x.TipoMime).HasColumnName("tipo_mime").IsRequired();
+                e.Property(x => x.TamanioBytes).HasColumnName("tamanio_bytes");
+                e.Property(x => x.FechaCarga).HasColumnName("fecha_carga").HasDefaultValueSql("GETDATE()");
 
+                e.HasOne(x => x.OrdenTrabajo)
+                    .WithMany(o => o.Archivos)
+                    .HasForeignKey(x => x.IdOrden)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
             // =========================================================
             // CONTROL VISITAS
             // =========================================================
@@ -291,6 +312,26 @@ namespace WinMovers.Data
                     .HasForeignKey(x => x.IdTipoDocumento)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+            // =========================================================
+            // EXPORTACIONES ARCHIVOS
+            // =========================================================
+            modelBuilder.Entity<ExportacionArchivo>(e =>
+            {
+                e.ToTable("Exportaciones_Archivos");
+                e.HasKey(x => x.IdArchivo);
+                e.Property(x => x.IdArchivo).HasColumnName("id_archivo");
+                e.Property(x => x.IdExportacion).HasColumnName("id_exportacion");
+                e.Property(x => x.NombreOriginal).HasColumnName("nombre_original").IsRequired();
+                e.Property(x => x.NombreGuardado).HasColumnName("nombre_guardado").IsRequired();
+                e.Property(x => x.TipoMime).HasColumnName("tipo_mime").IsRequired();
+                e.Property(x => x.TamanioBytes).HasColumnName("tamanio_bytes");
+                e.Property(x => x.FechaCarga).HasColumnName("fecha_carga").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Exportacion)
+                    .WithMany(i => i.Archivos)
+                    .HasForeignKey(x => x.IdExportacion)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             // =========================================================
             // IMPORTACIONES
@@ -364,6 +405,45 @@ namespace WinMovers.Data
                     .WithMany()
                     .HasForeignKey(x => x.IdTipoDocumento)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+            // =========================================================
+            // IMPORTACIONES ARCHIVOS
+            // =========================================================
+            modelBuilder.Entity<ImportacionArchivo>(e =>
+            {
+                e.ToTable("Importaciones_Archivos");
+
+                e.HasKey(x => x.IdArchivo);
+
+                e.Property(x => x.IdArchivo)
+                    .HasColumnName("id_archivo");
+
+                e.Property(x => x.IdImportacion)
+                    .HasColumnName("id_importacion");
+
+                e.Property(x => x.NombreOriginal)
+                    .HasColumnName("nombre_original")
+                    .IsRequired();
+
+                e.Property(x => x.NombreGuardado)
+                    .HasColumnName("nombre_guardado")
+                    .IsRequired();
+
+                e.Property(x => x.TipoMime)
+                    .HasColumnName("tipo_mime")
+                    .IsRequired();
+
+                e.Property(x => x.TamanioBytes)
+                    .HasColumnName("tamanio_bytes");
+
+                e.Property(x => x.FechaCarga)
+                    .HasColumnName("fecha_carga")
+                    .HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Importacion)
+                    .WithMany(i => i.Archivos)
+                    .HasForeignKey(x => x.IdImportacion)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

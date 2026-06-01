@@ -36,5 +36,6 @@ namespace WinMovers.Models
         public DateTime? FechaActualizacion { get; set; }
 
         public ICollection<ExportacionDocumento> Documentos { get; set; } = new List<ExportacionDocumento>();
+        public ICollection<ExportacionArchivo> Archivos { get; set; } = new List<ExportacionArchivo>();
     }
 }

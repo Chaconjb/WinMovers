@@ -17,13 +17,8 @@
         <div><strong>Cliente:</strong> @Model.NombreCliente</div>
         <div><strong>Referencia:</strong> @(Model.Referencia ?? "—")</div>
         <div><strong>Fecha:</strong> @(Model.Fecha?.ToString("dd/MM/yyyy") ?? "—")</div>
-        <div>
-            <strong>Cajas:</strong> @Model.Cajas
-        </div>
-
-        <div>
-            <strong>Kilos:</strong> @Model.Kilos.ToString("N2")
-        </div>
+        <div><strong>Cajas:</strong> @Model.Cajas</div>
+        <div><strong>Kilos:</strong> @Model.Kilos.ToString("N2")</div>
     </div>
     @if (!string.IsNullOrEmpty(Model.Observaciones))
     {
@@ -34,7 +29,6 @@
 <form asp-action="Checklist" asp-route-id="@Model.IdExportacion" method="post">
     @Html.AntiForgeryToken()
 
-    <!-- Embarque WinMovers -->
     <div class="checklist-section">
         <div class="checklist-title">
             <i class="fas fa-truck-moving"></i>
@@ -59,7 +53,6 @@
         </div>
     </div>
 
-    <!-- Embarque Otro Agente -->
     <div class="checklist-section" style="margin-top:20px">
         <div class="checklist-title">
             <i class="fas fa-handshake"></i>
@@ -91,3 +84,139 @@
         <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
     </div>
 </form>
+
+<!-- Documentos adjuntos -->
+<div class="checklist-section" style="margin-top:20px">
+    <div class="checklist-title">
+        <i class="fas fa-paperclip"></i>
+        Documentos Adjuntos
+        <span style="margin-left:auto;font-weight:400">@Model.Archivos.Count archivo(s)</span>
+    </div>
+
+    <div style="padding:16px">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
+            <div>
+                <label style="font-size:13px;color:var(--text-light);display:block;margin-bottom:4px">
+                    PDF, JPG, PNG o WEBP — máx. 10 MB
+                </label>
+                <input type="file" id="inputArchivo"
+                       accept=".pdf,.jpg,.jpeg,.png,.webp"
+                       style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;background:var(--bg-white, #fff)" />
+            </div>
+            <button type="button" class="btn btn-primary" onclick="subirArchivo()">
+                <i class="fas fa-upload"></i> Adjuntar
+            </button>
+        </div>
+        <div id="msg-carga" style="font-size:13px;min-height:20px"></div>
+
+        @if (Model.Archivos.Any())
+        {
+            <table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:13px">
+                <thead>
+                    <tr style="background:var(--bg-light, #f5f5f5)">
+                        <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)">Nombre</th>
+                        <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)">Tipo</th>
+                        <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)">Tamaño</th>
+                        <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)">Fecha</th>
+                        <th style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border)">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaArchivos">
+                    @foreach (var a in Model.Archivos)
+                    {
+                        <tr id="fila-@a.IdArchivo" style="border-bottom:1px solid var(--border)">
+                            <td style="padding:8px 12px">
+                                <i class="fas @(a.TipoMime == "application/pdf" ? "fa-file-pdf" : "fa-file-image")"
+                                   style="margin-right:6px;color:var(--primary, #e74c3c)"></i>
+                                @a.NombreOriginal
+                            </td>
+                            <td style="padding:8px 12px;color:var(--text-light)">
+                                @(a.TipoMime == "application/pdf" ? "PDF" : "Imagen")
+                            </td>
+                            <td style="padding:8px 12px;color:var(--text-light)">
+                                @((a.TamanioBytes / 1024.0).ToString("F1")) KB
+                            </td>
+                            <td style="padding:8px 12px;color:var(--text-light)">
+                                @a.FechaCarga.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td style="padding:8px 12px;text-align:center;display:flex;gap:6px;justify-content:center">
+                                <a href="@Url.Action("DescargarArchivo", "Exportacion", new { idArchivo = a.IdArchivo })"
+                                   class="btn btn-outline" style="font-size:12px;padding:4px 10px" target="_blank">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                                <button type="button" class="btn btn-secondary"
+                                        style="font-size:12px;padding:4px 10px;background:var(--danger,#e74c3c);border-color:var(--danger,#e74c3c);color:#fff"
+                                        onclick="confirmarEliminar(@a.IdArchivo, '@Html.Raw(a.NombreOriginal)')">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p id="sinArchivos" style="color:var(--text-light);font-size:13px;margin-top:8px">
+                <i class="fas fa-inbox"></i> No hay documentos adjuntos aún.
+            </p>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const idExportacion = @Model.IdExportacion;
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+    async function subirArchivo() {
+        const input = document.getElementById('inputArchivo');
+        const msg   = document.getElementById('msg-carga');
+
+        if (!input.files.length) {
+            msg.style.color = 'orange';
+            msg.textContent = 'Por favor seleccioná un archivo primero.';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('idExportacion', idExportacion);
+        formData.append('archivo', input.files[0]);
+        formData.append('__RequestVerificationToken', token);
+
+        msg.style.color = 'var(--text-light)';
+        msg.textContent = 'Subiendo...';
+
+        try {
+            const res  = await fetch('/Exportacion/SubirArchivo', { method: 'POST', body: formData });
+            const data = await res.json();
+            msg.style.color = data.ok ? 'green' : 'var(--danger, #e74c3c)';
+            msg.textContent = data.mensaje;
+            if (data.ok) setTimeout(() => location.reload(), 1000);
+        } catch {
+            msg.style.color = 'var(--danger, #e74c3c)';
+            msg.textContent = 'Error de red al subir el archivo.';
+        }
+    }
+
+    async function confirmarEliminar(idArchivo, nombre) {
+        if (!confirm(`¿Eliminar el documento "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
+
+        const formData = new FormData();
+        formData.append('idArchivo', idArchivo);
+        formData.append('__RequestVerificationToken', token);
+
+        try {
+            const res  = await fetch('/Exportacion/EliminarArchivo', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.ok) {
+                document.getElementById(`fila-${idArchivo}`)?.remove();
+            } else {
+                alert(data.mensaje);
+            }
+        } catch {
+            alert('Error de red al eliminar el archivo.');
+        }
+    }
+</script>
+}
