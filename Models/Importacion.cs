@@ -20,14 +20,15 @@ namespace WinMovers.Models
         public string Pais { get; set; } = string.Empty;
 
 
-        
+        [Required(ErrorMessage = "La referencia es obligatoria")]
+        [StringLength(100)]
         public string? Referencia { get; set; }
 
 
-       
+        [Required(ErrorMessage = "La fecha es obligatoria")]
         public DateTime? Fecha { get; set; }
 
-        
+
         [Range(0, int.MaxValue, ErrorMessage = "Las cajas no pueden tener un valor negativo")]
         [Column("cajas")]
         public int Cajas { get; set; }

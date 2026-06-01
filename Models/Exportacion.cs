@@ -12,9 +12,9 @@ namespace WinMovers.Models
         [StringLength(150)]
         public string NombreCliente { get; set; } = string.Empty;
 
-        [StringLength(100)]
-        public string? Referencia { get; set; }
-
+        [Required(ErrorMessage = "La referencia es obligatoria")]
+        [StringLength(100, ErrorMessage = "La referencia no puede exceder los 100 caracteres")]
+        public string Referencia { get; set; } = string.Empty;
         [DataType(DataType.Date)]
         public DateTime? Fecha { get; set; }
 

@@ -29,16 +29,17 @@
                        value="@ViewBag.Fecha"
                        class="form-control" />
             </div>
-
             <div class="form-group" style="align-self:end;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    Buscar
-                </button>
+                <div style="display:flex; gap:10px; flex-wrap:nowrap;">
+                    <button type="submit" class="btn btn-primary" style="width:auto;">
+                        <i class="fas fa-search"></i>
+                        Buscar
+                    </button>
 
-                <a asp-action="Index" class="btn btn-secondary">
-                    Limpiar
-                </a>
+                    <a asp-action="Index" class="btn btn-secondary" style="width:auto;">
+                        Limpiar
+                    </a>
+                </div>
             </div>
 
         </div>
