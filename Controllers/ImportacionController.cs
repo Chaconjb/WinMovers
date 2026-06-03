@@ -62,6 +62,18 @@ namespace WinMovers.Controllers
                 ModelState.AddModelError("Pais", "El país es obligatorio");
             }
 
+            ///nuevo
+
+            var referenciaExiste = await _context.OrdenesTrabajo
+    .AnyAsync(o => o.NumeroOT == importacion.Referencia);
+
+            if (!referenciaExiste)
+            {
+                ModelState.AddModelError("Referencia",
+                    "La referencia ingresada no existe en una Orden de Trabajo.");
+            }
+
+
             if (ModelState.IsValid)
             {
                 await _context.Database.ExecuteSqlRawAsync(

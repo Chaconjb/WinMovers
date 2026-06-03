@@ -1,29 +1,44 @@
 @model WinMovers.Models.Exportacion
+
 @{
     ViewData["Title"] = "Nuevo Embarque de Exportación";
 }
 
 <div class="form-header">
-    <h2 class="content-title"><i class="fas fa-file-export"></i> Nuevo Embarque de Exportación</h2>
-    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-list"></i> Ver Listado</a>
+    <h2 class="content-title">
+        <i class="fas fa-file-export"></i> Nuevo Embarque de Exportación
+    </h2>
+
+    <a asp-action="Index" class="btn btn-outline">
+        <i class="fas fa-list"></i> Ver Listado
+    </a>
 </div>
 
 <form asp-action="Create" method="post" class="form-card">
+
     @Html.AntiForgeryToken()
+
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+    <!-- CLIENTE Y REFERENCIA -->
     <div class="form-row two-cols">
+
         <div class="form-group">
             <label asp-for="NombreCliente"></label>
-            <input asp-for="NombreCliente" class="form-control" placeholder="Nombre del cliente" />
+            <input asp-for="NombreCliente"
+                   class="form-control"
+                   placeholder="Nombre del cliente" />
             <span asp-validation-for="NombreCliente" class="text-danger"></span>
         </div>
+
         <div class="form-group">
             <label asp-for="Referencia"></label>
-            <input asp-for="Referencia" class="form-control" placeholder="Ej: EXP-2026-001" />
+            <input asp-for="Referencia"
+                   class="form-control"
+                   placeholder="Ingrese el número de O.T. (Ej: OT-2026-001)" />
             <span asp-validation-for="Referencia" class="text-danger"></span>
-
         </div>
+
     </div>
 
     <!-- CAJAS Y KILOS -->
@@ -31,49 +46,61 @@
 
         <div class="form-group">
             <label asp-for="Cajas"></label>
-
             <input asp-for="Cajas"
                    type="number"
                    min="0"
                    class="form-control"
                    placeholder="Cantidad de cajas" />
-
-            <span asp-validation-for="Cajas"
-                  class="text-danger"></span>
+            <span asp-validation-for="Cajas" class="text-danger"></span>
         </div>
 
         <div class="form-group">
             <label asp-for="Kilos"></label>
-
             <input asp-for="Kilos"
                    type="number"
                    min="0"
                    step="0.01"
                    class="form-control"
                    placeholder="Peso total en kilos" />
-
-            <span asp-validation-for="Kilos"
-                  class="text-danger"></span>
+            <span asp-validation-for="Kilos" class="text-danger"></span>
         </div>
 
     </div>
 
+    <!-- FECHA Y OBSERVACIONES -->
     <div class="form-row two-cols">
+
         <div class="form-group">
             <label asp-for="Fecha"></label>
-            <input asp-for="Fecha" type="date" class="form-control" />
+            <input asp-for="Fecha"
+                   type="date"
+                   class="form-control" />
+            <span asp-validation-for="Fecha" class="text-danger"></span>
         </div>
+
+        <div class="form-group">
+            <label asp-for="Observaciones"></label>
+            <textarea asp-for="Observaciones"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Observaciones adicionales..."></textarea>
+        </div>
+
     </div>
 
-    <div class="form-group">
-        <label asp-for="Observaciones"></label>
-        <textarea asp-for="Observaciones" class="form-control" rows="3" placeholder="Observaciones adicionales..."></textarea>
-    </div>
-
+    <!-- BOTONES -->
     <div class="form-actions">
+
         <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save"></i> Crear Embarque y Configurar Checklist
+            <i class="fas fa-save"></i>
+            Crear Embarque y Configurar Checklist
         </button>
-        <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-times"></i>
+            Cancelar
+        </a>
+
     </div>
+
 </form>

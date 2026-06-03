@@ -56,6 +56,21 @@ namespace WinMovers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Exportacion exportacion)
         {
+
+            /// nuevo ////
+             
+            var referenciaExiste = await _context.OrdenesTrabajo
+              .AnyAsync(o => o.NumeroOT == exportacion.Referencia);
+
+            if (!referenciaExiste)
+            {
+                ModelState.AddModelError("Referencia",
+                    "La referencia ingresada no existe en una Orden de Trabajo.");
+            }
+
+
+
+
             if (ModelState.IsValid)
             {
                 exportacion.FechaCreacion = DateTime.Now;
