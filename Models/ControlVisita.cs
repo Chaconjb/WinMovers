@@ -90,5 +90,8 @@ namespace WinMovers.Models
 
         [Display(Name = "Fecha de Creación")]
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
+
+        [Display(Name = "Fecha de Actualización")]
+        public DateTime? FechaActualizacion { get; set; }
     }
 }

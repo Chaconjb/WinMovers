@@ -1,14 +1,14 @@
 @model WinMovers.Models.Importacion
 
 @{
-    ViewData["Title"] = "Nuevo Embarque de Importación";
+    ViewData["Title"] = "Editar Embarque de Importación";
 }
 
 <div class="form-header">
 
     <h2 class="content-title">
-        <i class="fas fa-file-import"></i>
-        Nuevo Embarque de Importación
+        <i class="fas fa-edit"></i>
+        Editar Embarque de Importación
     </h2>
 
     <a asp-action="Index" class="btn btn-outline">
@@ -20,9 +20,11 @@
 
 </div>
 
-<form asp-action="Create" method="post" class="form-card">
+<form asp-action="Edit" method="post" class="form-card">
 
     @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="IdImportacion" />
 
     <div asp-validation-summary="ModelOnly"
          class="text-danger mb-3"></div>
@@ -61,7 +63,6 @@
     </div>
 
     <!-- REFERENCIA -->
-    <!-- REFERENCIA -->
     <div class="form-row two-cols">
 
         <div class="form-group">
@@ -70,9 +71,7 @@
 
             <input asp-for="Referencia"
                    class="form-control"
-                   placeholder="Ingrese el número de O.T. (Ej: OT-2026-001)" />
-
-            <span asp-validation-for="Referencia" class="text-danger"></span>
+                   placeholder="Ej: IMP-2026-001" />
 
         </div>
 
@@ -144,7 +143,7 @@
                 class="btn btn-primary">
 
             <i class="fas fa-save"></i>
-            Crear Embarque y Configurar Checklist
+            Guardar Cambios
 
         </button>
 

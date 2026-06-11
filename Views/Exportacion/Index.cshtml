@@ -8,6 +8,45 @@
     <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Embarque</a>
 </div>
 
+<div class="form-card" style="margin-bottom:20px;">
+    <form asp-action="Index" method="get">
+
+        <div class="form-row three-cols">
+
+            <div class="form-group">
+                <label>Cliente</label>
+                <input type="text"
+                       name="cliente"
+                       value="@ViewBag.Cliente"
+                       class="form-control"
+                       placeholder="Buscar por cliente" />
+            </div>
+
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date"
+                       name="fecha"
+                       value="@ViewBag.Fecha"
+                       class="form-control" />
+            </div>
+            <div class="form-group" style="align-self:end;">
+                <div style="display:flex; gap:10px; flex-wrap:nowrap;">
+                    <button type="submit" class="btn btn-primary" style="width:auto;">
+                        <i class="fas fa-search"></i>
+                        Buscar
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-secondary" style="width:auto;">
+                        Limpiar
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
 <div class="table-container">
     <table class="data-table">
         <thead>
@@ -15,6 +54,8 @@
                 <th>Cliente</th>
                 <th>Referencia</th>
                 <th>Fecha</th>
+                <th>Cajas</th>
+                <th>Kilos</th>
                 <th>Documentos WinMovers</th>
                 <th>Documentos Otro Agente</th>
                 <th>Acciones</th>
@@ -29,8 +70,8 @@
             {
                 @foreach (var e in Model)
                 {
-                    var docsWM   = e.Documentos.Where(d => d.TipoAgente == "WinMovers").ToList();
-                    var docsOA   = e.Documentos.Where(d => d.TipoAgente == "OtroAgente").ToList();
+                    var docsWM   = e.Documentos.Where(d => d.TipoChecklist == "WinMovers").ToList();
+                    var docsOA   = e.Documentos.Where(d => d.TipoChecklist == "OtroAgente").ToList();
                     var wmOk     = docsWM.Count(d => d.Completado);
                     var oaOk     = docsOA.Count(d => d.Completado);
 
@@ -38,6 +79,8 @@
                         <td>@e.NombreCliente</td>
                         <td>@(e.Referencia ?? "—")</td>
                         <td>@(e.Fecha?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td>@e.Cajas</td>
+                        <td>@e.Kilos.ToString("N2")</td>
                         <td>
                             <span class="badge @(wmOk == docsWM.Count && docsWM.Count > 0 ? "badge-success" : "badge-warning")">
                                 @wmOk / @docsWM.Count
@@ -49,6 +92,12 @@
                             </span>
                         </td>
                         <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@e.IdExportacion"
+                               class="btn-icon edit"
+                               title="Editar">
+                                <i class="fas fa-pen"></i>
+                            </a>
                             <a asp-action="Checklist" asp-route-id="@e.IdExportacion" class="btn-icon edit" title="Gestionar Checklist">
                                 <i class="fas fa-tasks"></i>
                             </a>

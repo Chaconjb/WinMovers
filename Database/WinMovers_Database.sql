@@ -81,7 +81,7 @@ CREATE TABLE Control_Visitas (
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  
     fecha_actualizacion     DATETIME2       NULL
 );
-G
+GO
 
 CREATE TABLE Catalogo_Documentos (
     id_tipo_documento       INT IDENTITY(1,1) PRIMARY KEY,
@@ -99,7 +99,9 @@ CREATE TABLE Exportaciones (
     id_exportacion          INT IDENTITY(1,1) PRIMARY KEY,
     nombre_cliente          NVARCHAR(150)   NOT NULL,         
     referencia              NVARCHAR(50)    NULL,           
-    fecha                   DATE            NULL,           
+    fecha                   DATE            NULL,   
+	cajas INT NOT NULL CHECK (cajas >= 0),
+	kilos DECIMAL(18,2) NOT NULL CHECK (kilos >= 0),
     observaciones           NVARCHAR(MAX)   NULL,           
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(), 
     fecha_actualizacion     DATETIME2       NULL
@@ -129,9 +131,12 @@ GO
 
 CREATE TABLE Importaciones (
     id_importacion          INT IDENTITY(1,1) PRIMARY KEY,
-    nombre_cliente          NVARCHAR(150)   NOT NULL,         
+    nombre_cliente          NVARCHAR(150)   NOT NULL,      
+	pais NVARCHAR(100) NULL,
     referencia              NVARCHAR(50)    NULL,                
-    fecha                   DATE            NULL,             
+    fecha                   DATE            NULL,
+	cajas INT NOT NULL CHECK (cajas >= 0),
+	kilos DECIMAL(18,2) NOT NULL CHECK (kilos >= 0),
     observaciones           NVARCHAR(MAX)   NULL,             
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),
     fecha_actualizacion     DATETIME2       NULL
@@ -151,9 +156,55 @@ CREATE TABLE Importaciones_Documentos (
         ON DELETE CASCADE,
     CONSTRAINT FK_ImpDoc_TipoDoc FOREIGN KEY (id_tipo_documento) REFERENCES Catalogo_Documentos(id_tipo_documento)
 );
+
+-- Tabla para subir archivos a Importaciones
+CREATE TABLE Importaciones_Archivos (
+    id_archivo          INT IDENTITY(1,1) PRIMARY KEY,
+    id_importacion      INT             NOT NULL,
+    nombre_original     NVARCHAR(255)   NOT NULL,
+    nombre_guardado     NVARCHAR(255)   NOT NULL,   -- GUID + extensión
+    tipo_mime           NVARCHAR(100)   NOT NULL,
+    tamanio_bytes       BIGINT          NOT NULL,
+    fecha_carga         DATETIME2       NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_ImpArchivo_Importacion 
+        FOREIGN KEY (id_importacion) 
+        REFERENCES Importaciones(id_importacion) ON DELETE CASCADE
+);
+GO
+
+-- Tabla para subir archivos a Exportaciones
+CREATE TABLE Exportaciones_Archivos (
+    id_archivo          INT IDENTITY(1,1) PRIMARY KEY,
+    id_exportacion      INT             NOT NULL,
+    nombre_original     NVARCHAR(255)   NOT NULL,
+    nombre_guardado     NVARCHAR(255)   NOT NULL,
+    tipo_mime           NVARCHAR(100)   NOT NULL,
+    tamanio_bytes       BIGINT          NOT NULL,
+    fecha_carga         DATETIME2       NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_ExpArchivo_Exportacion
+        FOREIGN KEY (id_exportacion)
+        REFERENCES Exportaciones(id_exportacion) ON DELETE CASCADE
+);
+GO
+
+-- Tabla para subir archivos a Órdenes de trabajo
+CREATE TABLE OrdenesTrabajo_Archivos (
+    id_archivo          INT IDENTITY(1,1) PRIMARY KEY,
+    id_orden            INT             NOT NULL,
+    nombre_original     NVARCHAR(255)   NOT NULL,
+    nombre_guardado     NVARCHAR(255)   NOT NULL,
+    tipo_mime           NVARCHAR(100)   NOT NULL,
+    tamanio_bytes       BIGINT          NOT NULL,
+    fecha_carga         DATETIME2       NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_OTArchivo_Orden
+        FOREIGN KEY (id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden) ON DELETE CASCADE
+);
 GO
 
 
+ALTER TABLE [dbo].[Importaciones]
+ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
 
 INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion) VALUES
     ('Reporte de Visita Previa',            1, 0, 1, 1, 1),
@@ -170,7 +221,81 @@ INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion,
     ('Confirmación de Entrega',             1, 1, 1, 1, 12);
 GO
 
+-- Procedimientos almacenados para subir archivos a importaciones
+-- Insertar archivo
+CREATE PROCEDURE sp_ImportacionArchivo_Insertar
+    @id_importacion     INT,
+    @nombre_original    NVARCHAR(255),
+    @nombre_guardado    NVARCHAR(255),
+    @tipo_mime          NVARCHAR(100),
+    @tamanio_bytes      BIGINT
+AS
+BEGIN
+    INSERT INTO Importaciones_Archivos 
+        (id_importacion, nombre_original, nombre_guardado, tipo_mime, tamanio_bytes)
+    VALUES 
+        (@id_importacion, @nombre_original, @nombre_guardado, @tipo_mime, @tamanio_bytes);
 
+    SELECT SCOPE_IDENTITY() AS id_archivo;
+END
+GO
+
+-- Obtener archivos por importación
+CREATE PROCEDURE sp_ImportacionArchivo_ObtenerPorImportacion
+    @id_importacion INT
+AS
+BEGIN
+    SELECT id_archivo, id_importacion, nombre_original, nombre_guardado,
+           tipo_mime, tamanio_bytes, fecha_carga
+    FROM Importaciones_Archivos
+    WHERE id_importacion = @id_importacion
+    ORDER BY fecha_carga DESC;
+END
+GO
+
+-- Obtener un archivo por ID (para descarga)
+CREATE PROCEDURE sp_ImportacionArchivo_ObtenerPorId
+    @id_archivo INT
+AS
+BEGIN
+    SELECT id_archivo, id_importacion, nombre_original, nombre_guardado,
+           tipo_mime, tamanio_bytes, fecha_carga
+    FROM Importaciones_Archivos
+    WHERE id_archivo = @id_archivo;
+END
+GO
+
+-- Eliminar archivo
+CREATE PROCEDURE sp_ImportacionArchivo_Eliminar
+    @id_archivo INT
+AS
+BEGIN
+    SELECT nombre_guardado FROM Importaciones_Archivos WHERE id_archivo = @id_archivo;
+    DELETE FROM Importaciones_Archivos WHERE id_archivo = @id_archivo;
+END
+GO
+
+-- Procedimientos almacenados para subir archivos a exportaciones
+CREATE PROCEDURE sp_ExportacionArchivo_Insertar
+    @id_exportacion INT, @nombre_original NVARCHAR(255),
+    @nombre_guardado NVARCHAR(255), @tipo_mime NVARCHAR(100), @tamanio_bytes BIGINT
+AS
+BEGIN
+    INSERT INTO Exportaciones_Archivos
+        (id_exportacion, nombre_original, nombre_guardado, tipo_mime, tamanio_bytes)
+    VALUES (@id_exportacion, @nombre_original, @nombre_guardado, @tipo_mime, @tamanio_bytes);
+    SELECT SCOPE_IDENTITY() AS id_archivo;
+END
+GO
+
+CREATE PROCEDURE sp_ExportacionArchivo_Eliminar
+    @id_archivo INT
+AS
+BEGIN
+    SELECT nombre_guardado FROM Exportaciones_Archivos WHERE id_archivo = @id_archivo;
+    DELETE FROM Exportaciones_Archivos WHERE id_archivo = @id_archivo;
+END
+GO
 
 CREATE PROCEDURE sp_OrdenTrabajo_Insertar
     @numero_ot              NVARCHAR(20),
@@ -432,32 +557,53 @@ GO
 
 CREATE PROCEDURE sp_Exportacion_Insertar
     @nombre_cliente     NVARCHAR(150),
+    @cajas              INT,
+    @kilos              DECIMAL(18,2),
     @referencia         NVARCHAR(50) = NULL,
     @fecha              DATE = NULL,
     @observaciones      NVARCHAR(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO Exportaciones (nombre_cliente, referencia, fecha, observaciones)
-    VALUES (@nombre_cliente, @referencia, @fecha, @observaciones);
+
+    INSERT INTO Exportaciones
+    (
+        nombre_cliente,
+        cajas,
+        kilos,
+        referencia,
+        fecha,
+        observaciones,
+        fecha_creacion
+    )
+    VALUES
+    (
+        @nombre_cliente,
+        @cajas,
+        @kilos,
+        @referencia,
+        @fecha,
+        @observaciones,
+        GETDATE()
+    );
 
     DECLARE @id_exportacion INT = SCOPE_IDENTITY();
 
-    -- Generar checklist WinMovers automáticamente (JS: docsWinMovers)
-    INSERT INTO Exportaciones_Documentos (id_exportacion, id_tipo_documento, tipo_checklist)
+    INSERT INTO Exportaciones_Documentos
+        (id_exportacion, id_tipo_documento, tipo_checklist)
     SELECT @id_exportacion, id_tipo_documento, 'WinMovers'
     FROM Catalogo_Documentos
-    WHERE aplica_exportacion = 1 AND aplica_winmovers = 1 AND activo = 1
-    ORDER BY orden_presentacion;
+    WHERE aplica_exportacion = 1
+      AND aplica_winmovers = 1
+      AND activo = 1;
 
-    -- Generar checklist Otro Agente automáticamente (JS: docsOtroAgente)
-    INSERT INTO Exportaciones_Documentos (id_exportacion, id_tipo_documento, tipo_checklist)
+    INSERT INTO Exportaciones_Documentos
+        (id_exportacion, id_tipo_documento, tipo_checklist)
     SELECT @id_exportacion, id_tipo_documento, 'OtroAgente'
     FROM Catalogo_Documentos
-    WHERE aplica_exportacion = 1 AND aplica_otro_agente = 1 AND activo = 1
-    ORDER BY orden_presentacion;
-
-    SELECT @id_exportacion AS id_exportacion;
+    WHERE aplica_exportacion = 1
+      AND aplica_otro_agente = 1
+      AND activo = 1;
 END
 GO
 
@@ -544,30 +690,64 @@ GO
 
 CREATE PROCEDURE sp_Importacion_Insertar
     @nombre_cliente     NVARCHAR(150),
+    @pais               NVARCHAR(100),
+    @cajas              INT,
+    @kilos              DECIMAL(18,2),
     @referencia         NVARCHAR(50) = NULL,
     @fecha              DATE = NULL,
     @observaciones      NVARCHAR(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO Importaciones (nombre_cliente, referencia, fecha, observaciones)
-    VALUES (@nombre_cliente, @referencia, @fecha, @observaciones);
+
+    INSERT INTO Importaciones
+    (
+        nombre_cliente,
+        pais,
+        cajas,
+        kilos,
+        referencia,
+        fecha,
+        observaciones,
+        fecha_creacion
+    )
+    VALUES
+    (
+        @nombre_cliente,
+        @pais,
+        @cajas,
+        @kilos,
+        @referencia,
+        @fecha,
+        @observaciones,
+        GETDATE()
+    );
 
     DECLARE @id_importacion INT = SCOPE_IDENTITY();
 
-    -- Generar checklist WinMovers automáticamente (JS: docsWinMovers)
-    INSERT INTO Importaciones_Documentos (id_importacion, id_tipo_documento, tipo_checklist)
-    SELECT @id_importacion, id_tipo_documento, 'WinMovers'
+    -- Checklist WinMovers
+    INSERT INTO Importaciones_Documentos
+        (id_importacion, id_tipo_documento, tipo_checklist)
+    SELECT
+        @id_importacion,
+        id_tipo_documento,
+        'WinMovers'
     FROM Catalogo_Documentos
-    WHERE aplica_importacion = 1 AND aplica_winmovers = 1 AND activo = 1
-    ORDER BY orden_presentacion;
+    WHERE aplica_importacion = 1
+      AND aplica_winmovers = 1
+      AND activo = 1;
 
-    -- Generar checklist Otro Agente automáticamente (JS: docsOtroAgente)
-    INSERT INTO Importaciones_Documentos (id_importacion, id_tipo_documento, tipo_checklist)
-    SELECT @id_importacion, id_tipo_documento, 'OtroAgente'
+    -- Checklist Otro Agente
+    INSERT INTO Importaciones_Documentos
+        (id_importacion, id_tipo_documento, tipo_checklist)
+    SELECT
+        @id_importacion,
+        id_tipo_documento,
+        'OtroAgente'
     FROM Catalogo_Documentos
-    WHERE aplica_importacion = 1 AND aplica_otro_agente = 1 AND activo = 1
-    ORDER BY orden_presentacion;
+    WHERE aplica_importacion = 1
+      AND aplica_otro_agente = 1
+      AND activo = 1;
 
     SELECT @id_importacion AS id_importacion;
 END
