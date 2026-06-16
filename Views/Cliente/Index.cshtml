@@ -1,0 +1,92 @@
+﻿@model IEnumerable<WinMovers.Models.Cliente>
+
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<section class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon bg-blue">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@Model.Count()</h3>
+            <p>Clientes Registrados</p>
+        </div>
+    </div>
+</section>
+
+<div class="form-header">
+    <h2 class="content-title">
+        <i class="fas fa-users"></i> Clientes
+    </h2>
+
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nuevo Cliente
+    </a>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Celular</th>
+                <th>Empresa</th>
+                <th>Contacto</th>
+                <th>Fecha Registro</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6" class="no-data">
+                        No hay clientes registrados.
+                        <a asp-action="Create">Crear el primero</a>.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var cliente in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@cliente.NombreCliente</strong>
+                        </td>
+                        <td>@cliente.TelefonoCelular</td>
+                        <td>@(cliente.Empresa ?? "—")</td>
+                        <td>@(cliente.Contacto ?? "—")</td>
+                        <td>@cliente.FechaRegistro.ToString("dd/MM/yyyy")</td>
+
+                        <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@cliente.IdCliente"
+                               class="btn-icon edit"
+                               title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+
+                            <form asp-action="Delete"
+                                  asp-route-id="@cliente.IdCliente"
+                                  method="post"
+                                  style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar este cliente?')">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn-icon delete"
+                                        title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

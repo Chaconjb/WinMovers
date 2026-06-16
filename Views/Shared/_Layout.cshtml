@@ -37,6 +37,13 @@
                     </a>
                 </li>
                 <li>
+                    <a asp-controller="Cliente" asp-action="Index"
+                       class="sidebar-link @(ctrl == "Cliente" ? "active" : "")">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                </li>
+                <li>
                     <a asp-controller="OrdenTrabajo" asp-action="Index"
                        class="sidebar-link @(ctrl == "OrdenTrabajo" ? "active" : "")">
                         <i class="fas fa-clipboard-list"></i>

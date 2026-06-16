@@ -1,0 +1,94 @@
+﻿@model WinMovers.Models.Cliente
+
+@{
+    ViewData["Title"] = "Nuevo Cliente";
+}
+
+<div class="form-header">
+    <h2 class="content-title">
+        <i class="fas fa-user-plus"></i> Nuevo Cliente
+    </h2>
+
+    <a asp-action="Index" class="btn btn-outline">
+        <i class="fas fa-list"></i> Ver Clientes
+    </a>
+</div>
+
+<form asp-action="Create" method="post" class="form-card">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="form-group">
+        <label asp-for="NombreCliente"></label>
+        <input asp-for="NombreCliente" class="form-control" />
+        <span asp-validation-for="NombreCliente" class="text-danger"></span>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="TelefonoCelular"></label>
+            <input asp-for="TelefonoCelular" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TelefonoResidencia"></label>
+            <input asp-for="TelefonoResidencia" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="TelefonoEmpresa"></label>
+            <input asp-for="TelefonoEmpresa" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Empresa"></label>
+            <input asp-for="Empresa" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Contacto"></label>
+        <input asp-for="Contacto" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Direccion"></label>
+        <textarea asp-for="Direccion"
+                  class="form-control"
+                  rows="3"></textarea>
+        <span asp-validation-for="Direccion" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CorreoElectronico"></label>
+        <input asp-for="CorreoElectronico" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Observaciones"></label>
+        <textarea asp-for="Observaciones"
+                  class="form-control"
+                  rows="3"></textarea>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Guardar Cliente
+        </button>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
