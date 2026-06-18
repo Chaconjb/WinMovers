@@ -83,5 +83,15 @@ namespace WinMovers.Models
         [Column("fecha_actualizacion")]
         public DateTime? FechaActualizacion { get; set; }
         public ICollection<OrdenTrabajoArchivo> Archivos { get; set; } = new List<OrdenTrabajoArchivo>();
+
+        //NUEVO
+        [Column("estado")]
+        [StringLength(20)]
+        public string Estado { get; set; } = "Pendiente";
+
+
+
+
+
     }
 }

@@ -115,15 +115,41 @@ namespace WinMovers.Controllers
         {
             var exportacion = await _context.Exportaciones
                 .Include(e => e.Documentos)
-                .ThenInclude(d => d.TipoDocumento)
                 .FirstOrDefaultAsync(e => e.IdExportacion == id);
 
             if (exportacion == null) return NotFound();
 
+            // ✔ Guardar checklist exportación
             foreach (var doc in exportacion.Documentos)
+            {
                 doc.Completado = documentosCompletados.Contains(doc.IdExpDoc);
+            }
 
             await _context.SaveChangesAsync();
+
+           
+            var orden = await _context.OrdenesTrabajo
+                .FirstOrDefaultAsync(o => o.NumeroOT == exportacion.Referencia);
+
+            if (orden != null)
+            {
+                bool exportacionCompleta = exportacion.Documentos.All(d => d.Completado);
+
+                bool importacionCompleta = await _context.Importaciones
+                    .Include(i => i.Documentos)
+                    .Where(i => i.Referencia == orden.NumeroOT)
+                    .SelectMany(i => i.Documentos)
+                    .AllAsync(d => d.Completado);
+
+                orden.Estado = (importacionCompleta && exportacionCompleta)
+                    ? "Completado"
+                    : "Pendiente";
+
+                orden.FechaActualizacion = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+            }
+
             TempData["Success"] = "Checklist actualizado correctamente.";
             return RedirectToAction(nameof(Checklist), new { id });
         }
@@ -261,6 +287,41 @@ namespace WinMovers.Controllers
 
             var bytes = await System.IO.File.ReadAllBytesAsync(rutaCompleta);
             return File(bytes, archivo.TipoMime, archivo.NombreOriginal);
+        }
+
+        //nuevooo
+        private async Task ActualizarEstadoOrden(string numeroOT)
+        {
+            var importacion = await _context.Importaciones
+                .Include(i => i.Documentos)
+                .FirstOrDefaultAsync(i => i.Referencia == numeroOT);
+
+            var exportacion = await _context.Exportaciones
+                .Include(e => e.Documentos)
+                .FirstOrDefaultAsync(e => e.Referencia == numeroOT);
+
+            bool importacionCompleta =
+                importacion != null &&
+                importacion.Documentos.Any() &&
+                importacion.Documentos.All(d => d.Completado);
+
+            bool exportacionCompleta =
+                exportacion != null &&
+                exportacion.Documentos.Any() &&
+                exportacion.Documentos.All(d => d.Completado);
+
+            var orden = await _context.OrdenesTrabajo
+                .FirstOrDefaultAsync(o => o.NumeroOT == numeroOT);
+
+            if (orden != null)
+            {
+                orden.Estado =
+                    (importacionCompleta && exportacionCompleta)
+                    ? "Completado"
+                    : "Pendiente";
+
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

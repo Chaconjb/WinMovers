@@ -42,12 +42,30 @@ namespace WinMovers.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Verificar si ya existe una orden para la misma fecha
+                bool fechaOcupada = await _context.OrdenesTrabajo
+                    .AnyAsync(o => o.FechaServicio.HasValue &&
+                                   orden.FechaServicio.HasValue &&
+                                   o.FechaServicio.Value.Date == orden.FechaServicio.Value.Date);
+
+                if (fechaOcupada)
+                {
+                    ModelState.AddModelError("FechaServicio",
+                        "Ya existe una orden programada para esta fecha.");
+
+                    return View(orden);
+                }
+
                 orden.FechaCreacion = DateTime.Now;
+
                 _context.OrdenesTrabajo.Add(orden);
                 await _context.SaveChangesAsync();
+
                 TempData["Success"] = "Orden de Trabajo creada correctamente.";
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(orden);
         }
 
@@ -95,29 +113,37 @@ namespace WinMovers.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: /OrdenTrabajo/SubirArchivo
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubirArchivo(int idOrden, IFormFile archivo)
         {
             if (archivo == null || archivo.Length == 0)
+            {
                 return Json(new { ok = false, mensaje = "No se recibió ningún archivo." });
+            }
 
             if (archivo.Length > MaxBytes)
+            {
                 return Json(new { ok = false, mensaje = "El archivo supera el límite de 10 MB permitido." });
+            }
 
             if (!TiposPermitidos.Contains(archivo.ContentType))
-                return Json(new { ok = false, mensaje = "Solo se permiten archivos PDF o imágenes (JPG, PNG, WEBP)." });
+            {
+                return Json(new { ok = false, mensaje = "Solo se permiten PDF o imágenes (JPG, PNG, WEBP)." });
+            }
 
             var extension = Path.GetExtension(archivo.FileName);
             var nombreGuid = $"{Guid.NewGuid()}{extension}";
-            var rutaCarpeta = Path.Combine(_env.WebRootPath, "uploads", "ordenes");
 
+            var rutaCarpeta = Path.Combine(_env.WebRootPath, "uploads", "ordenes");
             Directory.CreateDirectory(rutaCarpeta);
 
             var rutaCompleta = Path.Combine(rutaCarpeta, nombreGuid);
+
             using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+            {
                 await archivo.CopyToAsync(stream);
+            }
 
             var registro = new OrdenTrabajoArchivo
             {
@@ -132,9 +158,27 @@ namespace WinMovers.Controllers
             _context.OrdenesTrabajosArchivos.Add(registro);
             await _context.SaveChangesAsync();
 
-            return Json(new { ok = true, mensaje = "Documento cargado correctamente." });
-        }
+            // ?? ACTUALIZAR ESTADO DE LA ORDEN
+            var numeroOT = await ObtenerNumeroOT(idOrden);
 
+            if (!string.IsNullOrEmpty(numeroOT))
+            {
+                await ActualizarEstadoOrden(numeroOT);
+            }
+
+            return Json(new
+            {
+                ok = true,
+                mensaje = "Documento cargado correctamente."
+            });
+        }
+        private async Task<string?> ObtenerNumeroOT(int idOrden)
+        {
+            return await _context.OrdenesTrabajo
+                .Where(o => o.IdOrden == idOrden)
+                .Select(o => o.NumeroOT)
+                .FirstOrDefaultAsync();
+        }
         // POST: /OrdenTrabajo/EliminarArchivo
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -172,6 +216,43 @@ namespace WinMovers.Controllers
 
             var bytes = await System.IO.File.ReadAllBytesAsync(rutaCompleta);
             return File(bytes, archivo.TipoMime, archivo.NombreOriginal);
+        }
+        
+        
+
+        private async Task ActualizarEstadoOrden(string numeroOT)
+        {
+            var importacion = await _context.Importaciones
+                .Include(i => i.Documentos)
+                .FirstOrDefaultAsync(i => i.Referencia == numeroOT);
+
+            var exportacion = await _context.Exportaciones
+                .Include(e => e.Documentos)
+                .FirstOrDefaultAsync(e => e.Referencia == numeroOT);
+
+            bool importacionCompleta =
+                importacion != null &&
+                importacion.Documentos.Any() &&
+                importacion.Documentos.All(d => d.Completado);
+
+            bool exportacionCompleta =
+                exportacion != null &&
+                exportacion.Documentos.Any() &&
+                exportacion.Documentos.All(d => d.Completado);
+
+            var orden = await _context.OrdenesTrabajo
+                .FirstOrDefaultAsync(o => o.NumeroOT == numeroOT);
+
+            if (orden != null)
+            {
+                orden.Estado = (importacionCompleta && exportacionCompleta)
+                    ? "Completado"
+                    : "Pendiente";
+
+                orden.FechaActualizacion = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

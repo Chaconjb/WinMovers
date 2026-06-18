@@ -48,5 +48,10 @@ namespace WinMovers.Models
 
         public ICollection<ImportacionDocumento> Documentos { get; set; } = new List<ImportacionDocumento>();
         public ICollection<ImportacionArchivo> Archivos { get; set; } = new List<ImportacionArchivo>();
+        [Column("id_orden")]
+        public int? IdOrden { get; set; }
+
+        [ForeignKey("IdOrden")]
+        public OrdenTrabajo? OrdenTrabajo { get; set; }
     }
 }

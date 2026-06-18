@@ -20,10 +20,19 @@
             <input asp-for="NumeroOT" class="form-control" placeholder="Ej: 037M-2026" />
             <span asp-validation-for="NumeroOT" class="text-danger"></span>
         </div>
+
         <div class="form-group">
             <label asp-for="FechaServicio"></label>
             <input asp-for="FechaServicio" type="date" class="form-control" />
+            <span asp-validation-for="FechaServicio" class="text-danger"></span>
+
+            <div id="alertaFecha"
+                 class="alert alert-warning mt-2"
+                 style="display:none;">
+                Ya existe una orden programada para esta fecha.
+            </div>
         </div>
+
         <div class="form-group">
             <label asp-for="Fecha">Fecha</label>
             <input asp-for="Fecha" type="date" class="form-control" />
@@ -43,6 +52,7 @@
             <input asp-for="NombreCliente" class="form-control" placeholder="Nombre completo" />
             <span asp-validation-for="NombreCliente" class="text-danger"></span>
         </div>
+
         <div class="form-group">
             <label asp-for="TelefonoCelular"></label>
             <input asp-for="TelefonoCelular" class="form-control" placeholder="Ej: 8842-5454" />
@@ -54,6 +64,7 @@
             <label asp-for="TelefonoResidencia"></label>
             <input asp-for="TelefonoResidencia" class="form-control" />
         </div>
+
         <div class="form-group">
             <label asp-for="Compania"></label>
             <input asp-for="Compania" class="form-control" />
@@ -65,6 +76,7 @@
             <label asp-for="TelefonoEmpresa"></label>
             <input asp-for="TelefonoEmpresa" class="form-control" />
         </div>
+
         <div class="form-group">
             <label asp-for="Contacto"></label>
             <input asp-for="Contacto" class="form-control" />
@@ -96,6 +108,7 @@
             <label asp-for="FacturarA"></label>
             <input asp-for="FacturarA" class="form-control" placeholder="Nombre para facturación" />
         </div>
+
         <div class="form-group">
             <label asp-for="DireccionCobro"></label>
             <input asp-for="DireccionCobro" class="form-control" />
@@ -111,6 +124,7 @@
         <button type="submit" class="btn btn-primary">
             <i class="fas fa-save"></i> Guardar Orden
         </button>
+
         <a asp-action="Index" class="btn btn-secondary">
             <i class="fas fa-times"></i> Cancelar
         </a>
@@ -118,5 +132,41 @@
 </form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const fechaInput = document.getElementById("FechaServicio");
+            const alerta = document.getElementById("alertaFecha");
+
+            fechaInput.addEventListener("change", function () {
+
+                if (!this.value) {
+                    alerta.style.display = "none";
+                    return;
+                }
+
+                fetch('/OrdenTrabajo/ValidarFecha?fecha=' + this.value)
+                    .then(response => response.json())
+                    .then(data => {
+
+                        if (data.ocupada) {
+                            alerta.style.display = "block";
+                        }
+                        else {
+                            alerta.style.display = "none";
+                        }
+
+                    })
+                    .catch(error => {
+                        console.error("Error al validar fecha:", error);
+                    });
+
+            });
+
+        });
+    </script>
 }

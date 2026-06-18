@@ -50,6 +50,22 @@ CREATE TABLE Ordenes_Trabajo (
     fecha_actualizacion     DATETIME2       NULL
 );
 
+---cambios--
+SELECT estado
+FROM Ordenes_Trabajo
+
+ALTER TABLE Ordenes_Trabajo
+ADD estado NVARCHAR(20) NOT NULL DEFAULT 'Pendiente';
+
+
+ALTER TABLE Importaciones
+ADD id_orden INT;
+
+ALTER TABLE Exportaciones
+ADD id_orden INT;
+
+
+
 
 CREATE TABLE Control_Visitas (
     id_visita               INT IDENTITY(1,1) PRIMARY KEY,

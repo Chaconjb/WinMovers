@@ -1,10 +1,15 @@
+@using System.Linq
 @model IEnumerable<WinMovers.Models.OrdenTrabajo>
+
 @{
     ViewData["Title"] = "Órdenes de Trabajo";
 }
 
 <div class="form-header">
-    <h2 class="content-title"><i class="fas fa-clipboard-list"></i> Órdenes de Trabajo</h2>
+    <h2 class="content-title">
+        <i class="fas fa-clipboard-list"></i> Órdenes de Trabajo
+    </h2>
+
     <a asp-action="Create" class="btn btn-primary">
         <i class="fas fa-plus"></i> Nueva Orden
     </a>
@@ -19,32 +24,73 @@
                 <th>Fecha Servicio</th>
                 <th>Compañía</th>
                 <th>Hecho Por</th>
+                <th>Estado</th> <!-- 🔥 NUEVO -->
                 <th>Acciones</th>
             </tr>
         </thead>
+
         <tbody>
-            @if (!Model.Any())
+            @if (Model == null || !Model.Any())
             {
-                <tr><td colspan="6" class="no-data">No hay órdenes registradas. <a asp-action="Create">Crear la primera</a>.</td></tr>
+                <tr>
+                    <td colspan="7" class="no-data">
+                        No hay órdenes registradas.
+                        <a asp-action="Create">Crear la primera</a>.
+                    </td>
+                </tr>
             }
             else
             {
-                @foreach (var o in Model)
+                foreach (var o in Model)
                 {
                     <tr>
                         <td><strong>@o.NumeroOT</strong></td>
+
                         <td>@o.NombreCliente</td>
-                        <td>@(o.FechaServicio?.ToString("dd/MM/yyyy") ?? "—")</td>
-                        <td>@(o.Compania ?? "Particular")</td>
-                        <td>@(o.HechoPor ?? "—")</td>
+
                         <td>
-                            <a asp-action="Edit" asp-route-id="@o.IdOrden" class="btn-icon edit" title="Editar">
+                            @(o.FechaServicio?.ToString("dd/MM/yyyy") ?? "—")
+                        </td>
+
+                        <td>
+                            @(o.Compania ?? "Particular")
+                        </td>
+
+                        <td>
+                            @(o.HechoPor ?? "—")
+                        </td>
+
+                        <!-- 🔥 ESTADO -->
+                        <td>
+                            @if (o.Estado == "Completado")
+                            {
+                                <span class="badge bg-success">Completado</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Pendiente</span>
+                            }
+                        </td>
+
+                        <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@o.IdOrden"
+                               class="btn-icon edit"
+                               title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form asp-action="Delete" asp-route-id="@o.IdOrden" method="post" style="display:inline"
+
+                            <form asp-action="Delete"
+                                  asp-route-id="@o.IdOrden"
+                                  method="post"
+                                  style="display:inline"
                                   onsubmit="return confirm('¿Eliminar esta orden de trabajo?')">
+
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-icon delete" title="Eliminar">
+
+                                <button type="submit"
+                                        class="btn-icon delete"
+                                        title="Eliminar">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
