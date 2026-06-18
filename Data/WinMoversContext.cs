@@ -14,6 +14,7 @@ namespace WinMovers.Data
         public DbSet<CatalogoDocumento> CatalogoDocumentos { get; set; }
         public DbSet<Exportacion> Exportaciones { get; set; }
         public DbSet<ExportacionDocumento> ExportacionesDocumentos { get; set; }
+        public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Importacion> Importaciones { get; set; }
         public DbSet<ImportacionDocumento> ImportacionesDocumentos { get; set; }
         public DbSet<ImportacionArchivo> ImportacionesArchivos { get; set; }

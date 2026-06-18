@@ -124,6 +124,33 @@ CREATE TABLE Exportaciones (
 );
 GO
 
+CREATE TABLE Clientes (
+    id_cliente INT IDENTITY(1,1) PRIMARY KEY,
+
+    nombre_cliente NVARCHAR(200) NOT NULL,
+
+    telefono_celular NVARCHAR(20) NULL,
+    telefono_residencia NVARCHAR(20) NULL,
+    telefono_empresa NVARCHAR(20) NULL,
+
+    empresa NVARCHAR(200) NULL,
+    contacto NVARCHAR(200) NULL,
+
+    correo_electronico NVARCHAR(200) NULL,
+
+    direccion NVARCHAR(MAX) NOT NULL,
+
+    observaciones NVARCHAR(MAX) NULL,
+
+    activo BIT NOT NULL DEFAULT 1,
+
+    fecha_registro DATE NOT NULL DEFAULT GETDATE(),
+
+    fecha_creacion DATETIME2 NOT NULL DEFAULT GETDATE(),
+    fecha_actualizacion DATETIME2 NULL
+);
+GO
+
 -- Checklist de documentos de exportación (JS: docsWinMovers + docsOtroAgente)
 -- Cada fila = un documento del checklist con su estado completado/pendiente
 CREATE TABLE Exportaciones_Documentos (
