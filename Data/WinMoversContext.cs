@@ -20,6 +20,8 @@ namespace WinMovers.Data
         public DbSet<ImportacionArchivo> ImportacionesArchivos { get; set; }
         public DbSet<ExportacionArchivo> ExportacionesArchivos { get; set; }
         public DbSet<OrdenTrabajoArchivo> OrdenesTrabajosArchivos { get; set; }
+        public DbSet<OrdenTrabajoHistorial> OrdenesTrabajoHistorial { get; set; }
+        public DbSet<OrdenTrabajoNota> OrdenesTrabajoNotas { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -444,6 +446,47 @@ namespace WinMovers.Data
                 e.HasOne(x => x.Importacion)
                     .WithMany(i => i.Archivos)
                     .HasForeignKey(x => x.IdImportacion)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            // Dentro de OnModelCreating, al final:
+
+            // =========================================================
+            // ORDENES TRABAJO HISTORIAL
+            // =========================================================
+            modelBuilder.Entity<OrdenTrabajoHistorial>(e =>
+            {
+                e.ToTable("Ordenes_Trabajo_Historial");
+                e.HasKey(x => x.IdHistorial);
+                e.Property(x => x.IdHistorial).HasColumnName("id_historial");
+                e.Property(x => x.IdOrden).HasColumnName("id_orden");
+                e.Property(x => x.CampoModificado).HasColumnName("campo_modificado").IsRequired();
+                e.Property(x => x.ValorAnterior).HasColumnName("valor_anterior");
+                e.Property(x => x.ValorNuevo).HasColumnName("valor_nuevo");
+                e.Property(x => x.Usuario).HasColumnName("usuario");
+                e.Property(x => x.FechaCambio).HasColumnName("fecha_cambio").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.OrdenTrabajo)
+                    .WithMany(o => o.Historial)
+                    .HasForeignKey(x => x.IdOrden)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            // =========================================================
+            // ORDENES TRABAJO NOTAS
+            // =========================================================
+            modelBuilder.Entity<OrdenTrabajoNota>(e =>
+            {
+                e.ToTable("Ordenes_Trabajo_Notas");
+                e.HasKey(x => x.IdNota);
+                e.Property(x => x.IdNota).HasColumnName("id_nota");
+                e.Property(x => x.IdOrden).HasColumnName("id_orden");
+                e.Property(x => x.Contenido).HasColumnName("contenido").IsRequired();
+                e.Property(x => x.Usuario).HasColumnName("usuario");
+                e.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("GETDATE()");
+                e.Property(x => x.FechaActualizacion).HasColumnName("fecha_actualizacion");
+
+                e.HasOne(x => x.OrdenTrabajo)
+                    .WithMany(o => o.Notas)
+                    .HasForeignKey(x => x.IdOrden)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

@@ -5,9 +5,17 @@
 
 <div class="form-header">
     <h2 class="content-title"><i class="fas fa-edit"></i> Editar Orden — @Model.NumeroOT</h2>
-    <a asp-action="Index" class="btn btn-outline">
-        <i class="fas fa-list"></i> Volver al Listado
-    </a>
+    <div style="display:flex;gap:8px">
+        <a asp-action="Notas" asp-route-id="@Model.IdOrden" class="btn btn-outline">
+            <i class="fas fa-sticky-note"></i> Notas
+        </a>
+        <a asp-action="Historial" asp-route-id="@Model.IdOrden" class="btn btn-outline">
+            <i class="fas fa-history"></i> Historial
+        </a>
+        <a asp-action="Index" class="btn btn-outline">
+            <i class="fas fa-list"></i> Volver al Listado
+        </a>
+    </div>
 </div>
 
 <form asp-action="Edit" method="post" class="form-card">
@@ -33,10 +41,17 @@
         </div>
     </div>
 
-    <div class="form-row">
+    <div class="form-row two-cols">
         <div class="form-group">
             <label asp-for="Hora"></label>
-            <input asp-for="Hora" type="time" class="form-control" style="max-width:200px" />
+            <input asp-for="Hora" type="time" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Estado"></label>
+            <select asp-for="Estado" class="form-control">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Completado">Completado</option>
+            </select>
         </div>
     </div>
 

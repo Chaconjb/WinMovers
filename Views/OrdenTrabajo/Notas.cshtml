@@ -1,0 +1,106 @@
+@model WinMovers.Models.OrdenTrabajo
+@{
+    ViewData["Title"] = "Notas de la Orden";
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-sticky-note"></i> Notas — @Model.NumeroOT (@Model.NombreCliente)</h2>
+    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-list"></i> Volver</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="form-card" style="margin-bottom:20px">
+    <form asp-action="AgregarNota" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="idOrden" value="@Model.IdOrden" />
+        <div class="form-group">
+            <label>Nueva nota</label>
+            <textarea name="contenido" class="form-control" rows="3" placeholder="Escriba una observación relevante..." required></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Agregar Nota
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="checklist-section">
+    <div class="checklist-title">
+        <i class="fas fa-history"></i> Historial de Notas
+        <span style="margin-left:auto;font-weight:400">@Model.Notas.Count nota(s)</span>
+    </div>
+
+    <div style="padding:16px">
+        @if (!Model.Notas.Any())
+        {
+            <p style="color:var(--text-light);font-size:13px">
+                <i class="fas fa-inbox"></i> No hay notas registradas aún.
+            </p>
+        }
+        else
+        {
+            @foreach (var nota in Model.Notas.OrderByDescending(n => n.FechaCreacion))
+            {
+                <div class="form-card" style="margin-bottom:12px" id="nota-@nota.IdNota">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                        <div style="font-size:12px;color:var(--text-light)">
+                            <i class="fas fa-user"></i> @(nota.Usuario ?? "Sistema")
+                            &nbsp;·&nbsp;
+                            <i class="fas fa-clock"></i> @nota.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
+                            @if (nota.FechaActualizacion.HasValue)
+                            {
+                                <span style="font-style:italic"> (editada @nota.FechaActualizacion.Value.ToString("dd/MM/yyyy HH:mm"))</span>
+                            }
+                        </div>
+                        <button type="button" class="btn-icon edit" title="Editar"
+                                onclick="activarEdicion(@nota.IdNota)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+
+                    <!-- Vista normal -->
+                    <p id="texto-@nota.IdNota" style="margin:0;white-space:pre-wrap">@nota.Contenido</p>
+
+                    <!-- Formulario de edición (oculto por defecto) -->
+                    <form asp-action="EditarNota" method="post" id="form-@nota.IdNota" style="display:none;margin-top:8px">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="idNota" value="@nota.IdNota" />
+                        <input type="hidden" name="idOrden" value="@Model.IdOrden" />
+                        <textarea name="contenido" class="form-control" rows="3">@nota.Contenido</textarea>
+                        <div class="form-actions" style="margin-top:8px">
+                            <button type="submit" class="btn btn-primary" style="font-size:12px;padding:6px 12px">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                            <button type="button" class="btn btn-secondary" style="font-size:12px;padding:6px 12px"
+                                    onclick="cancelarEdicion(@nota.IdNota)">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function activarEdicion(idNota) {
+        document.getElementById(`texto-${idNota}`).style.display = 'none';
+        document.getElementById(`form-${idNota}`).style.display = 'block';
+    }
+    function cancelarEdicion(idNota) {
+        document.getElementById(`texto-${idNota}`).style.display = 'block';
+        document.getElementById(`form-${idNota}`).style.display = 'none';
+    }
+</script>
+}

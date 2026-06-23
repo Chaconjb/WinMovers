@@ -24,7 +24,7 @@
                 <th>Fecha Servicio</th>
                 <th>Compañía</th>
                 <th>Hecho Por</th>
-                <th>Estado</th> <!-- 🔥 NUEVO -->
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -60,7 +60,6 @@
                             @(o.HechoPor ?? "—")
                         </td>
 
-                        <!-- 🔥 ESTADO -->
                         <td>
                             @if (o.Estado == "Completado")
                             {
