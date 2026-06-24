@@ -1,0 +1,109 @@
+@model List<AvanceWinMovers.Models.OrdenTrabajo>
+
+<div class="historial-section" style="margin-top: 20px;">
+    <!-- Botón para volver -->
+    <button class="btn-volver" onclick="location.reload()" 
+            style="padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 20px;">
+        <i class="fas fa-arrow-left"></i> Volver
+    </button>
+
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="alert @(Model.Count > 0 ? "alert-info" : "alert-warning")" style="padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+            <i class="fas fa-info-circle"></i> @ViewBag.Mensaje
+        </div>
+    }
+
+    @if (Model.Count > 0)
+    {
+        <!-- Agrupar por mes -->
+        @foreach (var mesGrupo in Model.GroupBy(o => new { Fecha = o.fecha_servicio ?? o.fecha ?? o.fecha_creacion, o.id_orden }).OrderByDescending(g => g.Key.Fecha.Year).ThenByDescending(g => g.Key.Fecha.Month))
+        {
+            <div class="mes-grupo" style="margin-bottom: 30px; border-left: 4px solid #007bff; padding-left: 15px;">
+                <h4 style="color: #007bff; margin-bottom: 15px;">
+                    <i class="fas fa-calendar-alt"></i>
+                    @($"{System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(mesGrupo.Key.Fecha.Month)} {mesGrupo.Key.Fecha.Year}")
+                </h4>
+
+                <table class="historial-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 10px; text-align: left;">ID</th>
+                            <th style="padding: 10px; text-align: left;">OT</th>
+                            <th style="padding: 10px; text-align: left;">Cliente</th>
+                            <th style="padding: 10px; text-align: left;">Fecha</th>
+                            <th style="padding: 10px; text-align: left;">Origen</th>
+                            <th style="padding: 10px; text-align: center;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var orden in mesGrupo)
+                        {
+                            var fechaVisible = orden.fecha_servicio ?? orden.fecha ?? orden.fecha_creacion;
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 10px;">#@orden.id_orden</td>
+                                <td style="padding: 10px;">@orden.numero_ot</td>
+                                <td style="padding: 10px;">@orden.nombre_cliente</td>
+                                <td style="padding: 10px;">@fechaVisible.ToString("dd/MM/yyyy")</td>
+                                <td style="padding: 10px;">@(orden.direccion_origen ?? "N/A")</td>
+                                <td style="padding: 10px; text-align: center;">
+                                    <button class="btn-detalles" onclick="cargarDetalles(@orden.id_orden)" 
+                                            style="padding: 6px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="sin-historial" style="text-align: center; padding: 40px; background-color: #f8f9fa; border-radius: 4px;">
+            <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+            <p style="color: #666; font-size: 16px;">No hay registros para este cliente</p>
+        </div>
+    }
+</div>
+
+<script>
+    function cargarDetalles(idOrden) {
+        fetch('@Url.Action("DetalleOrden", "Dashboards")' + '?id=' + idOrden)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('resultadosBusqueda').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cargar los detalles');
+            });
+    }
+</script>
+
+<style>
+    .historial-table tr:hover {
+        background-color: #f9f9f9;
+    }
+    
+    .mes-grupo {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .btn-detalles:hover {
+        background-color: #0056b3;
+    }
+    
+    .btn-volver:hover {
+        background-color: #5a6268;
+    }
+    
+    .badge {
+        display: inline-block;
+        text-align: center;
+    }
+</style>

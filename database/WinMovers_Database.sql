@@ -81,7 +81,47 @@ CREATE TABLE Control_Visitas (
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),  
     fecha_actualizacion     DATETIME2       NULL
 );
-G
+GO
+
+CREATE TABLE Cotizaciones (
+    id_cotizacion           INT IDENTITY(1,1) PRIMARY KEY,
+    numero_cotizacion       NVARCHAR(20)    NOT NULL UNIQUE,
+    nombre_cliente          NVARCHAR(150)   NOT NULL,
+    origen                  NVARCHAR(250)   NULL,
+    destino                 NVARCHAR(250)   NULL,
+    monto                   DECIMAL(18,2)   NOT NULL DEFAULT 0,
+    estado                  NVARCHAR(50)    NOT NULL DEFAULT 'Pendiente',
+    fecha_cotizacion        DATE            NULL,
+    descripcion             NVARCHAR(MAX)   NULL,
+    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),
+    fecha_actualizacion     DATETIME2       NULL
+);
+GO
+
+CREATE TABLE Inventario (
+    id_item                 INT IDENTITY(1,1) PRIMARY KEY,
+    nombre_material         NVARCHAR(150)   NOT NULL,
+    descripcion             NVARCHAR(MAX)   NULL,
+    cantidad                INT             NOT NULL DEFAULT 0,
+    unidad                  NVARCHAR(30)    NULL,
+    estado                  NVARCHAR(50)    NOT NULL DEFAULT 'Activo',
+    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),
+    fecha_actualizacion     DATETIME2       NULL
+);
+GO
+
+CREATE TABLE Empleados (
+    id_empleado             INT IDENTITY(1,1) PRIMARY KEY,
+    nombre_completo         NVARCHAR(150)   NOT NULL,
+    puesto                  NVARCHAR(100)   NOT NULL,
+    telefono                NVARCHAR(30)    NULL,
+    correo                  NVARCHAR(150)   NULL,
+    fecha_contratacion      DATE            NULL,
+    activo                  BIT             NOT NULL DEFAULT 1,
+    fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(),
+    fecha_actualizacion     DATETIME2       NULL
+);
+GO
 
 CREATE TABLE Catalogo_Documentos (
     id_tipo_documento       INT IDENTITY(1,1) PRIMARY KEY,

@@ -1,6 +1,6 @@
 ﻿<h2>Gestión de Mudanzas</h2>
 
-<button class="btn">+ Registrar Mudanza</button>
+<button class="btn" onclick="window.location.href='@Url.Action("AccionModulo", "Dashboards", new { modulo = "mudanzas", accion = "crear", id = 0 })'">+ Registrar Mudanza</button>
 
 <table>
     <tr>
@@ -17,8 +17,8 @@
         <td>San José</td>
         <td>En proceso</td>
         <td>
-            <button class="btn">Editar</button>
-            <button class="btn btn-danger">Eliminar</button>
+            <button class="btn" onclick="window.location.href='@Url.Action("AccionModulo", "Dashboards", new { modulo = "mudanzas", accion = "editar", id = 1 })'">Editar</button>
+            <button class="btn btn-danger" onclick="window.location.href='@Url.Action("AccionModulo", "Dashboards", new { modulo = "mudanzas", accion = "eliminar", id = 1 })'">Eliminar</button>
         </td>
     </tr>
 </table>

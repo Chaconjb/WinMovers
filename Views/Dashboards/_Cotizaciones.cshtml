@@ -1,24 +1,41 @@
-﻿<h2>Gestión de Cotizaciones</h2>
+﻿@model List<AvanceWinMovers.Models.Cotizacion>
 
-<button class="btn">+ Nueva Cotización</button>
+<h2>Gestión de Cotizaciones</h2>
+
+<button class="btn" onclick="window.location.href='@Url.Action("CrearCotizacion", "Dashboards")'">+ Nueva Cotización</button>
 
 <table>
     <tr>
         <th>ID</th>
+        <th>Número</th>
         <th>Cliente</th>
         <th>Monto</th>
         <th>Estado</th>
         <th>Acciones</th>
     </tr>
 
-    <tr>
-        <td>1</td>
-        <td>Juan Pérez</td>
-        <td>$500</td>
-        <td>Pendiente</td>
-        <td>
-            <button class="btn">Editar</button>
-            <button class="btn btn-danger">Eliminar</button>
-        </td>
-    </tr>
+    @if (Model != null && Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.id_cotizacion</td>
+                <td>@item.numero_cotizacion</td>
+                <td>@item.nombre_cliente</td>
+                <td>$@item.monto.ToString("N2")</td>
+                <td>@item.estado</td>
+                <td>
+                    <button class="btn" onclick="window.location.href='@Url.Action("EditarCotizacion", "Dashboards", new { id = item.id_cotizacion })'">Editar</button>
+                    <form asp-action="EliminarCotizacion" asp-controller="Dashboards" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar esta cotización?');">
+                        <input type="hidden" name="id" value="@item.id_cotizacion" />
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr><td colspan="6">No hay cotizaciones registradas.</td></tr>
+    }
 </table>

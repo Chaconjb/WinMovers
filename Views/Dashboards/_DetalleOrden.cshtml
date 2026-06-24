@@ -1,0 +1,111 @@
+@model AvanceWinMovers.Models.OrdenTrabajo
+
+<div class="detalle-orden-section" style="margin-top: 20px;">
+    <!-- Botón para volver -->
+    <button class="btn-volver" onclick="location.reload()" 
+            style="padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 20px;">
+        <i class="fas fa-arrow-left"></i> Volver
+    </button>
+
+    @if (Model != null)
+    {
+        var fechaServicioVisible = Model.fecha_servicio ?? Model.fecha ?? Model.fecha_creacion;
+        <div class="detalle-card" style="background: white; border-left: 4px solid #007bff; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="color: #007bff; margin-bottom: 20px;">
+                <i class="fas fa-receipt"></i> Orden de Trabajo #@Model.id_orden
+            </h3>
+
+            <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Columna 1 -->
+                <div>
+                    <div class="detalle-item" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #555;">Nombre Cliente:</label>
+                        <p style="color: #333; margin-top: 5px;">@Model.nombre_cliente</p>
+                    </div>
+
+                    <div class="detalle-item" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #555;">Número OT:</label>
+                        <p style="color: #333; margin-top: 5px;">@Model.numero_ot</p>
+                    </div>
+
+                    <div class="detalle-item" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #555;">Fecha servicio:</label>
+                        <p style="color: #333; margin-top: 5px;">@fechaServicioVisible.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+
+                <!-- Columna 2 -->
+                <div>
+                    <div class="detalle-item" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #555;">Contacto:</label>
+                        <p style="margin-top: 5px;">
+                            @(Model.contacto ?? Model.telefono_celular ?? "No registrado")
+                        </p>
+                    </div>
+
+                    <div class="detalle-item" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #555;">Teléfono celular:</label>
+                        <p style="color: #333; margin-top: 5px;">
+                            @(Model.telefono_celular ?? "No registrado")
+                        </p>
+                    </div>
+
+                    <div class="detalle-item" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #555;">Creado:</label>
+                        <p style="color: #333; margin-top: 5px;">@Model.fecha_creacion.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="detalle-item" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                <label style="font-weight: bold; color: #555; display: block; margin-bottom: 10px;">Servicio / Observaciones:</label>
+                <p style="color: #333; background-color: #f9f9f9; padding: 12px; border-radius: 4px; line-height: 1.6;">
+                    @(Model.detalle_servicio ?? "Sin información registrada")
+                </p>
+            </div>
+
+            <!-- Acciones -->
+            <div class="acciones-detalle" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                <button class="btn-editar" style="padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn-imprimir" style="padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="sin-datos" style="text-align: center; padding: 40px; background-color: #f8f9fa; border-radius: 4px;">
+            <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #dc3545; margin-bottom: 15px; display: block;"></i>
+            <p style="color: #666; font-size: 16px;">No se encontró la orden</p>
+        </div>
+    }
+</div>
+
+<style>
+    .detalle-card {
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .detalle-item {
+        margin-bottom: 15px;
+    }
+    
+    .btn-editar:hover {
+        background-color: #0056b3;
+    }
+    
+    .btn-imprimir:hover {
+        background-color: #5a6268;
+    }
+    
+    .btn-volver:hover {
+        background-color: #5a6268;
+    }
+</style>
+

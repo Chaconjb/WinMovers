@@ -1,22 +1,41 @@
-﻿<h2>Gestión de Empleados</h2>
+﻿@model List<AvanceWinMovers.Models.Empleado>
 
-<button class="btn">+ Agregar Empleado</button>
+<h2>Gestión de Empleados</h2>
+
+<button class="btn" onclick="window.location.href='@Url.Action("CrearEmpleado", "Dashboards")'">+ Agregar Empleado</button>
 
 <table>
     <tr>
         <th>ID</th>
         <th>Nombre</th>
         <th>Puesto</th>
+        <th>Teléfono</th>
+        <th>Activo</th>
         <th>Acciones</th>
     </tr>
 
-    <tr>
-        <td>1</td>
-        <td>Carlos López</td>
-        <td>Supervisor</td>
-        <td>
-            <button class="btn">Editar</button>
-            <button class="btn btn-danger">Eliminar</button>
-        </td>
-    </tr>
+    @if (Model != null && Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.id_empleado</td>
+                <td>@item.nombre_completo</td>
+                <td>@item.puesto</td>
+                <td>@(item.telefono ?? "N/A")</td>
+                <td>@(item.activo ? "Sí" : "No")</td>
+                <td>
+                    <button class="btn" onclick="window.location.href='@Url.Action("EditarEmpleado", "Dashboards", new { id = item.id_empleado })'">Editar</button>
+                    <form asp-action="EliminarEmpleado" asp-controller="Dashboards" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar este empleado?');">
+                        <input type="hidden" name="id" value="@item.id_empleado" />
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr><td colspan="6">No hay empleados registrados.</td></tr>
+    }
 </table>

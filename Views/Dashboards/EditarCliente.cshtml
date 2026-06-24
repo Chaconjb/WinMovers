@@ -1,0 +1,96 @@
+@model AvanceWinMovers.Models.OrdenTrabajo
+
+@{
+    ViewData["Title"] = "Editar Cliente";
+}
+
+<div style="max-width: 1000px; margin: 0 auto;">
+    <h2>Editar Cliente / Orden</h2>
+
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="alert alert-success" style="padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+            @ViewBag.Mensaje
+        </div>
+    }
+
+    <form asp-action="EditarCliente" asp-controller="Dashboards" method="post" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+        <input type="hidden" asp-for="id_orden" />
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+                <label>Número OT *</label>
+                <input asp-for="numero_ot" class="form-control" required />
+            </div>
+            <div>
+                <label>Nombre del cliente *</label>
+                <input asp-for="nombre_cliente" class="form-control" required />
+            </div>
+            <div>
+                <label>Fecha servicio</label>
+                <input asp-for="fecha_servicio" type="date" class="form-control" />
+            </div>
+            <div>
+                <label>Fecha</label>
+                <input asp-for="fecha" type="date" class="form-control" />
+            </div>
+            <div>
+                <label>Hora</label>
+                <input asp-for="hora" class="form-control" />
+            </div>
+            <div>
+                <label>Contacto</label>
+                <input asp-for="contacto" class="form-control" />
+            </div>
+            <div>
+                <label>Teléfono celular</label>
+                <input asp-for="telefono_celular" class="form-control" />
+            </div>
+            <div>
+                <label>Teléfono residencia</label>
+                <input asp-for="telefono_residencia" class="form-control" />
+            </div>
+            <div>
+                <label>Compañía</label>
+                <input asp-for="compania" class="form-control" />
+            </div>
+            <div>
+                <label>Teléfono empresa</label>
+                <input asp-for="telefono_empresa" class="form-control" />
+            </div>
+            <div>
+                <label>Hecho por</label>
+                <input asp-for="hecho_por" class="form-control" />
+            </div>
+            <div>
+                <label>Facturar a</label>
+                <input asp-for="facturar_a" class="form-control" />
+            </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+            <label>Dirección origen</label>
+            <textarea asp-for="direccion_origen" class="form-control" rows="2"></textarea>
+        </div>
+        <div style="margin-top: 16px;">
+            <label>Dirección destino</label>
+            <textarea asp-for="direccion_destino" class="form-control" rows="2"></textarea>
+        </div>
+        <div style="margin-top: 16px;">
+            <label>Detalle del servicio</label>
+            <textarea asp-for="detalle_servicio" class="form-control" rows="4"></textarea>
+        </div>
+        <div style="margin-top: 16px;">
+            <label>Materiales</label>
+            <textarea asp-for="materiales" class="form-control" rows="3"></textarea>
+        </div>
+        <div style="margin-top: 16px;">
+            <label>Dirección de cobro</label>
+            <textarea asp-for="direccion_cobro" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a href="@Url.Action("Index", "Dashboards")" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>

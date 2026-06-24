@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Acción de Módulo";
+}
+
+<div style="max-width: 900px; margin: 0 auto; background: white; padding: 24px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+    <h2 style="margin-top: 0;">Acción del módulo</h2>
+
+    <p><strong>Módulo:</strong> @ViewBag.Modulo</p>
+    <p><strong>Acción:</strong> @ViewBag.Accion</p>
+    <p><strong>Registro:</strong> #@ViewBag.Id</p>
+
+    <div style="display: flex; gap: 10px; margin-top: 24px;">
+        <a class="btn btn-primary" href="@Url.Action("Index", "Dashboards")">Volver al panel</a>
+        <a class="btn btn-secondary" href="@Url.Action("CargarVista", "Dashboards", new { nombre = ViewBag.Modulo })">Volver al módulo</a>
+    </div>
+</div>

@@ -1,39 +1,160 @@
-﻿<h2>Gestión de Clientes</h2>
+﻿@model List<AvanceWinMovers.Models.OrdenTrabajo>
 
-<button class="btn">+ Crear Cliente</button>
+<h2>Gestión de Clientes</h2>
 
-<br>
-<br>
+<!-- HU-CLI-003: Formulario de Búsqueda -->
+<div class="busqueda-section" style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+    <h3><i class="fas fa-search"></i> Buscar Cliente</h3>
+    <form id="formBuscar" method="post" action="@Url.Action("BuscarClientes", "Dashboards")">
+        <div class="form-group">
+            <label for="criterio">Ingresa el nombre o documento del cliente:</label>
+            <input type="text" id="criterio" name="criterio" class="form-control" placeholder="Ej: Juan Pérez o 12345678" required>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Buscar
+        </button>
+    </form>
+</div>
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Teléfono</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
+<!-- Contenedor para resultados de búsqueda -->
+<div id="resultadosBusqueda">
+    @if (Model != null && Model.Count > 0)
+    {
+        <table class="tabla-clientes">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>OT</th>
+                    <th>Cliente</th>
+                    <th>Contacto</th>
+                    <th>Teléfono</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in Model)
+                {
+                    <tr>
+                        <td>@cliente.id_orden</td>
+                        <td>@cliente.numero_ot</td>
+                        <td>@cliente.nombre_cliente</td>
+                        <td>@(cliente.contacto ?? "N/A")</td>
+                        <td>@(cliente.telefono_celular ?? "N/A")</td>
+                        <td>@cliente.fecha_creacion.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <a class="btn btn-sm btn-primary" href="@Url.Action("EditarCliente", "Dashboards", new { id = cliente.id_orden })">Editar</a>
+                            <form asp-action="EliminarCliente" asp-controller="Dashboards" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar este cliente?');">
+                                <input type="hidden" name="id" value="@cliente.id_orden" />
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-warning">No hay clientes para mostrar.</div>
+    }
+</div>
 
-    <tbody>
-        <tr>
-            <td>1</td>
-            <td>Juan Pérez</td>
-            <td>8888-8888</td>
-            <td>
-                <button class="btn">Editar</button>
-                <button class="btn btn-danger">Eliminar</button>
-            </td>
-        </tr>
+<hr>
 
-        <tr>
-            <td>2</td>
-            <td>María Gómez</td>
-            <td>7777-7777</td>
-            <td>
-                <button class="btn">Editar</button>
-                <button class="btn btn-danger">Eliminar</button>
-            </td>
-        </tr>
-    </tbody>
-</table>
+<div class="acciones-section">
+    <button class="btn btn-success" onclick="window.location.href='@Url.Action("CrearCliente", "Dashboards")'">
+        <i class="fas fa-plus"></i> Crear Cliente
+    </button>
+</div>
+
+<script>
+document.getElementById('formBuscar').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const criterio = document.getElementById('criterio').value;
+    
+    fetch('@Url.Action("BuscarClientes", "Dashboards")', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'criterio=' + encodeURIComponent(criterio)
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById('resultadosBusqueda').innerHTML = html;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('resultadosBusqueda').innerHTML = '<p class="alert alert-danger">Error al buscar</p>';
+    });
+});
+</script>
+
+<style>
+    .busqueda-section {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .form-control {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background-color: #218838;
+    }
+    
+    .acciones-section {
+        margin-top: 20px;
+    }
+
+    .tabla-clientes {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        margin-bottom: 20px;
+    }
+
+    .tabla-clientes th, .tabla-clientes td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+</style>

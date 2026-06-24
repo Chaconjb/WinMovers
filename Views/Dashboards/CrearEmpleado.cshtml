@@ -1,0 +1,13 @@
+@model AvanceWinMovers.Models.Empleado
+
+<h2>Nuevo Empleado</h2>
+
+<form asp-action="CrearEmpleado" asp-controller="Dashboards" method="post">
+    <div><label>Nombre</label><input asp-for="nombre_completo" class="form-control" /></div>
+    <div><label>Puesto</label><input asp-for="puesto" class="form-control" /></div>
+    <div><label>Teléfono</label><input asp-for="telefono" class="form-control" /></div>
+    <div><label>Correo</label><input asp-for="correo" class="form-control" /></div>
+    <div><label>Fecha contratación</label><input asp-for="fecha_contratacion" type="date" class="form-control" /></div>
+    <div><label>Activo</label><input asp-for="activo" type="checkbox" /></div>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>

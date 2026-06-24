@@ -1,0 +1,13 @@
+@model AvanceWinMovers.Models.InventarioItem
+
+<h2>Editar Material</h2>
+
+<form asp-action="EditarInventario" asp-controller="Dashboards" method="post">
+    <input type="hidden" asp-for="id_item" />
+    <div><label>Material</label><input asp-for="nombre_material" class="form-control" /></div>
+    <div><label>Descripción</label><textarea asp-for="descripcion" class="form-control"></textarea></div>
+    <div><label>Cantidad</label><input asp-for="cantidad" type="number" class="form-control" /></div>
+    <div><label>Unidad</label><input asp-for="unidad" class="form-control" /></div>
+    <div><label>Estado</label><input asp-for="estado" class="form-control" /></div>
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+</form>

@@ -1,22 +1,41 @@
-﻿<h2>Gestión de Inventario</h2>
+﻿@model List<AvanceWinMovers.Models.InventarioItem>
 
-<button class="btn">+ Agregar Material</button>
+<h2>Gestión de Inventario</h2>
+
+<button class="btn" onclick="window.location.href='@Url.Action("CrearInventario", "Dashboards")'">+ Agregar Material</button>
 
 <table>
     <tr>
         <th>ID</th>
-        <th>Producto</th>
+        <th>Material</th>
         <th>Cantidad</th>
+        <th>Unidad</th>
+        <th>Estado</th>
         <th>Acciones</th>
     </tr>
 
-    <tr>
-        <td>1</td>
-        <td>Cajas</td>
-        <td>50</td>
-        <td>
-            <button class="btn">Editar</button>
-            <button class="btn btn-danger">Eliminar</button>
-        </td>
-    </tr>
+    @if (Model != null && Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.id_item</td>
+                <td>@item.nombre_material</td>
+                <td>@item.cantidad</td>
+                <td>@(item.unidad ?? "N/A")</td>
+                <td>@item.estado</td>
+                <td>
+                    <button class="btn" onclick="window.location.href='@Url.Action("EditarInventario", "Dashboards", new { id = item.id_item })'">Editar</button>
+                    <form asp-action="EliminarInventario" asp-controller="Dashboards" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar este material?');">
+                        <input type="hidden" name="id" value="@item.id_item" />
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr><td colspan="6">No hay materiales en inventario.</td></tr>
+    }
 </table>
