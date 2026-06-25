@@ -50,7 +50,6 @@ CREATE TABLE Ordenes_Trabajo (
     fecha_actualizacion     DATETIME2       NULL
 );
 
-
 CREATE TABLE Control_Visitas (
     id_visita               INT IDENTITY(1,1) PRIMARY KEY,
     fecha_llamada           DATE            NULL,                  
@@ -105,6 +104,33 @@ CREATE TABLE Exportaciones (
     observaciones           NVARCHAR(MAX)   NULL,           
     fecha_creacion          DATETIME2       NOT NULL DEFAULT GETDATE(), 
     fecha_actualizacion     DATETIME2       NULL
+);
+GO
+
+CREATE TABLE Clientes (
+    id_cliente INT IDENTITY(1,1) PRIMARY KEY,
+
+    nombre_cliente NVARCHAR(200) NOT NULL,
+
+    telefono_celular NVARCHAR(20) NULL,
+    telefono_residencia NVARCHAR(20) NULL,
+    telefono_empresa NVARCHAR(20) NULL,
+
+    empresa NVARCHAR(200) NULL,
+    contacto NVARCHAR(200) NULL,
+
+    correo_electronico NVARCHAR(200) NULL,
+
+    direccion NVARCHAR(MAX) NOT NULL,
+
+    observaciones NVARCHAR(MAX) NULL,
+
+    activo BIT NOT NULL DEFAULT 1,
+
+    fecha_registro DATE NOT NULL DEFAULT GETDATE(),
+
+    fecha_creacion DATETIME2 NOT NULL DEFAULT GETDATE(),
+    fecha_actualizacion DATETIME2 NULL
 );
 GO
 
@@ -202,6 +228,50 @@ CREATE TABLE OrdenesTrabajo_Archivos (
 );
 GO
 
+-- HU-ORD-003: Historial de cambios de fecha/estado
+CREATE TABLE Ordenes_Trabajo_Historial (
+    id_historial         INT IDENTITY(1,1) PRIMARY KEY,
+    id_orden             INT             NOT NULL,
+    campo_modificado     NVARCHAR(50)    NOT NULL,   -- 'fecha_servicio' o 'estado'
+    valor_anterior       NVARCHAR(100)   NULL,
+    valor_nuevo          NVARCHAR(100)   NULL,
+    usuario              NVARCHAR(100)   NULL,       -- texto libre por ahora (sin auth)
+    fecha_cambio         DATETIME2       NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_OTHist_Orden
+        FOREIGN KEY (id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden) ON DELETE CASCADE
+);
+GO
+
+CREATE NONCLUSTERED INDEX IX_OTHistorial_Orden ON Ordenes_Trabajo_Historial(id_orden);
+GO
+
+-- HU-ORD-004: Notas y observaciones
+CREATE TABLE Ordenes_Trabajo_Notas (
+    id_nota              INT IDENTITY(1,1) PRIMARY KEY,
+    id_orden             INT             NOT NULL,
+    contenido            NVARCHAR(MAX)   NOT NULL,
+    usuario              NVARCHAR(100)   NULL,       -- texto libre por ahora (sin auth)
+    fecha_creacion       DATETIME2       NOT NULL DEFAULT GETDATE(),
+    fecha_actualizacion  DATETIME2       NULL,
+    CONSTRAINT FK_OTNota_Orden
+        FOREIGN KEY (id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden) ON DELETE CASCADE
+);
+GO
+
+CREATE NONCLUSTERED INDEX IX_OTNotas_Orden ON Ordenes_Trabajo_Notas(id_orden);
+GO
+
+---cambios--
+ALTER TABLE Ordenes_Trabajo
+ADD estado NVARCHAR(20) NOT NULL DEFAULT 'Pendiente';
+
+ALTER TABLE Importaciones
+ADD id_orden INT;
+
+ALTER TABLE Exportaciones
+ADD id_orden INT;
 
 ALTER TABLE [dbo].[Importaciones]
 ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
@@ -410,6 +480,90 @@ BEGIN
 END
 GO
 
+-- Procedimientos almacenados para el historial
+CREATE PROCEDURE sp_OrdenHistorial_Insertar
+    @id_orden          INT,
+    @campo_modificado  NVARCHAR(50),
+    @valor_anterior    NVARCHAR(100) = NULL,
+    @valor_nuevo       NVARCHAR(100) = NULL,
+    @usuario           NVARCHAR(100) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO Ordenes_Trabajo_Historial
+        (id_orden, campo_modificado, valor_anterior, valor_nuevo, usuario)
+    VALUES
+        (@id_orden, @campo_modificado, @valor_anterior, @valor_nuevo, @usuario);
+END
+GO
+
+CREATE PROCEDURE sp_OrdenHistorial_ObtenerPorOrden
+    @id_orden INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM Ordenes_Trabajo_Historial
+    WHERE id_orden = @id_orden
+    ORDER BY fecha_cambio DESC;
+END
+GO
+
+-- Procedimientos almacenados para validar conflicto de fecha/hora
+CREATE PROCEDURE sp_OrdenTrabajo_ValidarConflicto
+    @id_orden        INT,           -- la orden actual (para excluirla)
+    @fecha_servicio  DATE,
+    @hora            NVARCHAR(10)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id_orden, numero_ot, nombre_cliente
+    FROM Ordenes_Trabajo
+    WHERE fecha_servicio = @fecha_servicio
+      AND hora = @hora
+      AND id_orden <> @id_orden;
+END
+GO
+
+-- Procedimientos almacenados para las notas
+CREATE PROCEDURE sp_OrdenNota_Insertar
+    @id_orden    INT,
+    @contenido   NVARCHAR(MAX),
+    @usuario     NVARCHAR(100) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO Ordenes_Trabajo_Notas (id_orden, contenido, usuario)
+    VALUES (@id_orden, @contenido, @usuario);
+
+    SELECT SCOPE_IDENTITY() AS id_nota;
+END
+GO
+
+CREATE PROCEDURE sp_OrdenNota_Actualizar
+    @id_nota     INT,
+    @contenido   NVARCHAR(MAX),
+    @usuario     NVARCHAR(100) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE Ordenes_Trabajo_Notas SET
+        contenido = @contenido,
+        usuario = @usuario,
+        fecha_actualizacion = GETDATE()
+    WHERE id_nota = @id_nota;
+END
+GO
+
+CREATE PROCEDURE sp_OrdenNota_ObtenerPorOrden
+    @id_orden INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM Ordenes_Trabajo_Notas
+    WHERE id_orden = @id_orden
+    ORDER BY fecha_creacion DESC;
+END
+GO
 
 -- ═══════════════════════════════════════════════════════════════
 -- CRUD: Control_Visitas (ControlVisitas.model.js)

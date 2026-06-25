@@ -1,0 +1,44 @@
+@model WinMovers.Models.OrdenTrabajo
+@{
+    ViewData["Title"] = "Historial de Cambios";
+}
+
+<div class="form-header">
+    <h2 class="content-title"><i class="fas fa-history"></i> Historial — @Model.NumeroOT (@Model.NombreCliente)</h2>
+    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-list"></i> Volver</a>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Campo</th>
+                <th>Valor Anterior</th>
+                <th>Valor Nuevo</th>
+                <th>Usuario</th>
+                <th>Fecha del Cambio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Historial.Any())
+            {
+                <tr><td colspan="5" class="no-data">No hay cambios registrados aún.</td></tr>
+            }
+            else
+            {
+                @foreach (var h in Model.Historial.OrderByDescending(x => x.FechaCambio))
+                {
+                    <tr>
+                        <td>
+                            <strong>@(h.CampoModificado == "fecha_servicio" ? "Fecha de Servicio" : "Estado")</strong>
+                        </td>
+                        <td>@(h.ValorAnterior ?? "—")</td>
+                        <td>@(h.ValorNuevo ?? "—")</td>
+                        <td>@(h.Usuario ?? "Sistema")</td>
+                        <td>@h.FechaCambio.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

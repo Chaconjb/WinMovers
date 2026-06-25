@@ -107,39 +107,50 @@ namespace WinMovers.Controllers
             if (importacion == null) return NotFound();
             return View(importacion);
         }
-
-        // POST: /Importacion/Checklist/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Checklist(int id, List<int> documentosCompletados)
         {
             var importacion = await _context.Importaciones
                 .Include(i => i.Documentos)
-                .ThenInclude(d => d.TipoDocumento)
                 .FirstOrDefaultAsync(i => i.IdImportacion == id);
 
             if (importacion == null) return NotFound();
 
+            // ✔ Guardar checklist
             foreach (var doc in importacion.Documentos)
+            {
                 doc.Completado = documentosCompletados.Contains(doc.IdImpDoc);
+            }
 
             await _context.SaveChangesAsync();
+
+            // 🔥 ACTUALIZAR ORDEN DE TRABAJO
+            var orden = await _context.OrdenesTrabajo
+                .FirstOrDefaultAsync(o => o.NumeroOT == importacion.Referencia);
+
+            if (orden != null)
+            {
+                bool importacionCompleta = importacion.Documentos.All(d => d.Completado);
+
+                bool exportacionCompleta = await _context.Exportaciones
+                    .Include(e => e.Documentos)
+                    .Where(e => e.Referencia == orden.NumeroOT)
+                    .SelectMany(e => e.Documentos)
+                    .AllAsync(d => d.Completado);
+
+                orden.Estado = (importacionCompleta && exportacionCompleta)
+                    ? "Completado"
+                    : "Pendiente";
+
+                orden.FechaActualizacion = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+            }
+
             TempData["Success"] = "Checklist actualizado correctamente.";
             return RedirectToAction(nameof(Checklist), new { id });
         }
-
-        // GET: /Importacion/Edit
-        public async Task<IActionResult> Edit(int id)
-        {
-            var importacion = await _context.Importaciones
-                .FirstOrDefaultAsync(i => i.IdImportacion == id);
-
-            if (importacion == null)
-                return NotFound();
-
-            return View(importacion);
-        }
-
         // POST: /Importacion/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -272,6 +283,40 @@ namespace WinMovers.Controllers
 
             var bytes = await System.IO.File.ReadAllBytesAsync(rutaCompleta);
             return File(bytes, archivo.TipoMime, archivo.NombreOriginal);
+        }
+       //nuevooo
+        private async Task ActualizarEstadoOrden(string numeroOT)
+        {
+            var importacion = await _context.Importaciones
+                .Include(i => i.Documentos)
+                .FirstOrDefaultAsync(i => i.Referencia == numeroOT);
+
+            var exportacion = await _context.Exportaciones
+                .Include(e => e.Documentos)
+                .FirstOrDefaultAsync(e => e.Referencia == numeroOT);
+
+            bool importacionCompleta =
+                importacion != null &&
+                importacion.Documentos.Any() &&
+                importacion.Documentos.All(d => d.Completado);
+
+            bool exportacionCompleta =
+                exportacion != null &&
+                exportacion.Documentos.Any() &&
+                exportacion.Documentos.All(d => d.Completado);
+
+            var orden = await _context.OrdenesTrabajo
+                .FirstOrDefaultAsync(o => o.NumeroOT == numeroOT);
+
+            if (orden != null)
+            {
+                orden.Estado =
+                    (importacionCompleta && exportacionCompleta)
+                    ? "Completado"
+                    : "Pendiente";
+
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
