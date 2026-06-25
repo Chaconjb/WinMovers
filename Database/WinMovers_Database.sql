@@ -246,6 +246,32 @@ GO
 CREATE NONCLUSTERED INDEX IX_OTHistorial_Orden ON Ordenes_Trabajo_Historial(id_orden);
 GO
 
+CREATE TABLE Clientes_Historial (
+    id_historial INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_cliente INT NOT NULL,
+
+    campo_modificado NVARCHAR(100) NOT NULL,
+
+    valor_anterior NVARCHAR(500) NULL,
+
+    valor_nuevo NVARCHAR(500) NULL,
+
+    usuario NVARCHAR(100) NULL,
+
+    fecha_cambio DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_ClientesHistorial_Cliente
+        FOREIGN KEY (id_cliente)
+        REFERENCES Clientes(id_cliente)
+        ON DELETE CASCADE
+);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClientesHistorial_Cliente
+ON Clientes_Historial(id_cliente);
+GO
+
 -- HU-ORD-004: Notas y observaciones
 CREATE TABLE Ordenes_Trabajo_Notas (
     id_nota              INT IDENTITY(1,1) PRIMARY KEY,

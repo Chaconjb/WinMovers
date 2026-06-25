@@ -43,6 +43,17 @@ namespace WinMovers.Controllers
                 _context.Clientes.Add(cliente);
                 await _context.SaveChangesAsync();
 
+                _context.ClienteHistorial.Add(
+                    new ClienteHistorial
+                    {
+                        IdCliente = cliente.IdCliente,
+                        CampoModificado = "CREACION",
+                        ValorNuevo = "Cliente creado",
+                        Usuario = User?.Identity?.Name ?? "Sistema"
+                    });
+
+                await _context.SaveChangesAsync();
+
                 TempData["Success"] = "Cliente creado correctamente.";
 
                 return RedirectToAction(nameof(Index));
@@ -71,17 +82,131 @@ namespace WinMovers.Controllers
             if (id != cliente.IdCliente)
                 return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(cliente);
+
+            var clienteActual = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.IdCliente == id);
+
+            if (clienteActual == null)
+                return NotFound();
+
+            var cambios = new List<ClienteHistorial>();
+
+            if (clienteActual.NombreCliente != cliente.NombreCliente)
             {
-                cliente.FechaActualizacion = DateTime.Now;
-
-                _context.Update(cliente);
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Cliente actualizado correctamente.";
-
-                return RedirectToAction(nameof(Index));
+                cambios.Add(new ClienteHistorial
+                {
+                    IdCliente = id,
+                    CampoModificado = "nombre_cliente",
+                    ValorAnterior = clienteActual.NombreCliente,
+                    ValorNuevo = cliente.NombreCliente,
+                    Usuario = User?.Identity?.Name ?? "Sistema"
+                });
             }
+
+            if (clienteActual.TelefonoCelular != cliente.TelefonoCelular)
+            {
+                cambios.Add(new ClienteHistorial
+                {
+                    IdCliente = id,
+                    CampoModificado = "telefono_celular",
+                    ValorAnterior = clienteActual.TelefonoCelular,
+                    ValorNuevo = cliente.TelefonoCelular,
+                    Usuario = User?.Identity?.Name ?? "Sistema"
+                });
+            }
+
+            if (clienteActual.TelefonoResidencia != cliente.TelefonoResidencia)
+            {
+                cambios.Add(new ClienteHistorial
+                {
+                    IdCliente = id,
+                    CampoModificado = "telefono_residencia",
+                    ValorAnterior = clienteActual.TelefonoResidencia,
+                    ValorNuevo = cliente.TelefonoResidencia,
+                    Usuario = User?.Identity?.Name ?? "Sistema"
+                });
+            }
+
+            if (clienteActual.TelefonoEmpresa != cliente.TelefonoEmpresa)
+            {
+                cambios.Add(new ClienteHistorial
+                {
+                    IdCliente = id,
+                    CampoModificado = "telefono_empresa",
+                    ValorAnterior = clienteActual.TelefonoEmpresa,
+                    ValorNuevo = cliente.TelefonoEmpresa,
+                    Usuario = User?.Identity?.Name ?? "Sistema"
+                });
+            }
+
+            if (clienteActual.Empresa != cliente.Empresa)
+            {
+                cambios.Add(new ClienteHistorial
+                {
+                    IdCliente = id,
+                    CampoModificado = "empresa",
+                    ValorAnterior = clienteActual.Empresa,
+                    ValorNuevo = cliente.Empresa,
+                    Usuario = User?.Identity?.Name ?? "Sistema"
+                });
+            }
+
+            if (clienteActual.Contacto != cliente.Contacto)
+            {
+                cambios.Add(new ClienteHistorial
+                {
+                    IdCliente = id,
+                    CampoModificado = "contacto",
+                    ValorAnterior = clienteActual.Contacto,
+                    ValorNuevo = cliente.Contacto,
+                    Usuario = User?.Identity?.Name ?? "Sistema"
+                });
+            }
+
+            if (clienteActual.Direccion != cliente.Direccion)
+            {
+                cambios.Add(new ClienteHistorial
+                {
+                    IdCliente = id,
+                    CampoModificado = "direccion",
+                    ValorAnterior = clienteActual.Direccion,
+                    ValorNuevo = cliente.Direccion,
+                    Usuario = User?.Identity?.Name ?? "Sistema"
+                });
+            }
+
+            // Actualizar datos
+            clienteActual.NombreCliente = cliente.NombreCliente;
+            clienteActual.TelefonoCelular = cliente.TelefonoCelular;
+            clienteActual.TelefonoResidencia = cliente.TelefonoResidencia;
+            clienteActual.TelefonoEmpresa = cliente.TelefonoEmpresa;
+            clienteActual.Empresa = cliente.Empresa;
+            clienteActual.Contacto = cliente.Contacto;
+            clienteActual.Direccion = cliente.Direccion;
+            clienteActual.FechaActualizacion = DateTime.Now;
+
+            if (cambios.Any())
+            {
+                _context.ClienteHistorial.AddRange(cambios);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Cliente actualizado correctamente.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Historial(int id)
+        {
+            var cliente = await _context.Clientes
+                .Include(c => c.Historial)
+                .FirstOrDefaultAsync(c => c.IdCliente == id);
+
+            if (cliente == null)
+                return NotFound();
 
             return View(cliente);
         }

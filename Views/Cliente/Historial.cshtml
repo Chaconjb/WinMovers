@@ -1,0 +1,67 @@
+﻿@model WinMovers.Models.Cliente
+
+@{
+    ViewData["Title"] = "Historial de Cambios del Cliente";
+}
+
+<div class="form-header">
+    <h2 class="content-title">
+        <i class="fas fa-history"></i>
+        Historial — @Model.NombreCliente
+    </h2>
+
+    <a asp-action="Index" class="btn btn-outline">
+        <i class="fas fa-list"></i> Volver
+    </a>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Campo</th>
+                <th>Valor Anterior</th>
+                <th>Valor Nuevo</th>
+                <th>Usuario</th>
+                <th>Fecha del Cambio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Historial.Any())
+            {
+                <tr>
+                    <td colspan="5" class="no-data">
+                        No hay cambios registrados aún.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var h in Model.Historial.OrderByDescending(x => x.FechaCambio))
+                {
+                    <tr>
+                        <td>
+                            <strong>
+                                @(h.CampoModificado switch
+                                {
+                                    "nombre_cliente" => "Nombre Cliente",
+                                    "telefono_celular" => "Teléfono Celular",
+                                    "telefono_residencia" => "Teléfono Residencia",
+                                    "telefono_empresa" => "Teléfono Empresa",
+                                    "empresa" => "Empresa",
+                                    "contacto" => "Contacto",
+                                    "direccion" => "Dirección",
+                                    _ => h.CampoModificado
+                                })
+                            </strong>
+                        </td>
+                        <td>@(string.IsNullOrEmpty(h.ValorAnterior) ? "—" : h.ValorAnterior)</td>
+                        <td>@(string.IsNullOrEmpty(h.ValorNuevo) ? "—" : h.ValorNuevo)</td>
+                        <td>@(string.IsNullOrEmpty(h.Usuario) ? "Sistema" : h.Usuario)</td>
+                        <td>@h.FechaCambio.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

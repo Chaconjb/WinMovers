@@ -21,6 +21,7 @@ namespace WinMovers.Data
         public DbSet<ExportacionArchivo> ExportacionesArchivos { get; set; }
         public DbSet<OrdenTrabajoArchivo> OrdenesTrabajosArchivos { get; set; }
         public DbSet<OrdenTrabajoHistorial> OrdenesTrabajoHistorial { get; set; }
+        public DbSet<ClienteHistorial> ClienteHistorial { get; set; }
         public DbSet<OrdenTrabajoNota> OrdenesTrabajoNotas { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -468,6 +469,43 @@ namespace WinMovers.Data
                 e.HasOne(x => x.OrdenTrabajo)
                     .WithMany(o => o.Historial)
                     .HasForeignKey(x => x.IdOrden)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            // =========================================================
+            // CLIENTES HISTORIAL
+            // =========================================================
+            modelBuilder.Entity<ClienteHistorial>(e =>
+            {
+                e.ToTable("Clientes_Historial");
+
+                e.HasKey(x => x.IdHistorial);
+
+                e.Property(x => x.IdHistorial)
+                    .HasColumnName("id_historial");
+
+                e.Property(x => x.IdCliente)
+                    .HasColumnName("id_cliente");
+
+                e.Property(x => x.CampoModificado)
+                    .HasColumnName("campo_modificado")
+                    .IsRequired();
+
+                e.Property(x => x.ValorAnterior)
+                    .HasColumnName("valor_anterior");
+
+                e.Property(x => x.ValorNuevo)
+                    .HasColumnName("valor_nuevo");
+
+                e.Property(x => x.Usuario)
+                    .HasColumnName("usuario");
+
+                e.Property(x => x.FechaCambio)
+                    .HasColumnName("fecha_cambio")
+                    .HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Cliente)
+                    .WithMany(c => c.Historial)
+                    .HasForeignKey(x => x.IdCliente)
                     .OnDelete(DeleteBehavior.Cascade);
             });
             // =========================================================

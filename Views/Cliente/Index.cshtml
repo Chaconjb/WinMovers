@@ -24,6 +24,7 @@
     <a asp-action="Create" class="btn btn-primary">
         <i class="fas fa-plus"></i> Nuevo Cliente
     </a>
+
 </div>
 
 <div class="table-container">
@@ -67,6 +68,13 @@
                                class="btn-icon edit"
                                title="Editar">
                                 <i class="fas fa-edit"></i>
+                            </a>
+
+                            <a asp-action="Historial"
+                               asp-route-id="@cliente.IdCliente"
+                               class="btn-icon"
+                               title="Historial">
+                                <i class="fas fa-history"></i>
                             </a>
 
                             <form asp-action="Delete"

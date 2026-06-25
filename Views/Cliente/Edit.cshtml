@@ -10,6 +10,12 @@
         Editar Cliente - @Model.NombreCliente
     </h2>
 
+    <a asp-action="Historial"
+       asp-route-id="@Model.IdCliente"
+       class="btn btn-outline">
+        <i class="fas fa-history"></i> Historial
+    </a>
+
     <a asp-action="Index" class="btn btn-outline">
         <i class="fas fa-list"></i> Volver al Listado
     </a>
