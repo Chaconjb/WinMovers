@@ -302,6 +302,142 @@ ADD id_orden INT;
 ALTER TABLE [dbo].[Importaciones]
 ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
 
+-- =========================================================
+-- TABLAS DE IDENTITY (nombres adaptados a la convención del proyecto)
+-- =========================================================
+CREATE TABLE Usuarios (
+    id_usuario                      INT IDENTITY(1,1) PRIMARY KEY,
+    nombre_completo                 NVARCHAR(200)   NOT NULL,
+    activo                          BIT             NOT NULL DEFAULT 1,
+    fecha_creacion                  DATETIME2       NOT NULL DEFAULT GETDATE(),
+    debe_cambiar_contrasena         BIT             NOT NULL DEFAULT 0,
+    nombre_usuario                  NVARCHAR(256)   NULL,
+    nombre_usuario_normalizado      NVARCHAR(256)   NULL,
+    correo                          NVARCHAR(256)   NULL,
+    correo_normalizado              NVARCHAR(256)   NULL,
+    correo_confirmado               BIT             NOT NULL DEFAULT 0,
+    contrasena_hash                 NVARCHAR(MAX)   NULL,
+    telefono                        NVARCHAR(30)    NULL,
+    telefono_confirmado             BIT             NOT NULL DEFAULT 0,
+    doble_factor_habilitado         BIT             NOT NULL DEFAULT 0,
+    bloqueo_hasta                   DATETIMEOFFSET  NULL,
+    bloqueo_habilitado              BIT             NOT NULL DEFAULT 1,
+    intentos_fallidos               INT             NOT NULL DEFAULT 0,
+    security_stamp                  NVARCHAR(MAX)   NULL,
+    concurrency_stamp                NVARCHAR(MAX)   NULL
+);
+CREATE UNIQUE INDEX IX_Usuarios_NombreUsuarioNormalizado ON Usuarios(nombre_usuario_normalizado) WHERE nombre_usuario_normalizado IS NOT NULL;
+CREATE INDEX IX_Usuarios_CorreoNormalizado ON Usuarios(correo_normalizado);
+GO
+
+CREATE TABLE Roles (
+    id_rol                   INT IDENTITY(1,1) PRIMARY KEY,
+    nombre                   NVARCHAR(256)   NULL,
+    nombre_normalizado       NVARCHAR(256)   NULL,
+    descripcion              NVARCHAR(250)   NULL,
+    ConcurrencyStamp         NVARCHAR(MAX)   NULL
+);
+CREATE UNIQUE INDEX IX_Roles_NombreNormalizado ON Roles(nombre_normalizado) WHERE nombre_normalizado IS NOT NULL;
+GO
+
+CREATE TABLE Usuarios_Roles (
+    UserId  INT NOT NULL,
+    RoleId  INT NOT NULL,
+    PRIMARY KEY (UserId, RoleId),
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (RoleId) REFERENCES Roles(id_rol) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Usuarios_Claims (
+    Id           INT IDENTITY(1,1) PRIMARY KEY,
+    UserId       INT NOT NULL,
+    ClaimType    NVARCHAR(MAX) NULL,
+    ClaimValue   NVARCHAR(MAX) NULL,
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Roles_Claims (
+    Id          INT IDENTITY(1,1) PRIMARY KEY,
+    RoleId      INT NOT NULL,
+    ClaimType   NVARCHAR(MAX) NULL,
+    ClaimValue  NVARCHAR(MAX) NULL,
+    FOREIGN KEY (RoleId) REFERENCES Roles(id_rol) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Usuarios_Logins (
+    LoginProvider        NVARCHAR(450) NOT NULL,
+    ProviderKey           NVARCHAR(450) NOT NULL,
+    ProviderDisplayName   NVARCHAR(MAX) NULL,
+    UserId                INT NOT NULL,
+    PRIMARY KEY (LoginProvider, ProviderKey),
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Usuarios_Tokens (
+    UserId          INT NOT NULL,
+    LoginProvider   NVARCHAR(450) NOT NULL,
+    Name            NVARCHAR(450) NOT NULL,
+    Value           NVARCHAR(MAX) NULL,
+    PRIMARY KEY (UserId, LoginProvider, Name),
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+GO
+
+-- Tabla de auditoría para los accesos al sistema
+CREATE TABLE Accesos_Auditoria (
+    id_auditoria         INT IDENTITY(1,1) PRIMARY KEY,
+    id_usuario           INT             NULL,
+    correo_intentado     NVARCHAR(256)   NOT NULL,
+    exitoso              BIT             NOT NULL,
+    motivo               NVARCHAR(200)   NULL,
+    ip_address           NVARCHAR(45)    NULL,
+    fecha                DATETIME2       NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
+);
+GO
+
+-- Cambios en las otras tablas que usaban usuario fijo
+-- Tabla de Ordenes_Trabajo_Historial
+ALTER TABLE Ordenes_Trabajo_Historial DROP COLUMN usuario;
+GO
+
+ALTER TABLE Ordenes_Trabajo_Historial ADD id_usuario INT NULL;
+ALTER TABLE Ordenes_Trabajo_Historial
+    ADD CONSTRAINT FK_OrdenesTrabajoHistorial_Usuarios
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+GO
+
+-- Tabla de Ordenes_Trabajo_Notas
+ALTER TABLE Ordenes_Trabajo_Notas DROP COLUMN usuario;
+GO
+
+ALTER TABLE Ordenes_Trabajo_Notas ADD id_usuario INT NULL;
+ALTER TABLE Ordenes_Trabajo_Notas
+    ADD CONSTRAINT FK_OrdenesTrabajoNotas_Usuarios
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+GO
+
+-- Tabla de Clientes_Historial
+ALTER TABLE Clientes_Historial DROP COLUMN usuario;
+GO
+
+ALTER TABLE Clientes_Historial ADD id_usuario INT NULL;
+ALTER TABLE Clientes_Historial
+    ADD CONSTRAINT FK_ClientesHistorial_Usuarios
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+GO
+
+-- Inserts iniciales para la tabla de roles de Identity
+INSERT INTO Roles (nombre, nombre_normalizado, descripcion, ConcurrencyStamp)
+VALUES
+    ('Administrador', 'ADMINISTRADOR', 'Acceso total al sistema', NEWID()),
+    ('Empleado', 'EMPLEADO', 'Acceso operativo a órdenes, clientes e importaciones/exportaciones', NEWID());
+GO
+
 INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion) VALUES
     ('Reporte de Visita Previa',            1, 0, 1, 1, 1),
     ('Cotización',                          1, 1, 1, 0, 2),

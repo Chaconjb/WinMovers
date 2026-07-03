@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Models;
 
 namespace WinMovers.Data
 {
-    public class WinMoversContext : DbContext
+    public class WinMoversContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
     {
         public WinMoversContext(DbContextOptions<WinMoversContext> options)
             : base(options)
@@ -23,9 +25,74 @@ namespace WinMovers.Data
         public DbSet<OrdenTrabajoHistorial> OrdenesTrabajoHistorial { get; set; }
         public DbSet<ClienteHistorial> ClienteHistorial { get; set; }
         public DbSet<OrdenTrabajoNota> OrdenesTrabajoNotas { get; set; }
+        public DbSet<AccesoAuditoria> AccesosAuditoria { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // =========================================================
+            // IDENTITY - Renombrado de tablas a la convención usada en el proyecto hasta ahora (sprint 2)
+            // =========================================================
+            modelBuilder.Entity<ApplicationUser>(e =>
+            {
+                e.ToTable("Usuarios");
+                e.Property(x => x.Id).HasColumnName("id_usuario");
+                e.Property(x => x.NombreCompleto).HasColumnName("nombre_completo").IsRequired().HasMaxLength(200);
+                e.Property(x => x.Activo).HasColumnName("activo").HasDefaultValue(true);
+                e.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("GETDATE()");
+                e.Property(x => x.DebeCambiarContrasena).HasColumnName("debe_cambiar_contrasena").HasDefaultValue(false);
+                e.Property(x => x.UserName).HasColumnName("nombre_usuario");
+                e.Property(x => x.NormalizedUserName).HasColumnName("nombre_usuario_normalizado");
+                e.Property(x => x.Email).HasColumnName("correo");
+                e.Property(x => x.NormalizedEmail).HasColumnName("correo_normalizado");
+                e.Property(x => x.EmailConfirmed).HasColumnName("correo_confirmado");
+                e.Property(x => x.PasswordHash).HasColumnName("contrasena_hash");
+                e.Property(x => x.PhoneNumber).HasColumnName("telefono");
+                e.Property(x => x.PhoneNumberConfirmed).HasColumnName("telefono_confirmado");
+                e.Property(x => x.TwoFactorEnabled).HasColumnName("doble_factor_habilitado");
+                e.Property(x => x.LockoutEnd).HasColumnName("bloqueo_hasta");
+                e.Property(x => x.LockoutEnabled).HasColumnName("bloqueo_habilitado");
+                e.Property(x => x.AccessFailedCount).HasColumnName("intentos_fallidos");
+                e.Property(x => x.SecurityStamp).HasColumnName("security_stamp");
+                e.Property(x => x.ConcurrencyStamp).HasColumnName("concurrency_stamp");
+            });
+
+            modelBuilder.Entity<ApplicationRole>(e =>
+            {
+                e.ToTable("Roles");
+                e.Property(x => x.Id).HasColumnName("id_rol");
+                e.Property(x => x.Name).HasColumnName("nombre");
+                e.Property(x => x.NormalizedName).HasColumnName("nombre_normalizado");
+                e.Property(x => x.Descripcion).HasColumnName("descripcion").HasMaxLength(250);
+            });
+
+            modelBuilder.Entity<IdentityUserRole<int>>(e => e.ToTable("Usuarios_Roles"));
+            modelBuilder.Entity<IdentityUserClaim<int>>(e => e.ToTable("Usuarios_Claims"));
+            modelBuilder.Entity<IdentityUserLogin<int>>(e => e.ToTable("Usuarios_Logins"));
+            modelBuilder.Entity<IdentityRoleClaim<int>>(e => e.ToTable("Roles_Claims"));
+            modelBuilder.Entity<IdentityUserToken<int>>(e => e.ToTable("Usuarios_Tokens"));
+
+            // =========================================================
+            // ACCESOS AUDITORIA (HU-AUT-001 Escenario 3)
+            // =========================================================
+            modelBuilder.Entity<AccesoAuditoria>(e =>
+            {
+                e.ToTable("Accesos_Auditoria");
+                e.HasKey(x => x.IdAuditoria);
+                e.Property(x => x.IdAuditoria).HasColumnName("id_auditoria");
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
+                e.Property(x => x.CorreoIntentado).HasColumnName("correo_intentado").IsRequired().HasMaxLength(256);
+                e.Property(x => x.Exitoso).HasColumnName("exitoso");
+                e.Property(x => x.Motivo).HasColumnName("motivo").HasMaxLength(200);
+                e.Property(x => x.IpAddress).HasColumnName("ip_address").HasMaxLength(45);
+                e.Property(x => x.Fecha).HasColumnName("fecha").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
             // =========================================================
             // ORDENES DE TRABAJO
             // =========================================================
@@ -463,8 +530,13 @@ namespace WinMovers.Data
                 e.Property(x => x.CampoModificado).HasColumnName("campo_modificado").IsRequired();
                 e.Property(x => x.ValorAnterior).HasColumnName("valor_anterior");
                 e.Property(x => x.ValorNuevo).HasColumnName("valor_nuevo");
-                e.Property(x => x.Usuario).HasColumnName("usuario");
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
                 e.Property(x => x.FechaCambio).HasColumnName("fecha_cambio").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany(u => u.HistorialOrdenes)
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 e.HasOne(x => x.OrdenTrabajo)
                     .WithMany(o => o.Historial)
@@ -496,12 +568,17 @@ namespace WinMovers.Data
                 e.Property(x => x.ValorNuevo)
                     .HasColumnName("valor_nuevo");
 
-                e.Property(x => x.Usuario)
-                    .HasColumnName("usuario");
+                e.Property(x => x.IdUsuario)
+                    .HasColumnName("id_usuario");
 
                 e.Property(x => x.FechaCambio)
                     .HasColumnName("fecha_cambio")
                     .HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany(u => u.HistorialClientes)
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 e.HasOne(x => x.Cliente)
                     .WithMany(c => c.Historial)
@@ -518,9 +595,14 @@ namespace WinMovers.Data
                 e.Property(x => x.IdNota).HasColumnName("id_nota");
                 e.Property(x => x.IdOrden).HasColumnName("id_orden");
                 e.Property(x => x.Contenido).HasColumnName("contenido").IsRequired();
-                e.Property(x => x.Usuario).HasColumnName("usuario");
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
                 e.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("GETDATE()");
                 e.Property(x => x.FechaActualizacion).HasColumnName("fecha_actualizacion");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany(u => u.Notas)
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 e.HasOne(x => x.OrdenTrabajo)
                     .WithMany(o => o.Notas)

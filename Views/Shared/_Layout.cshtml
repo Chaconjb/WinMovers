@@ -92,10 +92,22 @@
             </h1>
             <div class="topbar-right">
                 <span class="topbar-date" id="currentDate"></span>
-                <div class="topbar-user">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Admin</span>
-                </div>
+				<div class="topbar-user">
+					<i class="fas fa-user-circle"></i>
+					@if (User.Identity != null && User.Identity.IsAuthenticated)
+					{
+					<span>@User.FindFirst("NombreCompleto")?.Value</span>
+					<form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+						<button type="submit" class="sidebar-link" style="background:none;border:none;cursor:pointer;">
+							<i class="fas fa-sign-out-alt"></i>
+						</button>
+					</form>
+					}
+					else
+					{
+					<span>Invitado</span>
+					}
+				</div>
             </div>
         </header>
 

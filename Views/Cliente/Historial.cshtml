@@ -57,7 +57,7 @@
                         </td>
                         <td>@(string.IsNullOrEmpty(h.ValorAnterior) ? "—" : h.ValorAnterior)</td>
                         <td>@(string.IsNullOrEmpty(h.ValorNuevo) ? "—" : h.ValorNuevo)</td>
-                        <td>@(string.IsNullOrEmpty(h.Usuario) ? "Sistema" : h.Usuario)</td>
+                        <td>@(h.Usuario?.NombreCompleto ?? "Sistema")</td>
                         <td>@h.FechaCambio.ToString("dd/MM/yyyy HH:mm")</td>
                     </tr>
                 }

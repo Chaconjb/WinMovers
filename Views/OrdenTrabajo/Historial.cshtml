@@ -34,7 +34,7 @@
                         </td>
                         <td>@(h.ValorAnterior ?? "—")</td>
                         <td>@(h.ValorNuevo ?? "—")</td>
-                        <td>@(h.Usuario ?? "Sistema")</td>
+                        <td>@(h.Usuario?.NombreCompleto ?? "Sistema")</td>
                         <td>@h.FechaCambio.ToString("dd/MM/yyyy HH:mm")</td>
                     </tr>
                 }

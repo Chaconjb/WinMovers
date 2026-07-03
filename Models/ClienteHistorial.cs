@@ -24,13 +24,14 @@ namespace WinMovers.Models
         [Column("valor_nuevo")]
         public string? ValorNuevo { get; set; }
 
-        [StringLength(100)]
-        [Column("usuario")]
-        public string? Usuario { get; set; }
+        [Column("id_usuario")]
+        public int? IdUsuario { get; set; }
 
         [Column("fecha_cambio")]
         public DateTime FechaCambio { get; set; }
 
         public Cliente? Cliente { get; set; }
+        [ForeignKey(nameof(IdUsuario))]
+        public ApplicationUser? Usuario { get; set; }
     }
 }

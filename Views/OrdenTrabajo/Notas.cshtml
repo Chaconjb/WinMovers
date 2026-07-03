@@ -53,7 +53,7 @@
                 <div class="form-card" style="margin-bottom:12px" id="nota-@nota.IdNota">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
                         <div style="font-size:12px;color:var(--text-light)">
-                            <i class="fas fa-user"></i> @(nota.Usuario ?? "Sistema")
+                            <i class="fas fa-user"></i> @(nota.Usuario?.NombreCompleto ?? "Sistema")
                             &nbsp;·&nbsp;
                             <i class="fas fa-clock"></i> @nota.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
                             @if (nota.FechaActualizacion.HasValue)

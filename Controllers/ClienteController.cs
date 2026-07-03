@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
 using WinMovers.Models;
@@ -8,10 +9,19 @@ namespace WinMovers.Controllers
     public class ClienteController : Controller
     {
         private readonly WinMoversContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ClienteController(WinMoversContext context)
+        public ClienteController(WinMoversContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+        }
+
+        // Obtiene el Id (int) del usuario autenticado actual, o null si no hay sesión.
+        private int? ObtenerIdUsuarioActual()
+        {
+            var idTexto = _userManager.GetUserId(User);
+            return idTexto != null ? int.Parse(idTexto) : null;
         }
 
         // GET: /Cliente
@@ -49,7 +59,7 @@ namespace WinMovers.Controllers
                         IdCliente = cliente.IdCliente,
                         CampoModificado = "CREACION",
                         ValorNuevo = "Cliente creado",
-                        Usuario = User?.Identity?.Name ?? "Sistema"
+                        IdUsuario = ObtenerIdUsuarioActual()
                     });
 
                 await _context.SaveChangesAsync();
@@ -92,6 +102,7 @@ namespace WinMovers.Controllers
                 return NotFound();
 
             var cambios = new List<ClienteHistorial>();
+            var idUsuarioActual = ObtenerIdUsuarioActual();
 
             if (clienteActual.NombreCliente != cliente.NombreCliente)
             {
@@ -101,7 +112,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "nombre_cliente",
                     ValorAnterior = clienteActual.NombreCliente,
                     ValorNuevo = cliente.NombreCliente,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -113,7 +124,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "telefono_celular",
                     ValorAnterior = clienteActual.TelefonoCelular,
                     ValorNuevo = cliente.TelefonoCelular,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -125,7 +136,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "telefono_residencia",
                     ValorAnterior = clienteActual.TelefonoResidencia,
                     ValorNuevo = cliente.TelefonoResidencia,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -137,7 +148,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "telefono_empresa",
                     ValorAnterior = clienteActual.TelefonoEmpresa,
                     ValorNuevo = cliente.TelefonoEmpresa,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -149,7 +160,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "empresa",
                     ValorAnterior = clienteActual.Empresa,
                     ValorNuevo = cliente.Empresa,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -161,7 +172,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "contacto",
                     ValorAnterior = clienteActual.Contacto,
                     ValorNuevo = cliente.Contacto,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -173,7 +184,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "direccion",
                     ValorAnterior = clienteActual.Direccion,
                     ValorNuevo = cliente.Direccion,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -203,6 +214,7 @@ namespace WinMovers.Controllers
         {
             var cliente = await _context.Clientes
                 .Include(c => c.Historial)
+                    .ThenInclude(h => h.Usuario)
                 .FirstOrDefaultAsync(c => c.IdCliente == id);
 
             if (cliente == null)

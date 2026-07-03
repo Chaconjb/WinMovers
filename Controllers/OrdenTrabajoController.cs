@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
@@ -9,15 +10,24 @@ namespace WinMovers.Controllers
     {
         private readonly WinMoversContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         private const long MaxBytes = 10 * 1024 * 1024;
         private static readonly string[] TiposPermitidos =
             ["application/pdf", "image/jpeg", "image/png", "image/webp"];
 
-        public OrdenTrabajoController(WinMoversContext context, IWebHostEnvironment env)
+        public OrdenTrabajoController(WinMoversContext context, IWebHostEnvironment env, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _env = env;
+            _userManager = userManager;
+        }
+
+        // Obtiene el Id (int) del usuario autenticado actual, o null si no hay sesión.
+        private int? ObtenerIdUsuarioActual()
+        {
+            var idTexto = _userManager.GetUserId(User);
+            return idTexto != null ? int.Parse(idTexto) : null;
         }
 
         // GET: /OrdenTrabajo
@@ -119,6 +129,8 @@ namespace WinMovers.Controllers
             // Registrar auditoría si cambia fecha_servicio o estado
             var cambios = new List<OrdenTrabajoHistorial>();
 
+            var idUsuarioActual = ObtenerIdUsuarioActual();
+
             if (ordenActual.FechaServicio != orden.FechaServicio)
             {
                 cambios.Add(new OrdenTrabajoHistorial
@@ -127,7 +139,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "fecha_servicio",
                     ValorAnterior = ordenActual.FechaServicio?.ToString("yyyy-MM-dd") ?? "(sin fecha)",
                     ValorNuevo = orden.FechaServicio?.ToString("yyyy-MM-dd") ?? "(sin fecha)",
-                    Usuario = User?.Identity?.Name ?? "Sistema" // texto libre, sin auth por ahora
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -139,7 +151,7 @@ namespace WinMovers.Controllers
                     CampoModificado = "estado",
                     ValorAnterior = ordenActual.Estado,
                     ValorNuevo = orden.Estado,
-                    Usuario = User?.Identity?.Name ?? "Sistema"
+                    IdUsuario = idUsuarioActual
                 });
             }
 
@@ -334,6 +346,7 @@ namespace WinMovers.Controllers
         {
             var orden = await _context.OrdenesTrabajo
                 .Include(o => o.Historial)
+                    .ThenInclude(h => h.Usuario)
                 .FirstOrDefaultAsync(o => o.IdOrden == id);
 
             if (orden == null) return NotFound();
@@ -345,6 +358,7 @@ namespace WinMovers.Controllers
         {
             var orden = await _context.OrdenesTrabajo
                 .Include(o => o.Notas)
+                    .ThenInclude(n => n.Usuario)
                 .FirstOrDefaultAsync(o => o.IdOrden == id);
 
             if (orden == null) return NotFound();
@@ -366,7 +380,7 @@ namespace WinMovers.Controllers
             {
                 IdOrden = idOrden,
                 Contenido = contenido.Trim(),
-                Usuario = User?.Identity?.Name ?? "Sistema",
+                IdUsuario = ObtenerIdUsuarioActual(),
                 FechaCreacion = DateTime.Now
             };
 
@@ -392,7 +406,7 @@ namespace WinMovers.Controllers
             if (nota == null) return NotFound();
 
             nota.Contenido = contenido.Trim();
-            nota.Usuario = User?.Identity?.Name ?? "Sistema";
+            nota.IdUsuario = ObtenerIdUsuarioActual();
             nota.FechaActualizacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
