@@ -25,13 +25,21 @@ namespace WinMovers.Controllers
         }
 
         // GET: /Cliente
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? nombreCliente)
         {
-            var clientes = await _context.Clientes
-                .OrderBy(c => c.NombreCliente)
-                .ToListAsync();
+            var clientes = _context.Clientes.AsQueryable();
 
-            return View(clientes);
+            if (!string.IsNullOrWhiteSpace(nombreCliente))
+            {
+                clientes = clientes.Where(c =>
+                    c.NombreCliente.Contains(nombreCliente));
+            }
+
+            ViewBag.NombreCliente = nombreCliente;
+
+            return View(await clientes
+                .OrderBy(c => c.NombreCliente)
+                .ToListAsync());
         }
 
         // GET: /Cliente/Create
