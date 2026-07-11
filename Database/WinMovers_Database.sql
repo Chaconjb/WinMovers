@@ -302,6 +302,15 @@ ADD id_orden INT;
 ALTER TABLE [dbo].[Importaciones]
 ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
 
+--cambio tabla ordenes de trabajo HU-CLI-004--
+ALTER TABLE Ordenes_Trabajo
+ADD id_cliente INT NULL;
+
+ALTER TABLE Ordenes_Trabajo
+ADD CONSTRAINT FK_OrdenTrabajo_Cliente
+FOREIGN KEY (id_cliente)
+REFERENCES Clientes(id_cliente);
+
 -- =========================================================
 -- TABLAS DE IDENTITY (nombres adaptados a la convención del proyecto)
 -- =========================================================

@@ -73,5 +73,7 @@ namespace WinMovers.Models
         public DateTime? FechaActualizacion { get; set; }
 
         public ICollection<ClienteHistorial> Historial { get; set; } = new List<ClienteHistorial>();
+
+        public ICollection<OrdenTrabajo> OrdenesTrabajo { get; set; } = new List<OrdenTrabajo>();
     }
 }

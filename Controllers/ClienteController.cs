@@ -260,5 +260,24 @@ namespace WinMovers.Controllers
 
             return View(cliente);
         }
+
+        public async Task<IActionResult> HistorialMudanzas(int id)
+        {
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.IdCliente == id);
+
+            if (cliente == null)
+                return NotFound();
+
+            var ordenes = await _context.OrdenesTrabajo
+                .Where(o => o.IdCliente == id)
+                .OrderByDescending(o => o.FechaServicio)
+                .ToListAsync();
+
+            ViewBag.Cliente = cliente;
+
+            return View(ordenes);
+        }
+
     }
 }

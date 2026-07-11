@@ -164,6 +164,15 @@ namespace WinMovers.Data
 
         e.Property(x => x.FechaActualizacion)
             .HasColumnName("fecha_actualizacion");
+        // Nueva llave foránea
+        e.Property(x => x.IdCliente)
+            .HasColumnName("id_cliente");
+
+        // Relación con Cliente
+        e.HasOne(x => x.Cliente)
+            .WithMany(c => c.OrdenesTrabajo)
+            .HasForeignKey(x => x.IdCliente)
+            .OnDelete(DeleteBehavior.Restrict);
     });
             // =========================================================
             // ORDENES TRABAJO ARCHIVOS

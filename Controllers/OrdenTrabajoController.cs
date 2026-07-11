@@ -66,6 +66,14 @@ namespace WinMovers.Controllers
                     return View(orden);
                 }
 
+                var cliente = await _context.Clientes
+                    .FirstOrDefaultAsync(c => c.NombreCliente == orden.NombreCliente);
+
+                if (cliente != null)
+                {
+                    orden.IdCliente = cliente.IdCliente;
+                }
+
                 orden.FechaCreacion = DateTime.Now;
 
                 _context.OrdenesTrabajo.Add(orden);
@@ -350,6 +358,21 @@ namespace WinMovers.Controllers
                 .FirstOrDefaultAsync(o => o.IdOrden == id);
 
             if (orden == null) return NotFound();
+            return View(orden);
+        }
+
+        // GET: /OrdenTrabajo/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            var orden = await _context.OrdenesTrabajo
+                .Include(o => o.Archivos)
+                .Include(o => o.Historial)
+                .Include(o => o.Notas)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (orden == null)
+                return NotFound();
+
             return View(orden);
         }
 

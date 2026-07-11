@@ -31,6 +31,12 @@ namespace WinMovers.Models
         [Column("nombre_cliente")]
         public string NombreCliente { get; set; } = string.Empty;
 
+        [Column("id_cliente")]
+        public int? IdCliente { get; set; }
+
+        [ForeignKey(nameof(IdCliente))]
+        public Cliente? Cliente { get; set; }
+
         [Display(Name = "Tel. Celular")]
         [Column("telefono_celular")]
         [StringLength(30)]
