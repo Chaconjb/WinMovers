@@ -10,6 +10,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<WinMoversContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Servicio de envío de correo (versión de desarrollo: imprime en consola).
+builder.Services.AddTransient<WinMovers.Services.IEmailSender, WinMovers.Services.EmailSenderConsola>();
+
 // =========================================================
 // ASP.NET Identity
 // =========================================================

@@ -1,0 +1,61 @@
+﻿@model List<(WinMovers.Models.ApplicationUser Usuario, string Rol)>
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<div class="form-header">
+    <div>
+        <h2 class="content-title" style="margin-bottom:4px;"><i class="fas fa-users"></i> Usuarios del sistema</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Consulta los usuarios registrados y gestiona sus roles.</p>
+    </div>
+    <a asp-controller="Rol" asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-user-shield"></i> Ver roles
+    </a>
+</div>
+
+<div class="list-section">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Rol actual</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="5" class="no-data">No hay usuarios registrados.</td></tr>
+                }
+                @foreach (var (usuario, rol) in Model)
+                {
+                    <tr>
+                        <td>@usuario.NombreCompleto</td>
+                        <td>@usuario.Email</td>
+                        <td>
+                            <span class="badge @(rol == "Sin rol" ? "badge-warning" : "badge-info")">@rol</span>
+                        </td>
+                        <td>
+                            @if (usuario.Activo)
+                            {
+                                <span class="badge badge-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:#f0f0f0; color:var(--text-muted);">Inactivo</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-controller="Rol" asp-action="AsignarRol" asp-route-id="@usuario.Id" class="btn btn-outline btn-sm">
+                                <i class="fas fa-user-tag"></i> Cambiar rol
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

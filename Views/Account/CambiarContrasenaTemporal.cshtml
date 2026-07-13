@@ -1,0 +1,29 @@
+﻿@model WinMovers.Models.CambiarContrasenaTemporalViewModel
+@{
+    ViewData["Title"] = "Cambio de contraseña obligatorio";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <h2 class="mb-3">Debes cambiar tu contraseña</h2>
+        <p class="text-muted">Iniciaste sesión con una contraseña temporal. Por seguridad, crea una nueva contraseña antes de continuar.</p>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <form asp-action="CambiarContrasenaTemporal" method="post">
+            <div class="mb-3">
+                <label asp-for="NuevaContrasena" class="form-label"></label>
+                <input asp-for="NuevaContrasena" class="form-control" autofocus />
+                <span asp-validation-for="NuevaContrasena" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmarContrasena" class="form-label"></label>
+                <input asp-for="ConfirmarContrasena" class="form-control" />
+                <span asp-validation-for="ConfirmarContrasena" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Guardar nueva contraseña</button>
+        </form>
+    </div>
+</div>

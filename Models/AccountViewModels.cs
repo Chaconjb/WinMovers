@@ -45,4 +45,22 @@ namespace WinMovers.Models
         [Compare(nameof(NuevaContrasena), ErrorMessage = "Las contraseñas no coinciden")]
         public string ConfirmarContrasena { get; set; } = string.Empty;
     }
+
+    // Usado solo para el cambio obligatorio de contraseña temporal (HU-AUT-002
+    // Escenario 3), donde el usuario ya tiene sesión activa y no necesitamos
+    // Correo ni Token (a diferencia de ResetPasswordViewModel).
+    public class CambiarContrasenaTemporalViewModel
+    {
+        [Required(ErrorMessage = "La nueva contraseña es requerida")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Nueva contraseña")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "La contraseña debe tener al menos {2} caracteres")]
+        public string NuevaContrasena { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Confirma la nueva contraseña")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirmar contraseña")]
+        [Compare(nameof(NuevaContrasena), ErrorMessage = "Las contraseñas no coinciden")]
+        public string ConfirmarContrasena { get; set; } = string.Empty;
+    }
 }

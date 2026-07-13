@@ -1,0 +1,35 @@
+﻿@model WinMovers.Models.AsignarRolViewModel
+@{
+    ViewData["Title"] = "Asignar rol";
+}
+
+<div class="form-section">
+    <h2 class="content-title"><i class="fas fa-user-tag"></i> Asignar rol</h2>
+    <p style="color:var(--text-muted); margin-bottom:20px;">Usuario: <strong style="color:var(--dark);">@Model.NombreUsuarioMostrar</strong></p>
+
+    <div class="form-card" style="max-width:500px;">
+        <div asp-validation-summary="ModelOnly" style="color:var(--danger); margin-bottom:10px;"></div>
+
+        <form asp-action="AsignarRol" method="post">
+            <input type="hidden" asp-for="IdUsuario" />
+
+            <div class="form-group">
+                <label asp-for="NombreRol"></label>
+                <select asp-for="NombreRol">
+                    @foreach (var rol in Model.RolesDisponibles)
+                    {
+                        <option value="@rol">@rol</option>
+                    }
+                </select>
+                <span asp-validation-for="NombreRol" style="color:var(--danger); font-size:0.8rem;"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Asignar rol
+                </button>
+                <a asp-controller="Usuario" asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

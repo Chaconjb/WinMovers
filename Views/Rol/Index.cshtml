@@ -1,0 +1,68 @@
+﻿@model List<WinMovers.Models.ApplicationRole>
+@{
+    ViewData["Title"] = "Gestión de roles";
+}
+
+<div class="form-header">
+    <div>
+        <h2 class="content-title" style="margin-bottom:4px;"><i class="fas fa-user-shield"></i> Roles del sistema</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Administra los roles disponibles y sus permisos generales.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Crear rol
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="badge badge-warning" style="display:block; padding:10px 14px; font-size:0.85rem; margin-bottom:15px;">
+        <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="list-section">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="3" class="no-data">No hay roles registrados.</td></tr>
+                }
+                @foreach (var rol in Model)
+                {
+                    bool esBase = rol.Name == "Administrador" || rol.Name == "Empleado" || rol.Name == "SinRol";
+                    <tr>
+                        <td><span class="badge badge-info">@rol.Name</span></td>
+                        <td>@(string.IsNullOrWhiteSpace(rol.Descripcion) ? "—" : rol.Descripcion)</td>
+                        <td>
+                            @if (!esBase)
+                            {
+                                <form asp-action="Delete" asp-route-id="@rol.Id" method="post" style="display:inline;"
+                                      onsubmit="return confirm('¿Seguro que deseas eliminar el rol @rol.Name? Los usuarios con este rol se moverán a SinRol.');">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span style="color:var(--text-muted); font-size:0.8rem;"><i class="fas fa-lock"></i> Rol base protegido</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a asp-controller="Usuario" asp-action="Index" class="btn btn-secondary">
+    <i class="fas fa-users"></i> Ver usuarios y asignar roles
+</a>

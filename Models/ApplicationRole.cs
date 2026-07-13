@@ -16,5 +16,10 @@ namespace WinMovers.Models
     {
         public const string Administrador = "Administrador";
         public const string Empleado = "Empleado";
+
+        // Rol por defecto al que se mueven los usuarios cuando el rol que
+        // tenían asignado es eliminado (HU-AUT-003 Escenario 3). Este rol
+        // nunca se puede eliminar (lo protegemos en el controlador).
+        public const string SinRol = "SinRol";
     }
 }

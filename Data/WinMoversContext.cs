@@ -26,6 +26,7 @@ namespace WinMovers.Data
         public DbSet<ClienteHistorial> ClienteHistorial { get; set; }
         public DbSet<OrdenTrabajoNota> OrdenesTrabajoNotas { get; set; }
         public DbSet<AccesoAuditoria> AccesosAuditoria { get; set; }
+        public DbSet<RolAuditoria> RolesAuditoria { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -91,6 +92,32 @@ namespace WinMovers.Data
                     .WithMany()
                     .HasForeignKey(x => x.IdUsuario)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // =========================================================
+            // ROLES AUDITORIA (HU-AUT-003)
+            // =========================================================
+            modelBuilder.Entity<RolAuditoria>(e =>
+            {
+                e.ToTable("Roles_Auditoria");
+                e.HasKey(x => x.IdAuditoria);
+                e.Property(x => x.IdAuditoria).HasColumnName("id_auditoria");
+                e.Property(x => x.Accion).HasColumnName("accion").IsRequired().HasMaxLength(50);
+                e.Property(x => x.NombreRol).HasColumnName("nombre_rol").IsRequired().HasMaxLength(256);
+                e.Property(x => x.IdUsuarioAfectado).HasColumnName("id_usuario_afectado");
+                e.Property(x => x.IdUsuarioResponsable).HasColumnName("id_usuario_responsable");
+                e.Property(x => x.Detalle).HasColumnName("detalle");
+                e.Property(x => x.Fecha).HasColumnName("fecha").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.UsuarioAfectado)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuarioAfectado)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                e.HasOne(x => x.UsuarioResponsable)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuarioResponsable)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             // =========================================================

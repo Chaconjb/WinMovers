@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using WinMovers.Data;
 using WinMovers.Models;
+using WinMovers.Services;
+using System.Text.Encodings.Web;
 
 namespace WinMovers.Controllers
 {
@@ -10,15 +12,18 @@ namespace WinMovers.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly WinMoversContext _context;
+        private readonly IEmailSender _emailSender;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            WinMoversContext context)
+            WinMoversContext context,
+            IEmailSender emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _context = context;
+            _emailSender = emailSender;
         }
 
         // =====================================================
@@ -60,6 +65,12 @@ namespace WinMovers.Controllers
                     new[] { new System.Security.Claims.Claim("NombreCompleto", usuario.NombreCompleto) });
 
                 await RegistrarAuditoriaAsync(usuario.Id, modelo.Correo, exitoso: true, motivo: "Exitoso");
+
+                // Escenario 3 de HU-AUT-002: contraseña temporal -> forzar cambio.
+                if (usuario.DebeCambiarContrasena)
+                {
+                    return RedirectToAction(nameof(CambiarContrasenaTemporal));
+                }
 
                 if (!string.IsNullOrEmpty(modelo.ReturnUrl) && Url.IsLocalUrl(modelo.ReturnUrl))
                     return Redirect(modelo.ReturnUrl);
@@ -104,6 +115,133 @@ namespace WinMovers.Controllers
                 Fecha = DateTime.Now
             });
             await _context.SaveChangesAsync();
+        }
+
+        // =====================================================
+        // HU-AUT-002: Recuperación de contraseña
+        // =====================================================
+
+        [HttpGet]
+        public IActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel modelo)
+        {
+            if (!ModelState.IsValid)
+                return View(modelo);
+
+            var usuario = await _userManager.FindByEmailAsync(modelo.Correo);
+
+            // Escenario 1 y 2 que muestran el MISMO mensaje genérico a propósito:
+            // así no revelamos si el correo existe o no en el sistema.
+            if (usuario != null && usuario.Activo)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(usuario);
+                var tokenCodificado = HtmlEncoder.Default.Encode(token);
+                var enlace = Url.Action(
+                    nameof(ResetPassword), "Account",
+                    new { correo = usuario.Email, token },
+                    protocol: Request.Scheme);
+
+                var cuerpo = $@"
+                    <p>Hola {usuario.NombreCompleto},</p>
+                    <p>Recibimos una solicitud para restablecer tu contraseña en WinMovers.</p>
+                    <p><a href='{enlace}'>Haz clic aquí para crear una nueva contraseña</a></p>
+                    <p>Si no solicitaste este cambio, ignora este correo.</p>
+                    <p>Este enlace expira en 2 horas.</p>";
+
+                await _emailSender.EnviarAsync(usuario.Email!, "Recuperación de contraseña - WinMovers", cuerpo);
+            }
+
+            TempData["Success"] = "Si el correo ingresado está registrado, te enviamos instrucciones para restablecer tu contraseña.";
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPasswordConfirmation() => View();
+
+        [HttpGet]
+        public IActionResult ResetPassword(string? correo, string? token)
+        {
+            if (string.IsNullOrEmpty(correo) || string.IsNullOrEmpty(token))
+                return RedirectToAction(nameof(Login));
+
+            return View(new ResetPasswordViewModel { Correo = correo, Token = token });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel modelo)
+        {
+            if (!ModelState.IsValid)
+                return View(modelo);
+
+            var usuario = await _userManager.FindByEmailAsync(modelo.Correo);
+            if (usuario == null)
+            {
+                // No revelamos si el correo existe; tratamos igual que token inválido/expirado.
+                return RedirectToAction(nameof(ResetPasswordFallido));
+            }
+
+            var resultado = await _userManager.ResetPasswordAsync(usuario, modelo.Token, modelo.NuevaContrasena);
+
+            if (!resultado.Succeeded)
+            {
+                // Escenario 5: token expirado o inválido.
+                return RedirectToAction(nameof(ResetPasswordFallido));
+            }
+
+            usuario.DebeCambiarContrasena = false;
+            await _userManager.UpdateAsync(usuario);
+
+            // Escenario 4: mensaje de éxito.
+            TempData["Success"] = "La contraseña ha sido cambiada exitosamente.";
+            return RedirectToAction(nameof(ResetPasswordConfirmation));
+        }
+
+        [HttpGet]
+        public IActionResult ResetPasswordConfirmation() => View();
+
+        [HttpGet]
+        public IActionResult ResetPasswordFallido() => View();
+
+        // =====================================================
+        // HU-AUT-002 Escenario 3: cambio obligatorio tras
+        // iniciar sesión con contraseña temporal.
+        // =====================================================
+
+        [HttpGet]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public IActionResult CambiarContrasenaTemporal() => View(new CambiarContrasenaTemporalViewModel());
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> CambiarContrasenaTemporal(CambiarContrasenaTemporalViewModel modelo)
+        {
+            if (!ModelState.IsValid)
+                return View(modelo);
+
+            var usuario = await _userManager.GetUserAsync(User);
+            if (usuario == null)
+                return RedirectToAction(nameof(Login));
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(usuario);
+            var resultado = await _userManager.ResetPasswordAsync(usuario, token, modelo.NuevaContrasena);
+
+            if (!resultado.Succeeded)
+            {
+                foreach (var error in resultado.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return View(modelo);
+            }
+
+            usuario.DebeCambiarContrasena = false;
+            await _userManager.UpdateAsync(usuario);
+
+            TempData["Success"] = "La contraseña ha sido cambiada exitosamente.";
+            return RedirectToAction("Index", "Dashboards");
         }
     }
 }

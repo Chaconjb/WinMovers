@@ -440,11 +440,28 @@ ALTER TABLE Clientes_Historial
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
 GO
 
+-- =========================================================
+-- ROLES AUDITORIA (HU-AUT-003)
+-- =========================================================
+CREATE TABLE Roles_Auditoria (
+    id_auditoria              INT IDENTITY(1,1) PRIMARY KEY,
+    accion                    NVARCHAR(50)    NOT NULL,
+    nombre_rol                NVARCHAR(256)   NOT NULL,
+    id_usuario_afectado       INT             NULL,
+    id_usuario_responsable    INT             NULL,
+    detalle                   NVARCHAR(MAX)   NULL,
+    fecha                     DATETIME2       NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (id_usuario_afectado) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+    FOREIGN KEY (id_usuario_responsable) REFERENCES Usuarios(id_usuario) ON DELETE NO ACTION
+);
+GO
+
 -- Inserts iniciales para la tabla de roles de Identity
 INSERT INTO Roles (nombre, nombre_normalizado, descripcion, ConcurrencyStamp)
 VALUES
     ('Administrador', 'ADMINISTRADOR', 'Acceso total al sistema', NEWID()),
-    ('Empleado', 'EMPLEADO', 'Acceso operativo a órdenes, clientes e importaciones/exportaciones', NEWID());
+    ('Empleado', 'EMPLEADO', 'Acceso operativo a órdenes, clientes e importaciones/exportaciones', NEWID()),
+    ('SinRol', 'SINROL', 'Rol temporal para usuarios sin un rol asignado (por eliminación de su rol anterior)', NEWID());
 GO
 
 INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion) VALUES
