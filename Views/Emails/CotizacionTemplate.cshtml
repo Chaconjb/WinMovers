@@ -1,0 +1,359 @@
+@model WinMovers.Models.CotizacionEmailViewModel
+@{
+    // Se renderiza fuera del ciclo normal de una petición (ViewRenderService),
+    // así que no puede heredar el layout de la aplicación.
+    Layout = null;
+
+    var c = Model.Cotizacion;
+    var emisor = Model.Emisor;
+
+    // Los correos no soportan hojas de estilo externas ni <style> de forma
+    // confiable: todo el formato va inline.
+    const string parrafo = "margin:0 0 14px 0;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.6;color:#1f2933;";
+    const string titulo = "margin:26px 0 10px 0;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:bold;color:#0b3d6b;";
+    const string vinieta = "margin:0 0 8px 0;font-family:Georgia,'Times New Roman',serif;font-size:13.5px;line-height:1.55;color:#1f2933;";
+    const string etiqueta = "font-family:Georgia,'Times New Roman',serif;font-size:13px;color:#5a6673;padding:4px 12px 4px 0;white-space:nowrap;";
+    const string valor = "font-family:Georgia,'Times New Roman',serif;font-size:13px;color:#1f2933;font-weight:bold;padding:4px 0;";
+
+    string Moneda(decimal m) => $"{c.Moneda}${m:N2}";
+}
+<div style="margin:0;padding:24px 12px;background-color:#eef1f5;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:720px;margin:0 auto;background-color:#ffffff;border-radius:6px;border:1px solid #d9e0e7;">
+
+        @* ================= ENCABEZADO ================= *@
+        <tr>
+            <td style="background-color:#0b3d6b;padding:22px 32px;border-radius:6px 6px 0 0;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                        <td>
+                            <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">
+                                @emisor.Empresa
+                            </div>
+                            <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#a9c8e4;margin-top:3px;">
+                                Local and International Relocations
+                            </div>
+                        </td>
+                        <td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#a9c8e4;line-height:1.6;">
+                            @emisor.Telefono<br />
+                            @emisor.Correo
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding:30px 32px;">
+
+                @* ================= FECHA Y REFERENCIA ================= *@
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:22px;">
+                    <tr>
+                        <td style="@parrafo margin:0;">
+                            <strong>Fecha:</strong> @c.Fecha.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-CR"))
+                        </td>
+                        <td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#0b3d6b;font-weight:bold;">
+                            Cotización @c.NumeroCotizacion
+                        </td>
+                    </tr>
+                </table>
+
+                @* ================= DESTINATARIO ================= *@
+                <p style="@parrafo margin-bottom:2px;">Señor (a)</p>
+                <p style="@parrafo margin-bottom:2px;"><strong>@c.NombreCliente</strong></p>
+                @if (!string.IsNullOrWhiteSpace(c.Compania))
+                {
+                    <p style="@parrafo margin-bottom:2px;">@c.Compania</p>
+                }
+
+                <p style="@parrafo margin-top:18px;">Estimado (a) @c.NombreCliente</p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.MensajeAdicional))
+                {
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 18px 0;">
+                        <tr>
+                            <td style="border-left:3px solid #0b3d6b;background-color:#f4f7fa;padding:12px 16px;">
+                                <p style="@parrafo margin:0;">@Model.MensajeAdicional</p>
+                            </td>
+                        </tr>
+                    </table>
+                }
+
+                <p style="@parrafo">
+                    De acuerdo a su solicitud con mucho gusto le presentamos nuestra cotización para el
+                    traslado del menaje de casa, y efectos personales del Sr. @c.NombreCliente
+                    ofreciéndoles el servicio de <strong>@c.TipoServicio</strong>.
+                </p>
+
+                @* ================= ORIGEN / DESTINO ================= *@
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:18px 0;border-collapse:collapse;">
+                    <tr>
+                        <td width="50%" style="border:1px solid #d9e0e7;padding:12px 16px;background-color:#f9fbfc;">
+                            <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#5a6673;letter-spacing:1px;">ORIGEN</div>
+                            <div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;color:#1f2933;font-weight:bold;margin-top:4px;">
+                                @(string.IsNullOrWhiteSpace(c.Origen) ? "—" : c.Origen)
+                            </div>
+                        </td>
+                        <td width="50%" style="border:1px solid #d9e0e7;padding:12px 16px;background-color:#f9fbfc;">
+                            <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#5a6673;letter-spacing:1px;">DESTINO</div>
+                            <div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;color:#1f2933;font-weight:bold;margin-top:4px;">
+                                @(string.IsNullOrWhiteSpace(c.Destino) ? "—" : c.Destino)
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <p style="@titulo">Detalle de los servicios de embalaje que le brindaremos</p>
+
+                @* ================= SERVICIO DE EMPAQUE ================= *@
+                <p style="@parrafo margin-bottom:8px;"><strong>Servicio de Empaque</strong></p>
+                <ul style="margin:0 0 16px 0;padding-left:20px;">
+                    <li style="@vinieta">
+                        El embalaje se realizará en la residencia con empacadores profesionales, quienes
+                        utilizan materiales nuevos tales como plástico con burbujas, papel blanco,
+                        estereofón, cartón corrugado, además de cajas especiales para el embalaje
+                        (empaque) de cristalería, loza, adornos, libros, ropa, etc.
+                    </li>
+                    <li style="@vinieta">
+                        Se confeccionarán cajas especiales de madera para brindar mayor seguridad a los
+                        artículos frágiles tales como cuadros, mármol, vidrios y espejos.
+                    </li>
+                    <li style="@vinieta">Habrá supervisión del servicio que se está brindando.</li>
+                    <li style="@vinieta">Preparación de lista de empaque.</li>
+                    <li style="@vinieta">
+                        Una vez finalizado el embalaje se acondicionarán los bultos dentro del
+                        contenedor, que estará ubicado frente o contiguo a su residencia.
+                    </li>
+                </ul>
+
+                @* ================= TRÁMITE DE ADUANA ================= *@
+                <p style="@parrafo margin-bottom:8px;"><strong>Trámite de aduana para la Exportación</strong></p>
+                <ul style="margin:0 0 16px 0;padding-left:20px;">
+                    <li style="@vinieta">
+                        Se realizarán los trámites para cumplir con las formalidades aduaneras de
+                        exportación para el menaje de casa en la aduana de salida. Para realizar este
+                        trámite se le estará solicitando la documentación necesaria.
+                    </li>
+                </ul>
+
+                @* ================= FLETE ================= *@
+                <p style="@parrafo margin-bottom:8px;">
+                    <strong>
+                        Flete marítimo internacional exclusivo
+                        @if (!string.IsNullOrWhiteSpace(c.TipoContenedor))
+                        {
+                            @:en contenedor de @c.TipoContenedor
+                        }
+                    </strong>
+                </p>
+                <p style="@parrafo">
+                    Coordinaremos el flete marítimo internacional exclusivo desde
+                    <strong>@(string.IsNullOrWhiteSpace(c.Origen) ? "—" : c.Origen)</strong> hasta puerto
+                    <strong>@(string.IsNullOrWhiteSpace(c.Destino) ? "—" : c.Destino)</strong>
+                    @if (c.DiasFrecuenciaSalidas > 0)
+                    {
+                        @:con salidas cada @c.DiasFrecuenciaSalidas días
+                    }
+                    @if (c.DiasTransito > 0)
+                    {
+                        @:y un tiempo de tránsito de aprox. @c.DiasTransito días
+                    }.
+                    @if (!string.IsNullOrWhiteSpace(c.CompaniaMaritima))
+                    {
+                        @:Compañía marítima: @c.CompaniaMaritima.
+                    }
+                </p>
+
+                @* ================= SERVICIOS DE DESTINO ================= *@
+                <p style="@titulo">Servicios de Destino</p>
+                <p style="@parrafo">
+                    A la llegada del embarque nuestro corresponsal
+                    @if (!string.IsNullOrWhiteSpace(c.Corresponsal))
+                    {
+                        <text>(<strong>@c.Corresponsal</strong>)</text>
+                    }
+                    realizará los siguientes servicios:
+                </p>
+                <ul style="margin:0 0 16px 0;padding-left:20px;">
+                    <li style="@vinieta">Trámites de aduana para la nacionalización del embarque.</li>
+                    <li style="@vinieta">Traslado del embarque a la nueva residencia.</li>
+                    <li style="@vinieta">
+                        Descarga, desempaque, apertura de cajas de madera, armado de camas y acomodo
+                        de todos los artículos.
+                    </li>
+                    <li style="@vinieta">Retiro de los materiales de empaque usados.</li>
+                </ul>
+
+                @* ================= TARIFA ================= *@
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;border:2px solid #0b3d6b;border-radius:4px;">
+                    <tr>
+                        <td style="padding:18px 20px;">
+                            <p style="@parrafo margin-bottom:12px;">
+                                La tarifa por los servicios antes mencionados de <strong>@c.TipoServicio</strong>
+                                incluyendo el THC es de
+                                <strong style="color:#0b3d6b;">@Moneda(c.TarifaTotal)</strong>
+                                (@Model.TarifaTotalEnLetras).
+                                @if (c.VolumenM3 > 0)
+                                {
+                                    <text>
+                                        Hemos estimado nuestra tarifa en un embarque de
+                                        <strong>@c.VolumenM3.Value.ToString("N0") metros cúbicos</strong>
+                                        @if (!string.IsNullOrWhiteSpace(c.TipoContenedor))
+                                        {
+                                            @:despachados en un contenedor de @c.TipoContenedor
+                                        }.
+                                    </text>
+                                }
+                            </p>
+
+                            @* Desglose de los rubros *@
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:1px solid #d9e0e7;padding-top:10px;">
+                                @if (c.CostoOrigen > 0)
+                                {
+                                    <tr>
+                                        <td style="@etiqueta">Servicios en origen (empaque)</td>
+                                        <td align="right" style="@valor">@Moneda(c.CostoOrigen)</td>
+                                    </tr>
+                                }
+                                @if (c.CostoTramitesAduana > 0)
+                                {
+                                    <tr>
+                                        <td style="@etiqueta">Trámites de aduana</td>
+                                        <td align="right" style="@valor">@Moneda(c.CostoTramitesAduana)</td>
+                                    </tr>
+                                }
+                                @if (c.CostoFlete > 0)
+                                {
+                                    <tr>
+                                        <td style="@etiqueta">Flete marítimo internacional</td>
+                                        <td align="right" style="@valor">@Moneda(c.CostoFlete)</td>
+                                    </tr>
+                                }
+                                @if (c.CostoDestino > 0)
+                                {
+                                    <tr>
+                                        <td style="@etiqueta">Servicios en destino</td>
+                                        <td align="right" style="@valor">@Moneda(c.CostoDestino)</td>
+                                    </tr>
+                                }
+                                @if (c.IncluyeSeguro && c.MontoSeguro > 0)
+                                {
+                                    <tr>
+                                        <td style="@etiqueta">Seguro (@c.PorcentajeSeguro.ToString("N1")% del valor declarado)</td>
+                                        <td align="right" style="@valor">@Moneda(c.MontoSeguro)</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td style="@etiqueta border-top:2px solid #0b3d6b;padding-top:8px;color:#0b3d6b;font-weight:bold;font-size:14px;">
+                                        TARIFA TOTAL
+                                    </td>
+                                    <td align="right" style="@valor border-top:2px solid #0b3d6b;padding-top:8px;color:#0b3d6b;font-size:16px;">
+                                        @Moneda(c.TarifaTotal)
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                @* ================= CRONOGRAMA ================= *@
+                @if (c.DiasEmpaque > 0 || c.DiasTransito > 0 || c.DiasDesalmacenaje > 0)
+                {
+                    <p style="@titulo">Cronograma de Servicios</p>
+                    <ul style="margin:0 0 16px 0;padding-left:20px;">
+                        @if (c.DiasEmpaque > 0)
+                        {
+                            <li style="@vinieta">El empaque tendrá una duración de <strong>@c.DiasEmpaque días</strong>.</li>
+                        }
+                        @if (c.DiasTransito > 0)
+                        {
+                            <li style="@vinieta">El tiempo de tránsito será de <strong>@c.DiasTransito días</strong>.</li>
+                        }
+                        @if (c.DiasDesalmacenaje > 0)
+                        {
+                            <li style="@vinieta">El tiempo de desalmacenaje es de <strong>@c.DiasDesalmacenaje días</strong>.</li>
+                        }
+                    </ul>
+                }
+
+                @* ================= SEGURO ================= *@
+                @if (c.IncluyeSeguro && c.ValorDeclarado > 0)
+                {
+                    <p style="@parrafo">
+                        Ofrecemos seguro de @c.TipoServicio a razón del
+                        <strong>@c.PorcentajeSeguro.ToString("N1")%</strong> del valor declarado
+                        (@Moneda(c.ValorDeclarado.Value)), se requiere un listado con los valores
+                        asegurados. Esta póliza le cubriría hasta 2 meses si el embarque por algún
+                        motivo se tuviera que quedar en bodega de nuestros corresponsales.
+                    </p>
+                }
+                else
+                {
+                    <p style="@parrafo">
+                        Ofrecemos seguro de @c.TipoServicio a razón del <strong>3.5%</strong> del valor
+                        declarado, se requiere un listado con los valores asegurados. Esta póliza le
+                        cubriría hasta 2 meses si el embarque por algún motivo se tuviera que quedar en
+                        bodega de nuestros corresponsales.
+                    </p>
+                }
+
+                @* ================= CONDICIONES ================= *@
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:18px 0;background-color:#f4f7fa;border-radius:4px;">
+                    <tr>
+                        <td style="padding:14px 18px;">
+                            <p style="@parrafo margin:0 0 6px 0;">
+                                <strong>Vigencia de la oferta:</strong> @c.VigenciaDias días
+                                (hasta el @c.FechaVencimiento.ToString("dd/MM/yyyy")).
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(c.FormaPago))
+                            {
+                                <p style="@parrafo margin:0;"><strong>Forma de pago:</strong> @c.FormaPago.</p>
+                            }
+                        </td>
+                    </tr>
+                </table>
+
+                @if (!string.IsNullOrWhiteSpace(c.Exclusiones))
+                {
+                    <p style="@parrafo">
+                        <strong>Nuestra tarifa no incluye:</strong> @c.Exclusiones
+                    </p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(c.Observaciones))
+                {
+                    <p style="@parrafo"><strong>Observaciones:</strong> @c.Observaciones</p>
+                }
+
+                <p style="@parrafo margin-top:20px;">
+                    Agradecemos la oportunidad de brindarle nuestros servicios, si requieren de alguna
+                    información adicional quedamos a las órdenes.
+                </p>
+
+                @* ================= FIRMA ================= *@
+                <p style="@parrafo margin-bottom:30px;">Atentamente,</p>
+
+                <p style="@parrafo margin:0;"><strong>@emisor.Firmante</strong></p>
+                <p style="@parrafo margin:0;color:#5a6673;">@emisor.Puesto</p>
+                <p style="@parrafo margin:0;color:#5a6673;">@emisor.Empresa</p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:48px;">
+                    <tr>
+                        <td style="border-top:1px solid #1f2933;padding-top:6px;width:280px;font-family:Georgia,'Times New Roman',serif;font-size:12px;color:#5a6673;">
+                            Firma de Aceptación
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        @* ================= PIE ================= *@
+        <tr>
+            <td style="background-color:#f4f7fa;padding:14px 32px;border-top:1px solid #d9e0e7;border-radius:0 0 6px 6px;">
+                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#5a6673;text-align:center;">
+                    @emisor.Empresa · @emisor.Telefono · @emisor.Correo<br />
+                    Cotización @c.NumeroCotizacion · Documento generado el @DateTime.Now.ToString("dd/MM/yyyy")
+                </p>
+            </td>
+        </tr>
+    </table>
+</div>

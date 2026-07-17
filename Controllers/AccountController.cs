@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WinMovers.Data;
 using WinMovers.Models;
@@ -30,12 +31,14 @@ namespace WinMovers.Controllers
         // HU-AUT-001: Inicio de sesión
         // =====================================================
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
             return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel modelo)
         {
@@ -101,6 +104,7 @@ namespace WinMovers.Controllers
             return RedirectToAction(nameof(Login));
         }
 
+        [AllowAnonymous]
         public IActionResult AccessDenied() => View();
 
         private async Task RegistrarAuditoriaAsync(int? idUsuario, string correoIntentado, bool exitoso, string motivo)
@@ -122,9 +126,11 @@ namespace WinMovers.Controllers
         // =====================================================
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel modelo)
         {

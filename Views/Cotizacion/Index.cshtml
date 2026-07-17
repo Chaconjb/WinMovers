@@ -1,0 +1,179 @@
+@model WinMovers.Models.CotizacionBusquedaViewModel
+
+@{
+    ViewData["Title"] = "Cotizaciones";
+
+    // Mapea cada estado a la clase de badge que ya existe en winmovers.css.
+    string ClaseBadge(string estado) => estado switch
+    {
+        EstadosCotizacion.Convertida => "badge-success",
+        EstadosCotizacion.Aceptada => "badge-success",
+        EstadosCotizacion.Enviada => "badge-info",
+        EstadosCotizacion.Rechazada => "badge-danger",
+        _ => "badge-warning"
+    };
+}
+
+<div class="form-header">
+    <h2 class="content-title">
+        <i class="fas fa-file-invoice-dollar"></i> Cotizaciones
+    </h2>
+
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nueva Cotización
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert-error">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+    </div>
+}
+
+<form asp-action="Index" method="get" class="form-card filtros-cotizacion">
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="Termino"></label>
+            <input asp-for="Termino" placeholder="Número, cliente o compañía..." />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Estado"></label>
+            <select asp-for="Estado">
+                <option value="">Todos los estados</option>
+                <option value="@EstadosCotizacion.Borrador">Borrador</option>
+                <option value="@EstadosCotizacion.Enviada">Enviada</option>
+                <option value="@EstadosCotizacion.Aceptada">Aceptada</option>
+                <option value="@EstadosCotizacion.Rechazada">Rechazada</option>
+                <option value="@EstadosCotizacion.Convertida">Convertida</option>
+            </select>
+        </div>
+
+        <div class="form-group filtros-acciones">
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            <a asp-action="Index" class="btn btn-outline">
+                <i class="fas fa-times"></i> Limpiar
+            </a>
+        </div>
+    </div>
+</form>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Cotización #</th>
+                <th>Cliente</th>
+                <th>Ruta</th>
+                <th>Volumen</th>
+                <th class="col-monto">Tarifa Total</th>
+                <th>Vigencia</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (!Model.Resultados.Any())
+            {
+                <tr>
+                    <td colspan="8" class="no-data">
+                        No hay cotizaciones que coincidan.
+                        <a asp-action="Create">Crear la primera</a>.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                foreach (var c in Model.Resultados)
+                {
+                    <tr>
+                        <td><strong>@c.NumeroCotizacion</strong></td>
+
+                        <td>
+                            @c.NombreCliente
+                            @if (!string.IsNullOrWhiteSpace(c.Compania))
+                            {
+                                <span class="celda-secundaria">@c.Compania</span>
+                            }
+                        </td>
+
+                        <td>
+                            <span class="ruta">
+                                @(string.IsNullOrWhiteSpace(c.Origen) ? "—" : c.Origen)
+                                <i class="fas fa-arrow-right"></i>
+                                @(string.IsNullOrWhiteSpace(c.Destino) ? "—" : c.Destino)
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (c.VolumenM3 > 0)
+                            {
+                                @($"{c.VolumenM3:N1} m³")
+                                @if (!string.IsNullOrWhiteSpace(c.TipoContenedor))
+                                {
+                                    <span class="celda-secundaria">@c.TipoContenedor</span>
+                                }
+                            }
+                            else
+                            {
+                                <text>—</text>
+                            }
+                        </td>
+
+                        <td class="col-monto">
+                            <strong>@c.Moneda $@c.TarifaTotal.ToString("N2")</strong>
+                        </td>
+
+                        <td>
+                            @if (c.EstaVencida)
+                            {
+                                <span class="badge badge-danger" title="Venció el @c.FechaVencimiento.ToString("dd/MM/yyyy")">
+                                    Vencida
+                                </span>
+                            }
+                            else
+                            {
+                                @c.FechaVencimiento.ToString("dd/MM/yyyy")
+                            }
+                        </td>
+
+                        <td>
+                            <span class="badge @ClaseBadge(c.Estado)">@c.Estado</span>
+                        </td>
+
+                        <td class="celda-acciones">
+                            <a asp-action="Details" asp-route-id="@c.IdCotizacion"
+                               class="btn-icon" title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+
+                            @if (c.SePuedeEditar)
+                            {
+                                <a asp-action="Edit" asp-route-id="@c.IdCotizacion"
+                                   class="btn-icon edit" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            }
+
+                            @if (c.Estado != EstadosCotizacion.Convertida)
+                            {
+                                <form asp-action="Delete" asp-route-id="@c.IdCotizacion" method="post"
+                                      style="display:inline"
+                                      onsubmit="return confirm('¿Eliminar la cotización @c.NumeroCotizacion?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-icon delete" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

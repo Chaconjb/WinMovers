@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using WinMovers.Data;
 using WinMovers.Models;
 
@@ -10,15 +11,20 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<WinMoversContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Servicio de envío de correo (versión de desarrollo: imprime en consola).
+// Servicio de envï¿½o de correo (versiï¿½n de desarrollo: imprime en consola).
 builder.Services.AddTransient<WinMovers.Services.IEmailSender, WinMovers.Services.EmailSenderConsola>();
+
+// Servicios del mï¿½dulo de Cotizaciones.
+builder.Services.AddScoped<WinMovers.Services.IQuoteService, WinMovers.Services.QuoteService>();
+builder.Services.AddScoped<WinMovers.Services.ICotizacionEmailService, WinMovers.Services.CotizacionEmailService>();
+builder.Services.AddScoped<WinMovers.Services.IViewRenderService, WinMovers.Services.ViewRenderService>();
 
 // =========================================================
 // ASP.NET Identity
 // =========================================================
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
-    // --- Política de contraseñas ---
+    // --- Polï¿½tica de contraseï¿½as ---
     options.Password.RequiredLength = 8;
     options.Password.RequireDigit = true;
     options.Password.RequireUppercase = true;
@@ -30,13 +36,26 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
 
-    // --- Correo único obligatorio ---
+    // --- Correo ï¿½nico obligatorio ---
     options.User.RequireUniqueEmail = true;
 })
     .AddEntityFrameworkStores<WinMoversContext>()
     .AddDefaultTokenProviders();
 
-// Cookie de autenticación: rutas de login/acceso denegado y expiración de sesión.
+// =========================================================
+// POLï¿½TICA DE ACCESO GLOBAL
+// Toda la aplicaciï¿½n exige sesiï¿½n iniciada, incluidos los controladores
+// que se agreguen mï¿½s adelante. Las ï¿½nicas excepciones son las pantallas
+// de login y recuperaciï¿½n de contraseï¿½a, marcadas con [AllowAnonymous].
+// =========================================================
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
+// Cookie de autenticaciï¿½n: rutas de login/acceso denegado y expiraciï¿½n de sesiï¿½n.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -72,7 +91,23 @@ app.MapControllerRoute(
 // =========================================================
 using (var scope = app.Services.CreateScope())
 {
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // Los roles base deben existir antes de asignarlos: AddToRoleAsync lanza
+    // excepciï¿½n si el rol no estï¿½, y eso tumbarï¿½a el arranque.
+    foreach (var (nombre, descripcion) in new[]
+             {
+                 (Roles.Administrador, "Acceso total al sistema."),
+                 (Roles.Empleado, "Asesor: registra clientes, cotizaciones y ï¿½rdenes."),
+                 (Roles.SinRol, "Usuario sin permisos asignados.")
+             })
+    {
+        if (!await roleManager.RoleExistsAsync(nombre))
+        {
+            await roleManager.CreateAsync(new ApplicationRole(nombre) { Descripcion = descripcion });
+        }
+    }
 
     var admin = await userManager.FindByEmailAsync("admin@winmovers.com");
     if (admin == null)

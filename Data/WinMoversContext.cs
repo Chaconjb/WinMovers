@@ -27,12 +27,13 @@ namespace WinMovers.Data
         public DbSet<OrdenTrabajoNota> OrdenesTrabajoNotas { get; set; }
         public DbSet<AccesoAuditoria> AccesosAuditoria { get; set; }
         public DbSet<RolAuditoria> RolesAuditoria { get; set; }
+        public DbSet<Cotizacion> Cotizaciones { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // =========================================================
-            // IDENTITY - Renombrado de tablas a la convención usada en el proyecto hasta ahora (sprint 2)
+            // IDENTITY - Renombrado de tablas a la convenciï¿½n usada en el proyecto hasta ahora (sprint 2)
             // =========================================================
             modelBuilder.Entity<ApplicationUser>(e =>
             {
@@ -191,11 +192,11 @@ namespace WinMovers.Data
 
         e.Property(x => x.FechaActualizacion)
             .HasColumnName("fecha_actualizacion");
-        // Nueva llave foránea
+        // Nueva llave forï¿½nea
         e.Property(x => x.IdCliente)
             .HasColumnName("id_cliente");
 
-        // Relación con Cliente
+        // Relaciï¿½n con Cliente
         e.HasOne(x => x.Cliente)
             .WithMany(c => c.OrdenesTrabajo)
             .HasForeignKey(x => x.IdCliente)
@@ -413,7 +414,7 @@ namespace WinMovers.Data
 
                 e.Property(x => x.Observaciones)
                     .HasColumnName("observaciones");
-                //Relación con TipoDocumento
+                //Relaciï¿½n con TipoDocumento
                 e.HasOne(x => x.TipoDocumento)
                     .WithMany()
                     .HasForeignKey(x => x.IdTipoDocumento)
@@ -507,7 +508,7 @@ namespace WinMovers.Data
 
                 e.Property(x => x.Observaciones)
                     .HasColumnName("observaciones");
-                //Relación con TipoDocumento
+                //Relaciï¿½n con TipoDocumento
                 e.HasOne(x => x.TipoDocumento)
                     .WithMany()
                     .HasForeignKey(x => x.IdTipoDocumento)
@@ -644,6 +645,102 @@ namespace WinMovers.Data
                     .WithMany(o => o.Notas)
                     .HasForeignKey(x => x.IdOrden)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // =========================================================
+            // COTIZACIONES (HU-COT-001 a HU-COT-004)
+            // =========================================================
+            modelBuilder.Entity<Cotizacion>(e =>
+            {
+                e.ToTable("Cotizaciones");
+                e.HasKey(x => x.IdCotizacion);
+
+                e.Property(x => x.IdCotizacion).HasColumnName("id_cotizacion");
+
+                e.Property(x => x.NumeroCotizacion)
+                    .HasColumnName("numero_cotizacion")
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                // El correlativo no se puede repetir: es la referencia que el
+                // cliente ve en el correo.
+                e.HasIndex(x => x.NumeroCotizacion).IsUnique();
+
+                e.Property(x => x.Fecha).HasColumnName("fecha");
+
+                // --- Cliente ---
+                e.Property(x => x.IdCliente).HasColumnName("id_cliente");
+                e.Property(x => x.NombreCliente).HasColumnName("nombre_cliente").IsRequired().HasMaxLength(200);
+                e.Property(x => x.Compania).HasColumnName("compania").HasMaxLength(200);
+                e.Property(x => x.Contacto).HasColumnName("contacto").HasMaxLength(200);
+                e.Property(x => x.CorreoCliente).HasColumnName("correo_cliente").HasMaxLength(200);
+                e.Property(x => x.TelefonoCelular).HasColumnName("telefono_celular").HasMaxLength(30);
+
+                // --- Servicio ---
+                e.Property(x => x.TipoServicio).HasColumnName("tipo_servicio").HasMaxLength(50);
+                e.Property(x => x.Origen).HasColumnName("origen").HasMaxLength(200);
+                e.Property(x => x.Destino).HasColumnName("destino").HasMaxLength(200);
+                e.Property(x => x.VolumenM3).HasColumnName("volumen_m3").HasPrecision(10, 2);
+                e.Property(x => x.TipoContenedor).HasColumnName("tipo_contenedor").HasMaxLength(30);
+                e.Property(x => x.CompaniaMaritima).HasColumnName("compania_maritima").HasMaxLength(100);
+                e.Property(x => x.Corresponsal).HasColumnName("corresponsal").HasMaxLength(100);
+
+                // --- Cronograma ---
+                e.Property(x => x.DiasEmpaque).HasColumnName("dias_empaque");
+                e.Property(x => x.DiasTransito).HasColumnName("dias_transito");
+                e.Property(x => x.DiasDesalmacenaje).HasColumnName("dias_desalmacenaje");
+                e.Property(x => x.DiasFrecuenciaSalidas).HasColumnName("dias_frecuencia_salidas");
+
+                // --- Rubros de costo (HU-COT-001) ---
+                e.Property(x => x.CostoOrigen).HasColumnName("costo_origen").HasPrecision(18, 2);
+                e.Property(x => x.CostoTramitesAduana).HasColumnName("costo_tramites_aduana").HasPrecision(18, 2);
+                e.Property(x => x.CostoFlete).HasColumnName("costo_flete").HasPrecision(18, 2);
+                e.Property(x => x.CostoDestino).HasColumnName("costo_destino").HasPrecision(18, 2);
+
+                // --- Seguro ---
+                e.Property(x => x.IncluyeSeguro).HasColumnName("incluye_seguro").HasDefaultValue(false);
+                e.Property(x => x.ValorDeclarado).HasColumnName("valor_declarado").HasPrecision(18, 2);
+                e.Property(x => x.PorcentajeSeguro).HasColumnName("porcentaje_seguro").HasPrecision(5, 2);
+
+                // --- Totales ---
+                e.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(18, 2);
+                e.Property(x => x.MontoSeguro).HasColumnName("monto_seguro").HasPrecision(18, 2);
+                e.Property(x => x.TarifaTotal).HasColumnName("tarifa_total").HasPrecision(18, 2);
+                e.Property(x => x.Moneda).HasColumnName("moneda").HasMaxLength(3);
+
+                // --- Condiciones comerciales ---
+                e.Property(x => x.VigenciaDias).HasColumnName("vigencia_dias").HasDefaultValue(60);
+                e.Property(x => x.FormaPago).HasColumnName("forma_pago").HasMaxLength(200);
+                e.Property(x => x.Exclusiones).HasColumnName("exclusiones");
+                e.Property(x => x.Observaciones).HasColumnName("observaciones");
+
+                // --- Estado y trazabilidad ---
+                e.Property(x => x.Estado).HasColumnName("estado").HasMaxLength(20);
+                e.Property(x => x.FechaEnvio).HasColumnName("fecha_envio");
+                e.Property(x => x.CorreoEnvio).HasColumnName("correo_envio").HasMaxLength(200);
+                e.Property(x => x.IdOrdenGenerada).HasColumnName("id_orden_generada");
+                e.Property(x => x.HechoPor).HasColumnName("hecho_por").HasMaxLength(100);
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
+                e.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("GETDATE()");
+                e.Property(x => x.FechaActualizacion).HasColumnName("fecha_actualizacion");
+
+                // Borrar un cliente no debe arrastrarse las cotizaciones.
+                e.HasOne(x => x.Cliente)
+                    .WithMany(c => c.Cotizaciones)
+                    .HasForeignKey(x => x.IdCliente)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // La orden generada (HU-COT-004) queda ligada a la cotizaciÃ³n
+                // que le dio origen.
+                e.HasOne(x => x.OrdenGenerada)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdOrdenGenerada)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

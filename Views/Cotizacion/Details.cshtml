@@ -1,0 +1,274 @@
+@model WinMovers.Models.Cotizacion
+
+@{
+    ViewData["Title"] = $"Cotización {Model.NumeroCotizacion}";
+
+    var enLetras = ViewBag.TarifaEnLetras as string ?? "";
+
+    string ClaseBadge(string estado) => estado switch
+    {
+        EstadosCotizacion.Convertida => "badge-success",
+        EstadosCotizacion.Aceptada => "badge-success",
+        EstadosCotizacion.Enviada => "badge-info",
+        EstadosCotizacion.Rechazada => "badge-danger",
+        _ => "badge-warning"
+    };
+
+    string Money(decimal m) => $"{Model.Moneda}${m:N2}";
+}
+
+<div class="form-header">
+    <h2 class="content-title">
+        <i class="fas fa-file-invoice-dollar"></i>
+        Cotización <span class="numero-cotizacion">@Model.NumeroCotizacion</span>
+        <span class="badge @ClaseBadge(Model.Estado)">@Model.Estado</span>
+        @if (Model.EstaVencida)
+        {
+            <span class="badge badge-danger">Vencida</span>
+        }
+    </h2>
+
+    <a asp-action="Index" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert-error">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+    </div>
+}
+
+@* ================= BARRA DE ACCIONES ================= *@
+<div class="acciones-cotizacion">
+    <a asp-action="VistaPrevia" asp-route-id="@Model.IdCotizacion" target="_blank" class="btn btn-outline">
+        <i class="fas fa-eye"></i> Vista previa del machote
+    </a>
+
+    @if (Model.SePuedeEditar)
+    {
+        <a asp-action="Edit" asp-route-id="@Model.IdCotizacion" class="btn btn-secondary">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+
+        @* HU-COT-003 *@
+        <a asp-action="Enviar" asp-route-id="@Model.IdCotizacion" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i>
+            @(Model.Estado == EstadosCotizacion.Enviada ? "Reenviar al cliente" : "Enviar al cliente")
+        </a>
+    }
+
+    @* El cliente respondió *@
+    @if (Model.Estado == EstadosCotizacion.Enviada)
+    {
+        <form asp-action="CambiarEstado" asp-route-id="@Model.IdCotizacion" method="post" style="display:inline">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="estado" value="@EstadosCotizacion.Aceptada" />
+            <button type="submit" class="btn btn-outline">
+                <i class="fas fa-check"></i> Marcar como aceptada
+            </button>
+        </form>
+
+        <form asp-action="CambiarEstado" asp-route-id="@Model.IdCotizacion" method="post" style="display:inline"
+              onsubmit="return confirm('¿Marcar esta cotización como rechazada?')">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="estado" value="@EstadosCotizacion.Rechazada" />
+            <button type="submit" class="btn btn-outline">
+                <i class="fas fa-times"></i> Marcar como rechazada
+            </button>
+        </form>
+    }
+
+    @* HU-COT-004 *@
+    @if (Model.SePuedeConvertir)
+    {
+        <a asp-action="Convertir" asp-route-id="@Model.IdCotizacion" class="btn btn-primary destacado">
+            <i class="fas fa-truck-moving"></i> Convertir en Orden de Mudanza
+        </a>
+    }
+</div>
+
+@if (Model.Estado == EstadosCotizacion.Convertida && Model.OrdenGenerada != null)
+{
+    <div class="alert-success">
+        <i class="fas fa-check-circle"></i>
+        Esta cotización se convirtió en la orden de trabajo
+        <strong>@Model.OrdenGenerada.NumeroOT</strong>.
+        <a asp-controller="OrdenTrabajo" asp-action="Details" asp-route-id="@Model.IdOrdenGenerada">
+            Ver la orden
+        </a>
+    </div>
+}
+
+<div class="detalle-grid">
+
+    @* ================= RESUMEN DE TARIFA ================= *@
+    <div class="form-card tarifa-card">
+        <h3 class="form-subtitle"><i class="fas fa-calculator"></i> Tarifa</h3>
+
+        <table class="tabla-rubros">
+            <tbody>
+                <tr>
+                    <td>Servicios en origen (empaque)</td>
+                    <td class="col-monto">@Money(Model.CostoOrigen)</td>
+                </tr>
+                <tr>
+                    <td>Trámites de aduana</td>
+                    <td class="col-monto">@Money(Model.CostoTramitesAduana)</td>
+                </tr>
+                <tr>
+                    <td>Flete marítimo internacional</td>
+                    <td class="col-monto">@Money(Model.CostoFlete)</td>
+                </tr>
+                <tr>
+                    <td>Servicios en destino</td>
+                    <td class="col-monto">@Money(Model.CostoDestino)</td>
+                </tr>
+                <tr class="subtotal">
+                    <td>Subtotal</td>
+                    <td class="col-monto">@Money(Model.Subtotal)</td>
+                </tr>
+
+                @if (Model.IncluyeSeguro)
+                {
+                    <tr>
+                        <td>
+                            Seguro @Model.PorcentajeSeguro.ToString("N1")%
+                            <span class="celda-secundaria">
+                                sobre valor declarado @Money(Model.ValorDeclarado ?? 0)
+                            </span>
+                        </td>
+                        <td class="col-monto">@Money(Model.MontoSeguro)</td>
+                    </tr>
+                }
+
+                <tr class="total">
+                    <td>TARIFA TOTAL</td>
+                    <td class="col-monto">@Money(Model.TarifaTotal)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        @if (!string.IsNullOrWhiteSpace(enLetras))
+        {
+            <p class="resumen-letras">(@enLetras)</p>
+        }
+    </div>
+
+    @* ================= DATOS DEL SERVICIO ================= *@
+    <div class="form-card">
+        <h3 class="form-subtitle"><i class="fas fa-ship"></i> Servicio</h3>
+
+        <dl class="lista-datos">
+            <dt>Tipo de servicio</dt>
+            <dd>@Model.TipoServicio</dd>
+
+            <dt>Origen</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.Origen) ? "—" : Model.Origen)</dd>
+
+            <dt>Destino</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.Destino) ? "—" : Model.Destino)</dd>
+
+            <dt>Volumen</dt>
+            <dd>@(Model.VolumenM3 > 0 ? $"{Model.VolumenM3:N2} m³" : "—")</dd>
+
+            <dt>Contenedor</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.TipoContenedor) ? "—" : Model.TipoContenedor)</dd>
+
+            <dt>Compañía marítima</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.CompaniaMaritima) ? "—" : Model.CompaniaMaritima)</dd>
+
+            <dt>Corresponsal</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.Corresponsal) ? "—" : Model.Corresponsal)</dd>
+        </dl>
+    </div>
+
+    @* ================= CLIENTE ================= *@
+    <div class="form-card">
+        <h3 class="form-subtitle"><i class="fas fa-user"></i> Cliente</h3>
+
+        <dl class="lista-datos">
+            <dt>Nombre</dt>
+            <dd>@Model.NombreCliente</dd>
+
+            <dt>Compañía</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.Compania) ? "—" : Model.Compania)</dd>
+
+            <dt>Contacto</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.Contacto) ? "—" : Model.Contacto)</dd>
+
+            <dt>Correo</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.CorreoCliente) ? "—" : Model.CorreoCliente)</dd>
+
+            <dt>Teléfono</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.TelefonoCelular) ? "—" : Model.TelefonoCelular)</dd>
+
+            @if (Model.Cliente != null)
+            {
+                <dt>Ficha</dt>
+                <dd>
+                    <a asp-controller="Cliente" asp-action="Historial" asp-route-id="@Model.IdCliente">
+                        Ver historial del cliente
+                    </a>
+                </dd>
+            }
+        </dl>
+    </div>
+
+    @* ================= CONDICIONES Y TRAZABILIDAD ================= *@
+    <div class="form-card">
+        <h3 class="form-subtitle"><i class="fas fa-file-contract"></i> Condiciones</h3>
+
+        <dl class="lista-datos">
+            <dt>Fecha</dt>
+            <dd>@Model.Fecha.ToString("dd/MM/yyyy")</dd>
+
+            <dt>Vigencia</dt>
+            <dd>
+                @Model.VigenciaDias días — vence el @Model.FechaVencimiento.ToString("dd/MM/yyyy")
+                @if (Model.EstaVencida)
+                {
+                    <span class="badge badge-danger">Vencida</span>
+                }
+            </dd>
+
+            <dt>Forma de pago</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.FormaPago) ? "—" : Model.FormaPago)</dd>
+
+            <dt>Hecho por</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.HechoPor) ? "—" : Model.HechoPor)</dd>
+
+            <dt>Creada</dt>
+            <dd>@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            @if (Model.FechaActualizacion.HasValue)
+            {
+                <dt>Última edición</dt>
+                <dd>@Model.FechaActualizacion.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+            }
+
+            @if (Model.FechaEnvio.HasValue)
+            {
+                <dt>Enviada</dt>
+                <dd>@Model.FechaEnvio.Value.ToString("dd/MM/yyyy HH:mm") a @Model.CorreoEnvio</dd>
+            }
+        </dl>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Observaciones))
+        {
+            <div class="bloque-texto">
+                <h4>Observaciones</h4>
+                <p>@Model.Observaciones</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.Exclusiones))
+        {
+            <div class="bloque-texto">
+                <h4>La tarifa no incluye</h4>
+                <p>@Model.Exclusiones</p>
+            </div>
+        }
+    </div>
+</div>
