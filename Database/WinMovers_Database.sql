@@ -440,6 +440,100 @@ ALTER TABLE Clientes_Historial
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
 GO
 
+CREATE TABLE dbo.Cotizaciones
+(
+    id_cotizacion INT IDENTITY(1,1) NOT NULL,
+
+    numero_cotizacion NVARCHAR(20) NOT NULL,
+    fecha DATETIME2 NOT NULL DEFAULT(GETDATE()),
+
+    -- Cliente
+    id_cliente INT NULL,
+    nombre_cliente NVARCHAR(200) NOT NULL,
+    compania NVARCHAR(200) NULL,
+    contacto NVARCHAR(200) NULL,
+    correo_cliente NVARCHAR(200) NULL,
+    telefono_celular NVARCHAR(30) NULL,
+
+    -- Servicio
+    tipo_servicio NVARCHAR(50) NOT NULL DEFAULT('Puerta a Puerta'),
+    origen NVARCHAR(200) NULL,
+    destino NVARCHAR(200) NULL,
+    volumen_m3 DECIMAL(10,2) NULL,
+    tipo_contenedor NVARCHAR(30) NULL,
+    compania_maritima NVARCHAR(100) NULL,
+    corresponsal NVARCHAR(100) NULL,
+
+    -- Cronograma
+    dias_empaque INT NULL,
+    dias_transito INT NULL,
+    dias_desalmacenaje INT NULL,
+    dias_frecuencia_salidas INT NULL,
+
+    -- Costos
+    costo_origen DECIMAL(18,2) NOT NULL DEFAULT(0),
+    costo_tramites_aduana DECIMAL(18,2) NOT NULL DEFAULT(0),
+    costo_flete DECIMAL(18,2) NOT NULL DEFAULT(0),
+    costo_destino DECIMAL(18,2) NOT NULL DEFAULT(0),
+
+    -- Seguro
+    incluye_seguro BIT NOT NULL DEFAULT(0),
+    valor_declarado DECIMAL(18,2) NULL,
+    porcentaje_seguro DECIMAL(5,2) NOT NULL DEFAULT(3.5),
+
+    -- Totales
+    subtotal DECIMAL(18,2) NOT NULL DEFAULT(0),
+    monto_seguro DECIMAL(18,2) NOT NULL DEFAULT(0),
+    tarifa_total DECIMAL(18,2) NOT NULL DEFAULT(0),
+    moneda NVARCHAR(3) NOT NULL DEFAULT('USD'),
+
+    -- Condiciones
+    vigencia_dias INT NOT NULL DEFAULT(60),
+    forma_pago NVARCHAR(200) NULL,
+    exclusiones NVARCHAR(MAX) NULL,
+    observaciones NVARCHAR(MAX) NULL,
+
+    -- Estado
+    estado NVARCHAR(20) NOT NULL DEFAULT('Borrador'),
+    fecha_envio DATETIME2 NULL,
+    correo_envio NVARCHAR(200) NULL,
+
+    -- Conversión a OT
+    id_orden_generada INT NULL,
+
+    -- Auditoría
+    hecho_por NVARCHAR(100) NULL,
+    id_usuario INT NULL,
+    fecha_creacion DATETIME2 NOT NULL DEFAULT(GETDATE()),
+    fecha_actualizacion DATETIME2 NULL,
+
+    CONSTRAINT PK_Cotizaciones
+        PRIMARY KEY (id_cotizacion)
+);
+GO
+
+CREATE UNIQUE INDEX IX_Cotizaciones_NumeroCotizacion
+ON dbo.Cotizaciones(numero_cotizacion);
+GO
+
+ALTER TABLE dbo.Cotizaciones
+ADD CONSTRAINT FK_Cotizaciones_Clientes
+FOREIGN KEY(id_cliente)
+REFERENCES dbo.Clientes(id_cliente);
+GO
+
+ALTER TABLE dbo.Cotizaciones
+ADD CONSTRAINT FK_Cotizaciones_OrdenTrabajo
+FOREIGN KEY(id_orden_generada)
+REFERENCES dbo.Ordenes_Trabajo(id_orden);
+GO
+
+ALTER TABLE dbo.Cotizaciones
+ADD CONSTRAINT FK_Cotizaciones_Usuarios
+FOREIGN KEY(id_usuario)
+REFERENCES dbo.Usuarios(id_usuario);
+GO
+
 -- =========================================================
 -- ROLES AUDITORIA (HU-AUT-003)
 -- =========================================================

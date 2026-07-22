@@ -11,8 +11,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<WinMoversContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Servicio de env�o de correo (versi�n de desarrollo: imprime en consola).
-builder.Services.AddTransient<WinMovers.Services.IEmailSender, WinMovers.Services.EmailSenderConsola>();
+// Servicio de envío de correo real, vía SMTP (Gmail).
+builder.Services.Configure<WinMovers.Services.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddTransient<WinMovers.Services.IEmailSender, WinMovers.Services.EmailSenderSmtp>();
 
 // Servicios del m�dulo de Cotizaciones.
 builder.Services.AddScoped<WinMovers.Services.IQuoteService, WinMovers.Services.QuoteService>();
@@ -40,7 +41,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.User.RequireUniqueEmail = true;
 })
     .AddEntityFrameworkStores<WinMoversContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddErrorDescriber<WinMovers.Services.IdentityErrorDescriberEspanol>();
 
 // =========================================================
 // POL�TICA DE ACCESO GLOBAL

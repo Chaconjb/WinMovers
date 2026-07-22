@@ -12,14 +12,17 @@
     <link rel="stylesheet" href="~/css/cotizaciones.css" asp-append-version="true" />
 </head>
 
-@{
-    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
-}
+	@{
+	var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+	var enGestionUsuarios = ctrl == "Usuario" || ctrl == "Rol";
+	}
 
-<body>
+	<body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
+		<!-- SIDEBAR -->
+		@if (User.Identity != null && User.Identity.IsAuthenticated)
+		{
+		<aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-brand">
                 <i class="fas fa-truck-moving sidebar-logo-icon"></i>
@@ -72,23 +75,38 @@
                         <span>Exportación</span>
                     </a>
                 </li>
-                <li>
-                    <a asp-controller="Importacion" asp-action="Index"
-                       class="sidebar-link @(ctrl == "Importacion" ? "active" : "")">
-                        <i class="fas fa-file-import"></i>
-                        <span>Importación</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+				<li>
+					<a asp-controller="Importacion" asp-action="Index"
+                       class="sidebar-link @(ctrl == "Importacion=" ? "active=" : "")">
+						<i class="fas fa-file-import"></i>
+						<span>Importación</span>
+					</a>
+				</li>
+				@if (User.IsInRole("Administrador"))
+				{
+				<li>
+					<a asp-controller="Usuario" asp-action="Index"
+					   class="sidebar-link @(enGestionUsuarios ? "active=" : "")">
+						<i class="fas fa-user-cog"></i>
+						<span>Gestión de Usuarios</span>
+					</a>
+				</li>
+				}
+			</ul>
+		</nav>
 
-        <div class="sidebar-footer">
-            <p><i class="fas fa-phone"></i> (506) 2215-3536</p>
-            <p><i class="fas fa-envelope"></i> sales@winmovers.com</p>
-        </div>
-    </aside>
+			<div class="sidebar-footer">
+				<p>
+					<i class="fas fa-phone"></i> (506) 2215-3536
+				</p>
+				<p>
+					<i class="fas fa-envelope"></i> sales@winmovers.com
+				</p>
+			</div>
+		</aside>
+		}
 
-    <!-- MAIN WRAPPER -->
+		<!-- MAIN WRAPPER -->
     <div class="main-wrapper">
         <header class="topbar">
             <button class="sidebar-toggle" id="sidebarToggle">

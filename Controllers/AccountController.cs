@@ -165,9 +165,11 @@ namespace WinMovers.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ForgotPasswordConfirmation() => View();
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ResetPassword(string? correo, string? token)
         {
             if (string.IsNullOrEmpty(correo) || string.IsNullOrEmpty(token))
@@ -178,12 +180,18 @@ namespace WinMovers.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel modelo)
         {
             if (!ModelState.IsValid)
                 return View(modelo);
 
+            Console.WriteLine($"[DIAGNÓSTICO] Correo recibido en POST: '{modelo.Correo}'");
+
             var usuario = await _userManager.FindByEmailAsync(modelo.Correo);
+
+            Console.WriteLine($"[DIAGNÓSTICO] ¿Usuario encontrado?: {usuario != null}");
+
             if (usuario == null)
             {
                 // No revelamos si el correo existe; tratamos igual que token inválido/expirado.
@@ -194,8 +202,22 @@ namespace WinMovers.Controllers
 
             if (!resultado.Succeeded)
             {
-                // Escenario 5: token expirado o inválido.
-                return RedirectToAction(nameof(ResetPasswordFallido));
+                // Si el token específicamente es inválido/expirado, mandamos a
+                // la pantalla de "solicitar nueva recuperación" (Escenario 5).
+                bool tokenInvalido = resultado.Errors.Any(e => e.Code == "InvalidToken");
+                if (tokenInvalido)
+                {
+                    return RedirectToAction(nameof(ResetPasswordFallido));
+                }
+
+                // Cualquier otro error (ej. contraseña no cumple la política)
+                // se muestra directamente en el mismo formulario, para que el
+                // usuario corrija y lo intente de nuevo sin perder el token.
+                foreach (var error in resultado.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View(modelo);
             }
 
             usuario.DebeCambiarContrasena = false;
@@ -207,9 +229,11 @@ namespace WinMovers.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ResetPasswordConfirmation() => View();
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ResetPasswordFallido() => View();
 
         // =====================================================

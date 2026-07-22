@@ -5,6 +5,7 @@ namespace WinMovers.Models
 {
     public class OrdenTrabajo
     {
+        [Key]
         [Column("id_orden")]
         public int IdOrden { get; set; }
 

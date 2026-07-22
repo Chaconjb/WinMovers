@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
@@ -6,6 +7,7 @@ using WinMovers.Models;
 
 namespace WinMovers.Controllers
 {
+    [Authorize(Roles = Roles.Administrador)]
     public class RolController : Controller
     {
         private readonly RoleManager<ApplicationRole> _roleManager;
