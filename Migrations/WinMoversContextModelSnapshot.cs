@@ -17,329 +17,1550 @@ namespace WinMovers.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("Roles_Claims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Usuarios_Claims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Usuarios_Logins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("Usuarios_Roles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("Usuarios_Tokens", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.AccesoAuditoria", b =>
+                {
+                    b.Property<int>("IdAuditoria")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_auditoria");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAuditoria"));
+
+                    b.Property<string>("CorreoIntentado")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("correo_intentado");
+
+                    b.Property<bool>("Exitoso")
+                        .HasColumnType("bit")
+                        .HasColumnName("exitoso");
+
+                    b.Property<DateTime>("Fecha")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int?>("IdUsuario")
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("motivo");
+
+                    b.HasKey("IdAuditoria");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Accesos_Auditoria", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ApplicationRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_rol");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("nombre_normalizado");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[nombre_normalizado] IS NOT NULL");
+
+                    b.ToTable("Roles", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ApplicationUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int")
+                        .HasColumnName("intentos_fallidos");
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasColumnName("activo");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<bool>("DebeCambiarContrasena")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("debe_cambiar_contrasena");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("correo");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit")
+                        .HasColumnName("correo_confirmado");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit")
+                        .HasColumnName("bloqueo_habilitado");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("bloqueo_hasta");
+
+                    b.Property<string>("NombreCompleto")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("nombre_completo");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("correo_normalizado");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("nombre_usuario_normalizado");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("contrasena_hash");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("telefono");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit")
+                        .HasColumnName("telefono_confirmado");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("security_stamp");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit")
+                        .HasColumnName("doble_factor_habilitado");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("nombre_usuario");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[nombre_usuario_normalizado] IS NOT NULL");
+
+                    b.ToTable("Usuarios", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.CatalogoDocumento", b =>
+                {
+                    b.Property<int>("IdTipoDocumento")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_tipo_documento");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTipoDocumento"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit")
+                        .HasColumnName("activo");
+
+                    b.Property<bool>("AplicaExportacion")
+                        .HasColumnType("bit")
+                        .HasColumnName("aplica_exportacion");
+
+                    b.Property<bool>("AplicaImportacion")
+                        .HasColumnType("bit")
+                        .HasColumnName("aplica_importacion");
+
+                    b.Property<bool>("AplicaOtroAgente")
+                        .HasColumnType("bit")
+                        .HasColumnName("aplica_otro_agente");
+
+                    b.Property<bool>("AplicaWinMovers")
+                        .HasColumnType("bit")
+                        .HasColumnName("aplica_winmovers");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("nombre");
+
+                    b.Property<int>("OrdenPresentacion")
+                        .HasColumnType("int")
+                        .HasColumnName("orden_presentacion");
+
+                    b.HasKey("IdTipoDocumento");
+
+                    b.ToTable("Catalogo_Documentos", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.Cliente", b =>
+                {
+                    b.Property<int>("IdCliente")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_cliente");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCliente"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit")
+                        .HasColumnName("activo");
+
+                    b.Property<string>("Contacto")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("contacto");
+
+                    b.Property<string>("CorreoElectronico")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("correo_electronico");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("direccion");
+
+                    b.Property<string>("Empresa")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("empresa");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_actualizacion");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_registro");
+
+                    b.Property<string>("NombreCliente")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("nombre_cliente");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("observaciones");
+
+                    b.Property<string>("TelefonoCelular")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("telefono_celular");
+
+                    b.Property<string>("TelefonoEmpresa")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("telefono_empresa");
+
+                    b.Property<string>("TelefonoResidencia")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("telefono_residencia");
+
+                    b.HasKey("IdCliente");
+
+                    b.ToTable("Clientes");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ClienteHistorial", b =>
+                {
+                    b.Property<int>("IdHistorial")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_historial");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdHistorial"));
+
+                    b.Property<string>("CampoModificado")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("campo_modificado");
+
+                    b.Property<DateTime>("FechaCambio")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_cambio")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("IdCliente")
+                        .HasColumnType("int")
+                        .HasColumnName("id_cliente");
+
+                    b.Property<int?>("IdUsuario")
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario");
+
+                    b.Property<string>("ValorAnterior")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("valor_anterior");
+
+                    b.Property<string>("ValorNuevo")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("valor_nuevo");
+
+                    b.HasKey("IdHistorial");
+
+                    b.HasIndex("IdCliente");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Clientes_Historial", (string)null);
+                });
 
             modelBuilder.Entity("WinMovers.Models.ControlVisita", b =>
                 {
                     b.Property<int>("IdVisita")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_visita");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdVisita"));
 
                     b.Property<string>("CompaniaMaritima")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("compania_maritima");
 
                     b.Property<string>("Corresponsal")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("corresponsal");
 
                     b.Property<string>("Destino")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("destino");
 
                     b.Property<string>("DireccionDestino")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("direccion_destino");
 
                     b.Property<string>("DireccionOrigen")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("direccion_origen");
 
                     b.Property<bool>("Empaque")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("empaque");
 
                     b.Property<string>("Empresa")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("empresa");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_actualizacion");
 
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion")
                         .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("FechaLlamada")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_llamada");
 
                     b.Property<DateTime?>("FechaVisita")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_visita");
 
                     b.Property<string>("Flete")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("flete");
 
                     b.Property<string>("HechoPor")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("hecho_por");
 
                     b.Property<string>("Hora")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("hora");
 
                     b.Property<bool>("MudanzaLocal")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("mudanza_local");
 
                     b.Property<string>("NombreCliente")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("nombre_cliente");
 
                     b.Property<string>("Observaciones")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("observaciones");
 
                     b.Property<string>("Origen")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("origen");
 
                     b.Property<bool>("PuertaAPuerta")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("puerta_a_puerta");
 
                     b.Property<bool>("PuertaAPuerto")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("puerta_a_puerto");
 
                     b.Property<string>("TarifaTotal")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("tarifa_total");
 
                     b.Property<string>("TelefonoCelular")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("telefono_celular");
 
                     b.Property<string>("TelefonoCompania")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("telefono_compania");
 
                     b.Property<string>("TelefonoHabitacion")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("telefono_habitacion");
 
                     b.Property<string>("TramitesAduana")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("tramites_aduana");
 
                     b.HasKey("IdVisita");
 
-                    b.ToTable("ControlVisitas");
+                    b.ToTable("Control_Visitas", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.Cotizacion", b =>
+                {
+                    b.Property<int>("IdCotizacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_cotizacion");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCotizacion"));
+
+                    b.Property<string>("Compania")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("compania");
+
+                    b.Property<string>("CompaniaMaritima")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("compania_maritima");
+
+                    b.Property<string>("Contacto")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("contacto");
+
+                    b.Property<string>("CorreoCliente")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("correo_cliente");
+
+                    b.Property<string>("CorreoEnvio")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("correo_envio");
+
+                    b.Property<string>("Corresponsal")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("corresponsal");
+
+                    b.Property<decimal>("CostoDestino")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("costo_destino");
+
+                    b.Property<decimal>("CostoFlete")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("costo_flete");
+
+                    b.Property<decimal>("CostoOrigen")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("costo_origen");
+
+                    b.Property<decimal>("CostoTramitesAduana")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("costo_tramites_aduana");
+
+                    b.Property<string>("Destino")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("destino");
+
+                    b.Property<int?>("DiasDesalmacenaje")
+                        .HasColumnType("int")
+                        .HasColumnName("dias_desalmacenaje");
+
+                    b.Property<int?>("DiasEmpaque")
+                        .HasColumnType("int")
+                        .HasColumnName("dias_empaque");
+
+                    b.Property<int?>("DiasFrecuenciaSalidas")
+                        .HasColumnType("int")
+                        .HasColumnName("dias_frecuencia_salidas");
+
+                    b.Property<int?>("DiasTransito")
+                        .HasColumnType("int")
+                        .HasColumnName("dias_transito");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<string>("Exclusiones")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("exclusiones");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_actualizacion");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("FechaEnvio")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_envio");
+
+                    b.Property<string>("FormaPago")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("forma_pago");
+
+                    b.Property<string>("HechoPor")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("hecho_por");
+
+                    b.Property<int?>("IdCliente")
+                        .HasColumnType("int")
+                        .HasColumnName("id_cliente");
+
+                    b.Property<int?>("IdOrdenGenerada")
+                        .HasColumnType("int")
+                        .HasColumnName("id_orden_generada");
+
+                    b.Property<int?>("IdUsuario")
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario");
+
+                    b.Property<bool>("IncluyeSeguro")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("incluye_seguro");
+
+                    b.Property<string>("Moneda")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)")
+                        .HasColumnName("moneda");
+
+                    b.Property<decimal>("MontoSeguro")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("monto_seguro");
+
+                    b.Property<string>("NombreCliente")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("nombre_cliente");
+
+                    b.Property<string>("NumeroCotizacion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("numero_cotizacion");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("observaciones");
+
+                    b.Property<string>("Origen")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("origen");
+
+                    b.Property<decimal>("PorcentajeSeguro")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)")
+                        .HasColumnName("porcentaje_seguro");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("subtotal");
+
+                    b.Property<decimal>("TarifaTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("tarifa_total");
+
+                    b.Property<string>("TelefonoCelular")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("telefono_celular");
+
+                    b.Property<string>("TipoContenedor")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("tipo_contenedor");
+
+                    b.Property<string>("TipoServicio")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("tipo_servicio");
+
+                    b.Property<decimal?>("ValorDeclarado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("valor_declarado");
+
+                    b.Property<int>("VigenciaDias")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(60)
+                        .HasColumnName("vigencia_dias");
+
+                    b.Property<decimal?>("VolumenM3")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("volumen_m3");
+
+                    b.HasKey("IdCotizacion");
+
+                    b.HasIndex("IdCliente");
+
+                    b.HasIndex("IdOrdenGenerada");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.HasIndex("NumeroCotizacion")
+                        .IsUnique();
+
+                    b.ToTable("Cotizaciones", (string)null);
                 });
 
             modelBuilder.Entity("WinMovers.Models.Exportacion", b =>
                 {
                     b.Property<int>("IdExportacion")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_exportacion");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdExportacion"));
 
+                    b.Property<int>("Cajas")
+                        .HasColumnType("int")
+                        .HasColumnName("cajas");
+
                     b.Property<DateTime?>("Fecha")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_actualizacion");
 
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion")
                         .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int?>("IdOrden")
+                        .HasColumnType("int")
+                        .HasColumnName("id_orden");
+
+                    b.Property<decimal>("Kilos")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("kilos");
 
                     b.Property<string>("NombreCliente")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("nombre_cliente");
 
                     b.Property<string>("Observaciones")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("observaciones");
 
                     b.Property<string>("Referencia")
+                        .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("referencia");
 
                     b.HasKey("IdExportacion");
 
-                    b.ToTable("Exportaciones");
+                    b.HasIndex("IdOrden");
+
+                    b.ToTable("Exportaciones", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ExportacionArchivo", b =>
+                {
+                    b.Property<int>("IdArchivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_archivo");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivo"));
+
+                    b.Property<DateTime>("FechaCarga")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_carga")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("IdExportacion")
+                        .HasColumnType("int")
+                        .HasColumnName("id_exportacion");
+
+                    b.Property<string>("NombreGuardado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("nombre_guardado");
+
+                    b.Property<string>("NombreOriginal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("nombre_original");
+
+                    b.Property<long>("TamanioBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("tamanio_bytes");
+
+                    b.Property<string>("TipoMime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("tipo_mime");
+
+                    b.HasKey("IdArchivo");
+
+                    b.HasIndex("IdExportacion");
+
+                    b.ToTable("Exportaciones_Archivos", (string)null);
                 });
 
             modelBuilder.Entity("WinMovers.Models.ExportacionDocumento", b =>
                 {
-                    b.Property<int>("IdDocumento")
+                    b.Property<int>("IdExpDoc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_exp_doc");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDocumento"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdExpDoc"));
 
                     b.Property<bool>("Completado")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("completado");
+
+                    b.Property<DateTime?>("FechaCompletado")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_completado");
 
                     b.Property<int>("IdExportacion")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_exportacion");
 
-                    b.Property<string>("NombreDocumento")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.Property<int>("IdTipoDocumento")
+                        .HasColumnType("int")
+                        .HasColumnName("id_tipo_documento");
 
-                    b.Property<string>("TipoAgente")
-                        .IsRequired()
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("observaciones");
+
+                    b.Property<string>("TipoChecklist")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("tipo_checklist");
 
-                    b.HasKey("IdDocumento");
+                    b.HasKey("IdExpDoc");
 
                     b.HasIndex("IdExportacion");
 
-                    b.ToTable("ExportacionesDocumentos");
+                    b.HasIndex("IdTipoDocumento");
+
+                    b.ToTable("Exportaciones_Documentos", (string)null);
                 });
 
             modelBuilder.Entity("WinMovers.Models.Importacion", b =>
                 {
                     b.Property<int>("IdImportacion")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_importacion");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdImportacion"));
 
-                    b.Property<DateTime?>("Fecha")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("Cajas")
+                        .HasColumnType("int")
+                        .HasColumnName("cajas");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_actualizacion");
 
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion")
                         .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int?>("IdOrden")
+                        .HasColumnType("int")
+                        .HasColumnName("id_orden");
+
+                    b.Property<decimal>("Kilos")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("kilos");
 
                     b.Property<string>("NombreCliente")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("nombre_cliente");
 
                     b.Property<string>("Observaciones")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("observaciones");
+
+                    b.Property<string>("Pais")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("pais");
 
                     b.Property<string>("Referencia")
+                        .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("referencia");
 
                     b.HasKey("IdImportacion");
 
-                    b.ToTable("Importaciones");
+                    b.HasIndex("IdOrden");
+
+                    b.ToTable("Importaciones", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ImportacionArchivo", b =>
+                {
+                    b.Property<int>("IdArchivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_archivo");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivo"));
+
+                    b.Property<DateTime>("FechaCarga")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_carga")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("IdImportacion")
+                        .HasColumnType("int")
+                        .HasColumnName("id_importacion");
+
+                    b.Property<string>("NombreGuardado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("nombre_guardado");
+
+                    b.Property<string>("NombreOriginal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("nombre_original");
+
+                    b.Property<long>("TamanioBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("tamanio_bytes");
+
+                    b.Property<string>("TipoMime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("tipo_mime");
+
+                    b.HasKey("IdArchivo");
+
+                    b.HasIndex("IdImportacion");
+
+                    b.ToTable("Importaciones_Archivos", (string)null);
                 });
 
             modelBuilder.Entity("WinMovers.Models.ImportacionDocumento", b =>
                 {
-                    b.Property<int>("IdDocumento")
+                    b.Property<int>("IdImpDoc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_imp_doc");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDocumento"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdImpDoc"));
 
                     b.Property<bool>("Completado")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("completado");
+
+                    b.Property<DateTime?>("FechaCompletado")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_completado");
 
                     b.Property<int>("IdImportacion")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_importacion");
 
-                    b.Property<string>("NombreDocumento")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.Property<int>("IdTipoDocumento")
+                        .HasColumnType("int")
+                        .HasColumnName("id_tipo_documento");
 
-                    b.Property<string>("TipoAgente")
-                        .IsRequired()
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("observaciones");
+
+                    b.Property<string>("TipoChecklist")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("tipo_checklist");
 
-                    b.HasKey("IdDocumento");
+                    b.HasKey("IdImpDoc");
 
                     b.HasIndex("IdImportacion");
 
-                    b.ToTable("ImportacionesDocumentos");
+                    b.HasIndex("IdTipoDocumento");
+
+                    b.ToTable("Importaciones_Documentos", (string)null);
                 });
 
             modelBuilder.Entity("WinMovers.Models.OrdenTrabajo", b =>
                 {
                     b.Property<int>("IdOrden")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id_orden");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdOrden"));
 
                     b.Property<string>("Compania")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("compania");
 
                     b.Property<string>("Contacto")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("contacto");
 
                     b.Property<string>("DetalleServicio")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("detalle_servicio");
 
                     b.Property<string>("DireccionCobro")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("direccion_cobro");
 
                     b.Property<string>("DireccionDestino")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("direccion_destino");
 
                     b.Property<string>("DireccionOrigen")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("direccion_origen");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("estado");
 
                     b.Property<string>("FacturarA")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("facturar_a");
 
                     b.Property<DateTime?>("Fecha")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_actualizacion");
 
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion")
                         .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("FechaServicio")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_servicio");
 
                     b.Property<string>("HechoPor")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("hecho_por");
 
                     b.Property<string>("Hora")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("hora");
+
+                    b.Property<int?>("IdCliente")
+                        .HasColumnType("int")
+                        .HasColumnName("id_cliente");
 
                     b.Property<string>("Materiales")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("materiales");
 
                     b.Property<string>("NombreCliente")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("nombre_cliente");
 
                     b.Property<string>("NumeroOT")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("numero_ot");
 
                     b.Property<string>("TelefonoCelular")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("telefono_celular");
 
                     b.Property<string>("TelefonoEmpresa")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("telefono_empresa");
 
                     b.Property<string>("TelefonoResidencia")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("telefono_residencia");
 
                     b.HasKey("IdOrden");
 
-                    b.ToTable("OrdenesTrabajo");
+                    b.HasIndex("IdCliente");
+
+                    b.ToTable("Ordenes_Trabajo", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajoArchivo", b =>
+                {
+                    b.Property<int>("IdArchivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_archivo");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivo"));
+
+                    b.Property<DateTime>("FechaCarga")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_carga")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("IdOrden")
+                        .HasColumnType("int")
+                        .HasColumnName("id_orden");
+
+                    b.Property<string>("NombreGuardado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("nombre_guardado");
+
+                    b.Property<string>("NombreOriginal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("nombre_original");
+
+                    b.Property<long>("TamanioBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("tamanio_bytes");
+
+                    b.Property<string>("TipoMime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("tipo_mime");
+
+                    b.HasKey("IdArchivo");
+
+                    b.HasIndex("IdOrden");
+
+                    b.ToTable("OrdenesTrabajo_Archivos", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajoHistorial", b =>
+                {
+                    b.Property<int>("IdHistorial")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_historial");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdHistorial"));
+
+                    b.Property<string>("CampoModificado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("campo_modificado");
+
+                    b.Property<DateTime>("FechaCambio")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_cambio")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("IdOrden")
+                        .HasColumnType("int")
+                        .HasColumnName("id_orden");
+
+                    b.Property<int?>("IdUsuario")
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario");
+
+                    b.Property<string>("ValorAnterior")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("valor_anterior");
+
+                    b.Property<string>("ValorNuevo")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("valor_nuevo");
+
+                    b.HasKey("IdHistorial");
+
+                    b.HasIndex("IdOrden");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Ordenes_Trabajo_Historial", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajoNota", b =>
+                {
+                    b.Property<int>("IdNota")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_nota");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdNota"));
+
+                    b.Property<string>("Contenido")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("contenido");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_actualizacion");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha_creacion")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("IdOrden")
+                        .HasColumnType("int")
+                        .HasColumnName("id_orden");
+
+                    b.Property<int?>("IdUsuario")
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario");
+
+                    b.HasKey("IdNota");
+
+                    b.HasIndex("IdOrden");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Ordenes_Trabajo_Notas", (string)null);
+                });
+
+            modelBuilder.Entity("WinMovers.Models.RolAuditoria", b =>
+                {
+                    b.Property<int>("IdAuditoria")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_auditoria");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAuditoria"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("accion");
+
+                    b.Property<string>("Detalle")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("detalle");
+
+                    b.Property<DateTime>("Fecha")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("fecha")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int?>("IdUsuarioAfectado")
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario_afectado");
+
+                    b.Property<int?>("IdUsuarioResponsable")
+                        .HasColumnType("int")
+                        .HasColumnName("id_usuario_responsable");
+
+                    b.Property<string>("NombreRol")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("nombre_rol");
+
+                    b.HasKey("IdAuditoria");
+
+                    b.HasIndex("IdUsuarioAfectado");
+
+                    b.HasIndex("IdUsuarioResponsable");
+
+                    b.ToTable("Roles_Auditoria", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.HasOne("WinMovers.Models.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+                {
+                    b.HasOne("WinMovers.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+                {
+                    b.HasOne("WinMovers.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+                {
+                    b.HasOne("WinMovers.Models.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WinMovers.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+                {
+                    b.HasOne("WinMovers.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WinMovers.Models.AccesoAuditoria", b =>
+                {
+                    b.HasOne("WinMovers.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ClienteHistorial", b =>
+                {
+                    b.HasOne("WinMovers.Models.Cliente", "Cliente")
+                        .WithMany("Historial")
+                        .HasForeignKey("IdCliente")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WinMovers.Models.ApplicationUser", "Usuario")
+                        .WithMany("HistorialClientes")
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.Cotizacion", b =>
+                {
+                    b.HasOne("WinMovers.Models.Cliente", "Cliente")
+                        .WithMany("Cotizaciones")
+                        .HasForeignKey("IdCliente")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenGenerada")
+                        .WithMany()
+                        .HasForeignKey("IdOrdenGenerada")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WinMovers.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("OrdenGenerada");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.Exportacion", b =>
+                {
+                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenTrabajo")
+                        .WithMany()
+                        .HasForeignKey("IdOrden");
+
+                    b.Navigation("OrdenTrabajo");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ExportacionArchivo", b =>
+                {
+                    b.HasOne("WinMovers.Models.Exportacion", "Exportacion")
+                        .WithMany("Archivos")
+                        .HasForeignKey("IdExportacion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exportacion");
                 });
 
             modelBuilder.Entity("WinMovers.Models.ExportacionDocumento", b =>
@@ -350,7 +1571,35 @@ namespace WinMovers.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("WinMovers.Models.CatalogoDocumento", "TipoDocumento")
+                        .WithMany()
+                        .HasForeignKey("IdTipoDocumento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Exportacion");
+
+                    b.Navigation("TipoDocumento");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.Importacion", b =>
+                {
+                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenTrabajo")
+                        .WithMany()
+                        .HasForeignKey("IdOrden");
+
+                    b.Navigation("OrdenTrabajo");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ImportacionArchivo", b =>
+                {
+                    b.HasOne("WinMovers.Models.Importacion", "Importacion")
+                        .WithMany("Archivos")
+                        .HasForeignKey("IdImportacion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Importacion");
                 });
 
             modelBuilder.Entity("WinMovers.Models.ImportacionDocumento", b =>
@@ -361,17 +1610,130 @@ namespace WinMovers.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("WinMovers.Models.CatalogoDocumento", "TipoDocumento")
+                        .WithMany()
+                        .HasForeignKey("IdTipoDocumento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Importacion");
+
+                    b.Navigation("TipoDocumento");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajo", b =>
+                {
+                    b.HasOne("WinMovers.Models.Cliente", "Cliente")
+                        .WithMany("OrdenesTrabajo")
+                        .HasForeignKey("IdCliente")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajoArchivo", b =>
+                {
+                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenTrabajo")
+                        .WithMany("Archivos")
+                        .HasForeignKey("IdOrden")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OrdenTrabajo");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajoHistorial", b =>
+                {
+                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenTrabajo")
+                        .WithMany("Historial")
+                        .HasForeignKey("IdOrden")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WinMovers.Models.ApplicationUser", "Usuario")
+                        .WithMany("HistorialOrdenes")
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("OrdenTrabajo");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajoNota", b =>
+                {
+                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenTrabajo")
+                        .WithMany("Notas")
+                        .HasForeignKey("IdOrden")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WinMovers.Models.ApplicationUser", "Usuario")
+                        .WithMany("Notas")
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("OrdenTrabajo");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.RolAuditoria", b =>
+                {
+                    b.HasOne("WinMovers.Models.ApplicationUser", "UsuarioAfectado")
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioAfectado")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("WinMovers.Models.ApplicationUser", "UsuarioResponsable")
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioResponsable")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("UsuarioAfectado");
+
+                    b.Navigation("UsuarioResponsable");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("HistorialClientes");
+
+                    b.Navigation("HistorialOrdenes");
+
+                    b.Navigation("Notas");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.Cliente", b =>
+                {
+                    b.Navigation("Cotizaciones");
+
+                    b.Navigation("Historial");
+
+                    b.Navigation("OrdenesTrabajo");
                 });
 
             modelBuilder.Entity("WinMovers.Models.Exportacion", b =>
                 {
+                    b.Navigation("Archivos");
+
                     b.Navigation("Documentos");
                 });
 
             modelBuilder.Entity("WinMovers.Models.Importacion", b =>
                 {
+                    b.Navigation("Archivos");
+
                     b.Navigation("Documentos");
+                });
+
+            modelBuilder.Entity("WinMovers.Models.OrdenTrabajo", b =>
+                {
+                    b.Navigation("Archivos");
+
+                    b.Navigation("Historial");
+
+                    b.Navigation("Notas");
                 });
 #pragma warning restore 612, 618
         }

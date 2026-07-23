@@ -5,6 +5,7 @@ namespace WinMovers.Models
 {
     public class OrdenTrabajo
     {
+        [Key]
         [Column("id_orden")]
         public int IdOrden { get; set; }
 
@@ -30,6 +31,12 @@ namespace WinMovers.Models
         [StringLength(150)]
         [Column("nombre_cliente")]
         public string NombreCliente { get; set; } = string.Empty;
+
+        [Column("id_cliente")]
+        public int? IdCliente { get; set; }
+
+        [ForeignKey(nameof(IdCliente))]
+        public Cliente? Cliente { get; set; }
 
         [Display(Name = "Tel. Celular")]
         [Column("telefono_celular")]

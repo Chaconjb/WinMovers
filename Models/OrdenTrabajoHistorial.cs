@@ -7,9 +7,10 @@
         public string CampoModificado { get; set; } = string.Empty; // "fecha_servicio" o "estado"
         public string? ValorAnterior { get; set; }
         public string? ValorNuevo { get; set; }
-        public string? Usuario { get; set; }
+        public int? IdUsuario { get; set; }
         public DateTime FechaCambio { get; set; }
 
         public OrdenTrabajo? OrdenTrabajo { get; set; }
+        public ApplicationUser? Usuario { get; set; }
     }
 }

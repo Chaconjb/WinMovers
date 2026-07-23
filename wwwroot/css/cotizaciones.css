@@ -1,0 +1,453 @@
+/* ============================================
+   WinMovers - Módulo de Cotizaciones
+   Reutiliza las variables de winmovers.css.
+   ============================================ */
+
+/* ---------- Alertas ---------- */
+.alert-error,
+.alert-info,
+.alert-success,
+.alert-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    font-size: 0.88rem;
+    border-left: 4px solid;
+    animation: cot-entrada 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.alert-error { background: #fdeaea; border-color: var(--danger); color: #8b1a24; }
+.alert-info { background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark); }
+.alert-success { background: #d4edda; border-color: var(--success); color: #155724; }
+.alert-warning { background: #fff3cd; border-color: var(--warning); color: #856404; }
+
+/* asp-validation-summary deja el div vacío cuando no hay errores. */
+.alert-error:empty { display: none; }
+
+.alert-error ul { margin: 0; padding: 0; }
+.alert-error li { list-style: none; }
+
+.alert-error a,
+.alert-info a,
+.alert-success a { text-decoration: underline; font-weight: 600; }
+
+@keyframes cot-entrada {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Validación y ayudas ---------- */
+.field-error {
+    display: block;
+    color: var(--danger);
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+
+.field-error:empty { display: none; }
+
+.form-hint {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-top: 4px;
+    line-height: 1.5;
+}
+
+.referencia-machote {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+}
+
+/* ---------- Badges que faltaban ---------- */
+.badge-danger { background: #f8d7da; color: #721c24; }
+
+/* ---------- Encabezados ---------- */
+.numero-cotizacion {
+    font-family: 'Courier New', monospace;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.header-acciones { display: flex; gap: 10px; }
+
+/* ---------- Filtros del listado ---------- */
+.filtros-cotizacion { padding: 20px 24px; margin-bottom: 20px; }
+.filtros-cotizacion .form-row { margin-bottom: 0; }
+
+.filtros-acciones {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+/* ---------- Tabla ---------- */
+.col-monto { text-align: right; white-space: nowrap; }
+
+.celda-secundaria {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.celda-acciones { white-space: nowrap; }
+
+.ruta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+}
+
+.ruta i {
+    color: var(--primary);
+    font-size: 0.7rem;
+}
+
+/* ---------- Campos de monto ---------- */
+.input-monto {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-monto:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+}
+
+.input-monto .prefijo,
+.input-monto .sufijo {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: #f7f8fa;
+    color: var(--text-light);
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-right: 1px solid var(--border);
+}
+
+.input-monto .sufijo {
+    border-right: none;
+    border-left: 1px solid var(--border);
+}
+
+/* El input interno no lleva su propio borde: lo pone el contenedor. */
+.input-monto input {
+    flex: 1;
+    border: none !important;
+    border-radius: 0 !important;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
+}
+
+.input-monto input:focus {
+    outline: none;
+    box-shadow: none !important;
+}
+
+/* ---------- Seguro ---------- */
+.seguro-bloque {
+    background: #fafbfc;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 20px 0;
+}
+
+.seguro-campos {
+    margin-top: 16px;
+    margin-bottom: 0;
+    transition: opacity 0.25s ease;
+}
+
+/* El bloque se colapsa en vez de desaparecer de golpe. */
+.oculto {
+    display: none !important;
+}
+
+/* ---------- Resumen del cálculo ---------- */
+.resumen-calculo {
+    background: linear-gradient(135deg, var(--dark) 0%, #232946 100%);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin-top: 24px;
+    color: #fff;
+    box-shadow: var(--shadow-md);
+}
+
+.resumen-linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    font-size: 0.88rem;
+    color: #c7cddb;
+}
+
+.resumen-linea strong {
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+    font-weight: 500;
+}
+
+.resumen-linea.total {
+    border-top: 2px solid rgba(255, 255, 255, 0.18);
+    margin-top: 8px;
+    padding-top: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+.resumen-linea.total strong {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4da3ff;
+}
+
+.resumen-letras {
+    margin-top: 10px;
+    font-size: 0.78rem;
+    font-style: italic;
+    color: #9aa5bd;
+    text-align: right;
+    min-height: 1.2em;
+}
+
+/* ---------- Barra de acciones del detalle ---------- */
+.acciones-cotizacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: var(--bg-white);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.acciones-cotizacion form { display: inline; }
+
+.btn-primary.destacado {
+    background: var(--secondary);
+    margin-left: auto;
+}
+
+.btn-primary.destacado:hover {
+    background: #e56200;
+}
+
+/* ---------- Detalle ---------- */
+.detalle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.tarifa-card { grid-column: 1 / -1; }
+
+.tabla-rubros {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-rubros td {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+}
+
+.tabla-rubros .col-monto {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+}
+
+.tabla-rubros .subtotal td {
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+}
+
+.tabla-rubros .total td {
+    padding-top: 14px;
+    border-bottom: none;
+    font-weight: 700;
+    color: var(--primary-dark);
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+}
+
+.tabla-rubros .total .col-monto { font-size: 1.35rem; }
+
+.tarifa-card .resumen-letras {
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+}
+
+/* ---------- Listas de datos ---------- */
+.lista-datos {
+    display: grid;
+    grid-template-columns: minmax(120px, auto) 1fr;
+    gap: 10px 18px;
+    font-size: 0.88rem;
+}
+
+.lista-datos dt {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding-top: 2px;
+}
+
+.lista-datos dd {
+    margin: 0;
+    color: var(--text);
+    font-weight: 500;
+    word-break: break-word;
+}
+
+.lista-datos dd a {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.bloque-texto {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.bloque-texto h4 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.bloque-texto p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text-light);
+}
+
+/* ---------- Envío ---------- */
+.aviso-previa {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-size: 0.83rem;
+    line-height: 1.6;
+    margin-top: 10px;
+}
+
+.aviso-previa a {
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+/* ---------- Conversión a orden ---------- */
+.resumen-conversion { margin-bottom: 20px; }
+
+.conversion-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.conversion-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background: #fafbfc;
+    border-radius: 6px;
+    border-left: 3px solid var(--border);
+}
+
+.conversion-item .etiqueta {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+}
+
+.conversion-item .dato {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.conversion-item.destacado {
+    background: var(--primary-light);
+    border-left-color: var(--primary);
+}
+
+.conversion-item.destacado .dato {
+    color: var(--primary-dark);
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.nota-conversion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ---------- Accesibilidad ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .alert-error,
+    .alert-info,
+    .alert-success,
+    .alert-warning {
+        animation: none;
+    }
+
+    .input-monto,
+    .seguro-campos {
+        transition: none;
+    }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .detalle-grid { grid-template-columns: 1fr; }
+
+    .acciones-cotizacion { flex-direction: column; }
+    .acciones-cotizacion .btn { width: 100%; justify-content: center; }
+    .btn-primary.destacado { margin-left: 0; }
+
+    .lista-datos { grid-template-columns: 1fr; gap: 2px 0; }
+    .lista-datos dd { margin-bottom: 12px; }
+
+    .filtros-acciones { flex-direction: column; align-items: stretch; }
+}

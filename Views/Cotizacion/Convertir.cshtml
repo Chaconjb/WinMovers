@@ -1,0 +1,116 @@
+@model WinMovers.Models.Cotizacion
+
+@{
+    ViewData["Title"] = "Convertir en Orden de Mudanza";
+    var numeroSugerido = ViewBag.NumeroOTSugerido as string ?? "";
+}
+
+<div class="form-header">
+    <h2 class="content-title">
+        <i class="fas fa-truck-moving"></i>
+        Convertir <span class="numero-cotizacion">@Model.NumeroCotizacion</span> en Orden de Mudanza
+    </h2>
+
+    <a asp-action="Details" asp-route-id="@Model.IdCotizacion" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+</div>
+
+<div asp-validation-summary="ModelOnly" class="alert-error"></div>
+
+@if (Model.Estado != EstadosCotizacion.Aceptada)
+{
+    <div class="alert-info">
+        <i class="fas fa-info-circle"></i>
+        Esta cotización está en estado <strong>@Model.Estado</strong>. Normalmente se convierte
+        una vez que el cliente la acepta, pero podés continuar si ya confirmó por otro medio.
+    </div>
+}
+
+@if (Model.EstaVencida)
+{
+    <div class="alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        La cotización <strong>venció el @Model.FechaVencimiento.ToString("dd/MM/yyyy")</strong>.
+        Verificá que la tarifa de @Model.Moneda $@Model.TarifaTotal.ToString("N2") siga vigente
+        antes de convertirla.
+    </div>
+}
+
+@* ================= LO QUE SE VA A COPIAR ================= *@
+<div class="form-card resumen-conversion">
+    <h3 class="form-subtitle"><i class="fas fa-clipboard-check"></i> Datos que pasarán a la orden</h3>
+
+    <div class="conversion-grid">
+        <div class="conversion-item">
+            <span class="etiqueta">Cliente</span>
+            <span class="dato">@Model.NombreCliente</span>
+        </div>
+        <div class="conversion-item">
+            <span class="etiqueta">Compañía</span>
+            <span class="dato">@(string.IsNullOrWhiteSpace(Model.Compania) ? "—" : Model.Compania)</span>
+        </div>
+        <div class="conversion-item">
+            <span class="etiqueta">Dirección de origen</span>
+            <span class="dato">@(string.IsNullOrWhiteSpace(Model.Origen) ? "—" : Model.Origen)</span>
+        </div>
+        <div class="conversion-item">
+            <span class="etiqueta">Dirección de destino</span>
+            <span class="dato">@(string.IsNullOrWhiteSpace(Model.Destino) ? "—" : Model.Destino)</span>
+        </div>
+        <div class="conversion-item">
+            <span class="etiqueta">Volumen</span>
+            <span class="dato">
+                @(Model.VolumenM3 > 0 ? $"{Model.VolumenM3:N2} m³" : "—")
+                @if (!string.IsNullOrWhiteSpace(Model.TipoContenedor))
+                {
+                    <text>· @Model.TipoContenedor</text>
+                }
+            </span>
+        </div>
+        <div class="conversion-item destacado">
+            <span class="etiqueta">Tarifa acordada</span>
+            <span class="dato">@Model.Moneda $@Model.TarifaTotal.ToString("N2")</span>
+        </div>
+    </div>
+</div>
+
+@* ================= DATOS NUEVOS DE LA ORDEN ================= *@
+<form asp-action="Convertir" asp-route-id="@Model.IdCotizacion" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-card">
+        <h3 class="form-subtitle"><i class="fas fa-calendar-plus"></i> Programación del servicio</h3>
+
+        <div class="form-row three-cols">
+            <div class="form-group">
+                <label for="numeroOT">O.T. #</label>
+                <input type="text" id="numeroOT" name="numeroOT" value="@numeroSugerido" required maxlength="20" />
+                <span class="form-hint">Debe ser único.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="fechaServicio">Fecha de Servicio</label>
+                <input type="date" id="fechaServicio" name="fechaServicio" />
+            </div>
+
+            <div class="form-group">
+                <label for="hora">Hora</label>
+                <input type="time" id="hora" name="hora" />
+                <span class="form-hint">No puede chocar con otra orden.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-truck-moving"></i> Crear Orden de Mudanza
+        </button>
+        <a asp-action="Details" asp-route-id="@Model.IdCotizacion" class="btn btn-secondary">Cancelar</a>
+    </div>
+
+    <p class="nota-conversion">
+        <i class="fas fa-lock"></i>
+        Al convertirla, la cotización queda en estado <strong>Convertida</strong> y ya no se podrá editar.
+    </p>
+</form>

@@ -1,0 +1,57 @@
+﻿@model IEnumerable<WinMovers.Models.OrdenTrabajo>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>O.T.</th>
+            <th>Fecha Servicio</th>
+            <th>Estado</th>
+            <th>Monto</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="5" class="text-center">
+                    Este cliente aún no posee mudanzas registradas.
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var orden in Model)
+            {
+                <tr>
+
+                    <td>@orden.NumeroOT</td>
+
+                    <td>@orden.FechaServicio?.ToString("dd/MM/yyyy")</td>
+
+                    <td>@orden.Estado</td>
+
+                    <td>No disponible</td>
+
+                    <td>
+
+                        <a asp-controller="OrdenTrabajo"
+                           asp-action="Details"
+                           asp-route-id="@orden.IdOrden"
+                           class="btn btn-primary">
+
+                            Ver detalle
+
+                        </a>
+
+                    </td>
+
+                </tr>
+            }
+        }
+
+    </tbody>
+
+</table>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>@ViewData["Title"] - WinMovers</title>
+
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+				<link rel="stylesheet" href="~/css/winmovers.css" asp-append-version="true" />
+				<link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+			</head>
+	<body class="auth-body">
+
+		<div class="auth-wrapper">
+			<div class="auth-brand">
+				<i class="fas fa-truck-moving"></i>
+				<h1>WinMovers</h1>
+				<span>Local and International Relocations</span>
+			</div>
+
+			<div class="auth-card">
+				@if (TempData["Success"] != null)
+				{
+				<div class="toast show success" id="toastMsg">
+					<i class="fas fa-check-circle"></i> @TempData["Success"]
+				</div>
+				}
+				@RenderBody()
+			</div>
+
+			<p class="auth-footer">
+				<i class="fas fa-phone"></i> (506) 2215-3536 &nbsp;·&nbsp;
+				<i class="fas fa-envelope"></i> sales@winmovers.com
+			</p>
+		</div>
+
+		<script>
+			setTimeout(() => {
+			const t = document.getElementById('toastMsg');
+			if (t) t.classList.remove('show');
+			}, 3500);
+		</script>
+
+		@await RenderSectionAsync("Scripts", required: false)
+	</body>
+</html>

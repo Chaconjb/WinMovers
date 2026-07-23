@@ -659,6 +659,43 @@ CREATE TABLE [Usuarios_Claims] (
     CONSTRAINT [FK_Usuarios_Claims_Usuarios_UserId] FOREIGN KEY ([UserId]) REFERENCES [Usuarios] ([id_usuario]) ON DELETE CASCADE
 );
 
+CREATE TABLE Clientes_Historial (
+    id_historial INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_cliente INT NOT NULL,
+
+    campo_modificado NVARCHAR(100) NOT NULL,
+
+    valor_anterior NVARCHAR(500) NULL,
+
+    valor_nuevo NVARCHAR(500) NULL,
+
+    usuario NVARCHAR(100) NULL,
+
+    fecha_cambio DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_ClientesHistorial_Cliente
+        FOREIGN KEY (id_cliente)
+        REFERENCES Clientes(id_cliente)
+        ON DELETE CASCADE
+);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClientesHistorial_Cliente
+ON Clientes_Historial(id_cliente);
+GO
+
+-- HU-ORD-004: Notas y observaciones
+CREATE TABLE Ordenes_Trabajo_Notas (
+    id_nota              INT IDENTITY(1,1) PRIMARY KEY,
+    id_orden             INT             NOT NULL,
+    contenido            NVARCHAR(MAX)   NOT NULL,
+    usuario              NVARCHAR(100)   NULL,       -- texto libre por ahora (sin auth)
+    fecha_creacion       DATETIME2       NOT NULL DEFAULT GETDATE(),
+    fecha_actualizacion  DATETIME2       NULL,
+    CONSTRAINT FK_OTNota_Orden
+        FOREIGN KEY (id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden) ON DELETE CASCADE
 CREATE TABLE [Usuarios_Logins] (
     [LoginProvider] nvarchar(450) NOT NULL,
     [ProviderKey] nvarchar(450) NOT NULL,
@@ -775,6 +812,288 @@ VALUES
     ('SinRol', 'SINROL', 'Rol temporal para usuarios sin un rol asignado (por eliminación de su rol anterior)', NEWID());
 GO
 
+---cambios--
+ALTER TABLE Ordenes_Trabajo
+ADD estado NVARCHAR(20) NOT NULL DEFAULT 'Pendiente';
+
+ALTER TABLE Importaciones
+ADD id_orden INT;
+
+ALTER TABLE Exportaciones
+ADD id_orden INT;
+
+ALTER TABLE [dbo].[Importaciones]
+ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
+
+--cambio tabla ordenes de trabajo HU-CLI-004--
+ALTER TABLE Ordenes_Trabajo
+ADD id_cliente INT NULL;
+
+ALTER TABLE Ordenes_Trabajo
+ADD CONSTRAINT FK_OrdenTrabajo_Cliente
+FOREIGN KEY (id_cliente)
+REFERENCES Clientes(id_cliente);
+
+-- =========================================================
+-- TABLAS DE IDENTITY (nombres adaptados a la convención del proyecto)
+-- =========================================================
+CREATE TABLE Usuarios (
+    id_usuario                      INT IDENTITY(1,1) PRIMARY KEY,
+    nombre_completo                 NVARCHAR(200)   NOT NULL,
+    activo                          BIT             NOT NULL DEFAULT 1,
+    fecha_creacion                  DATETIME2       NOT NULL DEFAULT GETDATE(),
+    debe_cambiar_contrasena         BIT             NOT NULL DEFAULT 0,
+    nombre_usuario                  NVARCHAR(256)   NULL,
+    nombre_usuario_normalizado      NVARCHAR(256)   NULL,
+    correo                          NVARCHAR(256)   NULL,
+    correo_normalizado              NVARCHAR(256)   NULL,
+    correo_confirmado               BIT             NOT NULL DEFAULT 0,
+    contrasena_hash                 NVARCHAR(MAX)   NULL,
+    telefono                        NVARCHAR(30)    NULL,
+    telefono_confirmado             BIT             NOT NULL DEFAULT 0,
+    doble_factor_habilitado         BIT             NOT NULL DEFAULT 0,
+    bloqueo_hasta                   DATETIMEOFFSET  NULL,
+    bloqueo_habilitado              BIT             NOT NULL DEFAULT 1,
+    intentos_fallidos               INT             NOT NULL DEFAULT 0,
+    security_stamp                  NVARCHAR(MAX)   NULL,
+    concurrency_stamp                NVARCHAR(MAX)   NULL
+);
+CREATE UNIQUE INDEX IX_Usuarios_NombreUsuarioNormalizado ON Usuarios(nombre_usuario_normalizado) WHERE nombre_usuario_normalizado IS NOT NULL;
+CREATE INDEX IX_Usuarios_CorreoNormalizado ON Usuarios(correo_normalizado);
+GO
+
+CREATE TABLE Roles (
+    id_rol                   INT IDENTITY(1,1) PRIMARY KEY,
+    nombre                   NVARCHAR(256)   NULL,
+    nombre_normalizado       NVARCHAR(256)   NULL,
+    descripcion              NVARCHAR(250)   NULL,
+    ConcurrencyStamp         NVARCHAR(MAX)   NULL
+);
+CREATE UNIQUE INDEX IX_Roles_NombreNormalizado ON Roles(nombre_normalizado) WHERE nombre_normalizado IS NOT NULL;
+GO
+
+CREATE TABLE Usuarios_Roles (
+    UserId  INT NOT NULL,
+    RoleId  INT NOT NULL,
+    PRIMARY KEY (UserId, RoleId),
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (RoleId) REFERENCES Roles(id_rol) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Usuarios_Claims (
+    Id           INT IDENTITY(1,1) PRIMARY KEY,
+    UserId       INT NOT NULL,
+    ClaimType    NVARCHAR(MAX) NULL,
+    ClaimValue   NVARCHAR(MAX) NULL,
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Roles_Claims (
+    Id          INT IDENTITY(1,1) PRIMARY KEY,
+    RoleId      INT NOT NULL,
+    ClaimType   NVARCHAR(MAX) NULL,
+    ClaimValue  NVARCHAR(MAX) NULL,
+    FOREIGN KEY (RoleId) REFERENCES Roles(id_rol) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Usuarios_Logins (
+    LoginProvider        NVARCHAR(450) NOT NULL,
+    ProviderKey           NVARCHAR(450) NOT NULL,
+    ProviderDisplayName   NVARCHAR(MAX) NULL,
+    UserId                INT NOT NULL,
+    PRIMARY KEY (LoginProvider, ProviderKey),
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE Usuarios_Tokens (
+    UserId          INT NOT NULL,
+    LoginProvider   NVARCHAR(450) NOT NULL,
+    Name            NVARCHAR(450) NOT NULL,
+    Value           NVARCHAR(MAX) NULL,
+    PRIMARY KEY (UserId, LoginProvider, Name),
+    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+GO
+
+-- Tabla de auditoría para los accesos al sistema
+CREATE TABLE Accesos_Auditoria (
+    id_auditoria         INT IDENTITY(1,1) PRIMARY KEY,
+    id_usuario           INT             NULL,
+    correo_intentado     NVARCHAR(256)   NOT NULL,
+    exitoso              BIT             NOT NULL,
+    motivo               NVARCHAR(200)   NULL,
+    ip_address           NVARCHAR(45)    NULL,
+    fecha                DATETIME2       NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
+);
+GO
+
+-- Cambios en las otras tablas que usaban usuario fijo
+-- Tabla de Ordenes_Trabajo_Historial
+ALTER TABLE Ordenes_Trabajo_Historial DROP COLUMN usuario;
+GO
+
+ALTER TABLE Ordenes_Trabajo_Historial ADD id_usuario INT NULL;
+ALTER TABLE Ordenes_Trabajo_Historial
+    ADD CONSTRAINT FK_OrdenesTrabajoHistorial_Usuarios
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+GO
+
+-- Tabla de Ordenes_Trabajo_Notas
+ALTER TABLE Ordenes_Trabajo_Notas DROP COLUMN usuario;
+GO
+
+ALTER TABLE Ordenes_Trabajo_Notas ADD id_usuario INT NULL;
+ALTER TABLE Ordenes_Trabajo_Notas
+    ADD CONSTRAINT FK_OrdenesTrabajoNotas_Usuarios
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+GO
+
+-- Tabla de Clientes_Historial
+ALTER TABLE Clientes_Historial DROP COLUMN usuario;
+GO
+
+ALTER TABLE Clientes_Historial ADD id_usuario INT NULL;
+ALTER TABLE Clientes_Historial
+    ADD CONSTRAINT FK_ClientesHistorial_Usuarios
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+GO
+
+CREATE TABLE dbo.Cotizaciones
+(
+    id_cotizacion INT IDENTITY(1,1) NOT NULL,
+
+    numero_cotizacion NVARCHAR(20) NOT NULL,
+    fecha DATETIME2 NOT NULL DEFAULT(GETDATE()),
+
+    -- Cliente
+    id_cliente INT NULL,
+    nombre_cliente NVARCHAR(200) NOT NULL,
+    compania NVARCHAR(200) NULL,
+    contacto NVARCHAR(200) NULL,
+    correo_cliente NVARCHAR(200) NULL,
+    telefono_celular NVARCHAR(30) NULL,
+
+    -- Servicio
+    tipo_servicio NVARCHAR(50) NOT NULL DEFAULT('Puerta a Puerta'),
+    origen NVARCHAR(200) NULL,
+    destino NVARCHAR(200) NULL,
+    volumen_m3 DECIMAL(10,2) NULL,
+    tipo_contenedor NVARCHAR(30) NULL,
+    compania_maritima NVARCHAR(100) NULL,
+    corresponsal NVARCHAR(100) NULL,
+
+    -- Cronograma
+    dias_empaque INT NULL,
+    dias_transito INT NULL,
+    dias_desalmacenaje INT NULL,
+    dias_frecuencia_salidas INT NULL,
+
+    -- Costos
+    costo_origen DECIMAL(18,2) NOT NULL DEFAULT(0),
+    costo_tramites_aduana DECIMAL(18,2) NOT NULL DEFAULT(0),
+    costo_flete DECIMAL(18,2) NOT NULL DEFAULT(0),
+    costo_destino DECIMAL(18,2) NOT NULL DEFAULT(0),
+
+    -- Seguro
+    incluye_seguro BIT NOT NULL DEFAULT(0),
+    valor_declarado DECIMAL(18,2) NULL,
+    porcentaje_seguro DECIMAL(5,2) NOT NULL DEFAULT(3.5),
+
+    -- Totales
+    subtotal DECIMAL(18,2) NOT NULL DEFAULT(0),
+    monto_seguro DECIMAL(18,2) NOT NULL DEFAULT(0),
+    tarifa_total DECIMAL(18,2) NOT NULL DEFAULT(0),
+    moneda NVARCHAR(3) NOT NULL DEFAULT('USD'),
+
+    -- Condiciones
+    vigencia_dias INT NOT NULL DEFAULT(60),
+    forma_pago NVARCHAR(200) NULL,
+    exclusiones NVARCHAR(MAX) NULL,
+    observaciones NVARCHAR(MAX) NULL,
+
+    -- Estado
+    estado NVARCHAR(20) NOT NULL DEFAULT('Borrador'),
+    fecha_envio DATETIME2 NULL,
+    correo_envio NVARCHAR(200) NULL,
+
+    -- Conversión a OT
+    id_orden_generada INT NULL,
+
+    -- Auditoría
+    hecho_por NVARCHAR(100) NULL,
+    id_usuario INT NULL,
+    fecha_creacion DATETIME2 NOT NULL DEFAULT(GETDATE()),
+    fecha_actualizacion DATETIME2 NULL,
+
+    CONSTRAINT PK_Cotizaciones
+        PRIMARY KEY (id_cotizacion)
+);
+GO
+
+CREATE UNIQUE INDEX IX_Cotizaciones_NumeroCotizacion
+ON dbo.Cotizaciones(numero_cotizacion);
+GO
+
+ALTER TABLE dbo.Cotizaciones
+ADD CONSTRAINT FK_Cotizaciones_Clientes
+FOREIGN KEY(id_cliente)
+REFERENCES dbo.Clientes(id_cliente);
+GO
+
+ALTER TABLE dbo.Cotizaciones
+ADD CONSTRAINT FK_Cotizaciones_OrdenTrabajo
+FOREIGN KEY(id_orden_generada)
+REFERENCES dbo.Ordenes_Trabajo(id_orden);
+GO
+
+ALTER TABLE dbo.Cotizaciones
+ADD CONSTRAINT FK_Cotizaciones_Usuarios
+FOREIGN KEY(id_usuario)
+REFERENCES dbo.Usuarios(id_usuario);
+GO
+
+-- =========================================================
+-- ROLES AUDITORIA (HU-AUT-003)
+-- =========================================================
+CREATE TABLE Roles_Auditoria (
+    id_auditoria              INT IDENTITY(1,1) PRIMARY KEY,
+    accion                    NVARCHAR(50)    NOT NULL,
+    nombre_rol                NVARCHAR(256)   NOT NULL,
+    id_usuario_afectado       INT             NULL,
+    id_usuario_responsable    INT             NULL,
+    detalle                   NVARCHAR(MAX)   NULL,
+    fecha                     DATETIME2       NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (id_usuario_afectado) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+    FOREIGN KEY (id_usuario_responsable) REFERENCES Usuarios(id_usuario) ON DELETE NO ACTION
+);
+GO
+
+-- Inserts iniciales para la tabla de roles de Identity
+INSERT INTO Roles (nombre, nombre_normalizado, descripcion, ConcurrencyStamp)
+VALUES
+    ('Administrador', 'ADMINISTRADOR', 'Acceso total al sistema', NEWID()),
+    ('Empleado', 'EMPLEADO', 'Acceso operativo a órdenes, clientes e importaciones/exportaciones', NEWID()),
+    ('SinRol', 'SINROL', 'Rol temporal para usuarios sin un rol asignado (por eliminación de su rol anterior)', NEWID());
+GO
+
+INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion) VALUES
+    ('Reporte de Visita Previa',            1, 0, 1, 1, 1),
+    ('Cotización',                          1, 1, 1, 0, 2),
+    ('Lista de inventario para el seguro',  1, 1, 1, 1, 3),
+    ('Cotización con firma de aceptación',  1, 1, 1, 0, 4),
+    ('Hoja de Trabajo',                     1, 1, 1, 1, 5),
+    ('Pre-Aviso al agente de destino',      1, 0, 1, 1, 6),
+    ('Instrucciones del Embarque',          1, 1, 1, 1, 7),
+    ('Carte de porte, AWA o B-L',           1, 1, 1, 1, 8),
+    ('Certificado del seguro',              1, 1, 1, 1, 9),
+    ('Lista de empaque firmada',            1, 1, 1, 1, 10),
+    ('Factura',                             1, 1, 1, 1, 11),
+    ('Confirmación de Entrega',             1, 1, 1, 1, 12);
 -- Se incluye 'activo' explícitamente: el esquema generado por EF no define
 -- un DEFAULT para esta columna, por lo que el seed debe proveer el valor.
 INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion, activo) VALUES

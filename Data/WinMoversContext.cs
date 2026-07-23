@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Models;
 
 namespace WinMovers.Data
 {
-    public class WinMoversContext : DbContext
+    public class WinMoversContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
     {
         public WinMoversContext(DbContextOptions<WinMoversContext> options)
             : base(options)
@@ -21,10 +23,104 @@ namespace WinMovers.Data
         public DbSet<ExportacionArchivo> ExportacionesArchivos { get; set; }
         public DbSet<OrdenTrabajoArchivo> OrdenesTrabajosArchivos { get; set; }
         public DbSet<OrdenTrabajoHistorial> OrdenesTrabajoHistorial { get; set; }
+        public DbSet<ClienteHistorial> ClienteHistorial { get; set; }
         public DbSet<OrdenTrabajoNota> OrdenesTrabajoNotas { get; set; }
+        public DbSet<AccesoAuditoria> AccesosAuditoria { get; set; }
+        public DbSet<RolAuditoria> RolesAuditoria { get; set; }
+        public DbSet<Cotizacion> Cotizaciones { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // =========================================================
+            // IDENTITY - Renombrado de tablas a la convenciï¿½n usada en el proyecto hasta ahora (sprint 2)
+            // =========================================================
+            modelBuilder.Entity<ApplicationUser>(e =>
+            {
+                e.ToTable("Usuarios");
+                e.Property(x => x.Id).HasColumnName("id_usuario");
+                e.Property(x => x.NombreCompleto).HasColumnName("nombre_completo").IsRequired().HasMaxLength(200);
+                e.Property(x => x.Activo).HasColumnName("activo").HasDefaultValue(true);
+                e.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("GETDATE()");
+                e.Property(x => x.DebeCambiarContrasena).HasColumnName("debe_cambiar_contrasena").HasDefaultValue(false);
+                e.Property(x => x.UserName).HasColumnName("nombre_usuario");
+                e.Property(x => x.NormalizedUserName).HasColumnName("nombre_usuario_normalizado");
+                e.Property(x => x.Email).HasColumnName("correo");
+                e.Property(x => x.NormalizedEmail).HasColumnName("correo_normalizado");
+                e.Property(x => x.EmailConfirmed).HasColumnName("correo_confirmado");
+                e.Property(x => x.PasswordHash).HasColumnName("contrasena_hash");
+                e.Property(x => x.PhoneNumber).HasColumnName("telefono");
+                e.Property(x => x.PhoneNumberConfirmed).HasColumnName("telefono_confirmado");
+                e.Property(x => x.TwoFactorEnabled).HasColumnName("doble_factor_habilitado");
+                e.Property(x => x.LockoutEnd).HasColumnName("bloqueo_hasta");
+                e.Property(x => x.LockoutEnabled).HasColumnName("bloqueo_habilitado");
+                e.Property(x => x.AccessFailedCount).HasColumnName("intentos_fallidos");
+                e.Property(x => x.SecurityStamp).HasColumnName("security_stamp");
+                e.Property(x => x.ConcurrencyStamp).HasColumnName("concurrency_stamp");
+            });
+
+            modelBuilder.Entity<ApplicationRole>(e =>
+            {
+                e.ToTable("Roles");
+                e.Property(x => x.Id).HasColumnName("id_rol");
+                e.Property(x => x.Name).HasColumnName("nombre");
+                e.Property(x => x.NormalizedName).HasColumnName("nombre_normalizado");
+                e.Property(x => x.Descripcion).HasColumnName("descripcion").HasMaxLength(250);
+            });
+
+            modelBuilder.Entity<IdentityUserRole<int>>(e => e.ToTable("Usuarios_Roles"));
+            modelBuilder.Entity<IdentityUserClaim<int>>(e => e.ToTable("Usuarios_Claims"));
+            modelBuilder.Entity<IdentityUserLogin<int>>(e => e.ToTable("Usuarios_Logins"));
+            modelBuilder.Entity<IdentityRoleClaim<int>>(e => e.ToTable("Roles_Claims"));
+            modelBuilder.Entity<IdentityUserToken<int>>(e => e.ToTable("Usuarios_Tokens"));
+
+            // =========================================================
+            // ACCESOS AUDITORIA (HU-AUT-001 Escenario 3)
+            // =========================================================
+            modelBuilder.Entity<AccesoAuditoria>(e =>
+            {
+                e.ToTable("Accesos_Auditoria");
+                e.HasKey(x => x.IdAuditoria);
+                e.Property(x => x.IdAuditoria).HasColumnName("id_auditoria");
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
+                e.Property(x => x.CorreoIntentado).HasColumnName("correo_intentado").IsRequired().HasMaxLength(256);
+                e.Property(x => x.Exitoso).HasColumnName("exitoso");
+                e.Property(x => x.Motivo).HasColumnName("motivo").HasMaxLength(200);
+                e.Property(x => x.IpAddress).HasColumnName("ip_address").HasMaxLength(45);
+                e.Property(x => x.Fecha).HasColumnName("fecha").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // =========================================================
+            // ROLES AUDITORIA (HU-AUT-003)
+            // =========================================================
+            modelBuilder.Entity<RolAuditoria>(e =>
+            {
+                e.ToTable("Roles_Auditoria");
+                e.HasKey(x => x.IdAuditoria);
+                e.Property(x => x.IdAuditoria).HasColumnName("id_auditoria");
+                e.Property(x => x.Accion).HasColumnName("accion").IsRequired().HasMaxLength(50);
+                e.Property(x => x.NombreRol).HasColumnName("nombre_rol").IsRequired().HasMaxLength(256);
+                e.Property(x => x.IdUsuarioAfectado).HasColumnName("id_usuario_afectado");
+                e.Property(x => x.IdUsuarioResponsable).HasColumnName("id_usuario_responsable");
+                e.Property(x => x.Detalle).HasColumnName("detalle");
+                e.Property(x => x.Fecha).HasColumnName("fecha").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.UsuarioAfectado)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuarioAfectado)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                e.HasOne(x => x.UsuarioResponsable)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuarioResponsable)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // =========================================================
             // ORDENES DE TRABAJO
             // =========================================================
@@ -96,6 +192,15 @@ namespace WinMovers.Data
 
         e.Property(x => x.FechaActualizacion)
             .HasColumnName("fecha_actualizacion");
+        // Nueva llave forï¿½nea
+        e.Property(x => x.IdCliente)
+            .HasColumnName("id_cliente");
+
+        // Relaciï¿½n con Cliente
+        e.HasOne(x => x.Cliente)
+            .WithMany(c => c.OrdenesTrabajo)
+            .HasForeignKey(x => x.IdCliente)
+            .OnDelete(DeleteBehavior.Restrict);
     });
             // =========================================================
             // ORDENES TRABAJO ARCHIVOS
@@ -309,7 +414,7 @@ namespace WinMovers.Data
 
                 e.Property(x => x.Observaciones)
                     .HasColumnName("observaciones");
-                //Relación con TipoDocumento
+                //Relaciï¿½n con TipoDocumento
                 e.HasOne(x => x.TipoDocumento)
                     .WithMany()
                     .HasForeignKey(x => x.IdTipoDocumento)
@@ -403,7 +508,7 @@ namespace WinMovers.Data
 
                 e.Property(x => x.Observaciones)
                     .HasColumnName("observaciones");
-                //Relación con TipoDocumento
+                //Relaciï¿½n con TipoDocumento
                 e.HasOne(x => x.TipoDocumento)
                     .WithMany()
                     .HasForeignKey(x => x.IdTipoDocumento)
@@ -462,12 +567,59 @@ namespace WinMovers.Data
                 e.Property(x => x.CampoModificado).HasColumnName("campo_modificado").IsRequired();
                 e.Property(x => x.ValorAnterior).HasColumnName("valor_anterior");
                 e.Property(x => x.ValorNuevo).HasColumnName("valor_nuevo");
-                e.Property(x => x.Usuario).HasColumnName("usuario");
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
                 e.Property(x => x.FechaCambio).HasColumnName("fecha_cambio").HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany(u => u.HistorialOrdenes)
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 e.HasOne(x => x.OrdenTrabajo)
                     .WithMany(o => o.Historial)
                     .HasForeignKey(x => x.IdOrden)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            // =========================================================
+            // CLIENTES HISTORIAL
+            // =========================================================
+            modelBuilder.Entity<ClienteHistorial>(e =>
+            {
+                e.ToTable("Clientes_Historial");
+
+                e.HasKey(x => x.IdHistorial);
+
+                e.Property(x => x.IdHistorial)
+                    .HasColumnName("id_historial");
+
+                e.Property(x => x.IdCliente)
+                    .HasColumnName("id_cliente");
+
+                e.Property(x => x.CampoModificado)
+                    .HasColumnName("campo_modificado")
+                    .IsRequired();
+
+                e.Property(x => x.ValorAnterior)
+                    .HasColumnName("valor_anterior");
+
+                e.Property(x => x.ValorNuevo)
+                    .HasColumnName("valor_nuevo");
+
+                e.Property(x => x.IdUsuario)
+                    .HasColumnName("id_usuario");
+
+                e.Property(x => x.FechaCambio)
+                    .HasColumnName("fecha_cambio")
+                    .HasDefaultValueSql("GETDATE()");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany(u => u.HistorialClientes)
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                e.HasOne(x => x.Cliente)
+                    .WithMany(c => c.Historial)
+                    .HasForeignKey(x => x.IdCliente)
                     .OnDelete(DeleteBehavior.Cascade);
             });
             // =========================================================
@@ -480,14 +632,115 @@ namespace WinMovers.Data
                 e.Property(x => x.IdNota).HasColumnName("id_nota");
                 e.Property(x => x.IdOrden).HasColumnName("id_orden");
                 e.Property(x => x.Contenido).HasColumnName("contenido").IsRequired();
-                e.Property(x => x.Usuario).HasColumnName("usuario");
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
                 e.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("GETDATE()");
                 e.Property(x => x.FechaActualizacion).HasColumnName("fecha_actualizacion");
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany(u => u.Notas)
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 e.HasOne(x => x.OrdenTrabajo)
                     .WithMany(o => o.Notas)
                     .HasForeignKey(x => x.IdOrden)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // =========================================================
+            // COTIZACIONES (HU-COT-001 a HU-COT-004)
+            // =========================================================
+            modelBuilder.Entity<Cotizacion>(e =>
+            {
+                e.ToTable("Cotizaciones");
+                e.HasKey(x => x.IdCotizacion);
+
+                e.Property(x => x.IdCotizacion).HasColumnName("id_cotizacion");
+
+                e.Property(x => x.NumeroCotizacion)
+                    .HasColumnName("numero_cotizacion")
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                // El correlativo no se puede repetir: es la referencia que el
+                // cliente ve en el correo.
+                e.HasIndex(x => x.NumeroCotizacion).IsUnique();
+
+                e.Property(x => x.Fecha).HasColumnName("fecha");
+
+                // --- Cliente ---
+                e.Property(x => x.IdCliente).HasColumnName("id_cliente");
+                e.Property(x => x.NombreCliente).HasColumnName("nombre_cliente").IsRequired().HasMaxLength(200);
+                e.Property(x => x.Compania).HasColumnName("compania").HasMaxLength(200);
+                e.Property(x => x.Contacto).HasColumnName("contacto").HasMaxLength(200);
+                e.Property(x => x.CorreoCliente).HasColumnName("correo_cliente").HasMaxLength(200);
+                e.Property(x => x.TelefonoCelular).HasColumnName("telefono_celular").HasMaxLength(30);
+
+                // --- Servicio ---
+                e.Property(x => x.TipoServicio).HasColumnName("tipo_servicio").HasMaxLength(50);
+                e.Property(x => x.Origen).HasColumnName("origen").HasMaxLength(200);
+                e.Property(x => x.Destino).HasColumnName("destino").HasMaxLength(200);
+                e.Property(x => x.VolumenM3).HasColumnName("volumen_m3").HasPrecision(10, 2);
+                e.Property(x => x.TipoContenedor).HasColumnName("tipo_contenedor").HasMaxLength(30);
+                e.Property(x => x.CompaniaMaritima).HasColumnName("compania_maritima").HasMaxLength(100);
+                e.Property(x => x.Corresponsal).HasColumnName("corresponsal").HasMaxLength(100);
+
+                // --- Cronograma ---
+                e.Property(x => x.DiasEmpaque).HasColumnName("dias_empaque");
+                e.Property(x => x.DiasTransito).HasColumnName("dias_transito");
+                e.Property(x => x.DiasDesalmacenaje).HasColumnName("dias_desalmacenaje");
+                e.Property(x => x.DiasFrecuenciaSalidas).HasColumnName("dias_frecuencia_salidas");
+
+                // --- Rubros de costo (HU-COT-001) ---
+                e.Property(x => x.CostoOrigen).HasColumnName("costo_origen").HasPrecision(18, 2);
+                e.Property(x => x.CostoTramitesAduana).HasColumnName("costo_tramites_aduana").HasPrecision(18, 2);
+                e.Property(x => x.CostoFlete).HasColumnName("costo_flete").HasPrecision(18, 2);
+                e.Property(x => x.CostoDestino).HasColumnName("costo_destino").HasPrecision(18, 2);
+
+                // --- Seguro ---
+                e.Property(x => x.IncluyeSeguro).HasColumnName("incluye_seguro").HasDefaultValue(false);
+                e.Property(x => x.ValorDeclarado).HasColumnName("valor_declarado").HasPrecision(18, 2);
+                e.Property(x => x.PorcentajeSeguro).HasColumnName("porcentaje_seguro").HasPrecision(5, 2);
+
+                // --- Totales ---
+                e.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(18, 2);
+                e.Property(x => x.MontoSeguro).HasColumnName("monto_seguro").HasPrecision(18, 2);
+                e.Property(x => x.TarifaTotal).HasColumnName("tarifa_total").HasPrecision(18, 2);
+                e.Property(x => x.Moneda).HasColumnName("moneda").HasMaxLength(3);
+
+                // --- Condiciones comerciales ---
+                e.Property(x => x.VigenciaDias).HasColumnName("vigencia_dias").HasDefaultValue(60);
+                e.Property(x => x.FormaPago).HasColumnName("forma_pago").HasMaxLength(200);
+                e.Property(x => x.Exclusiones).HasColumnName("exclusiones");
+                e.Property(x => x.Observaciones).HasColumnName("observaciones");
+
+                // --- Estado y trazabilidad ---
+                e.Property(x => x.Estado).HasColumnName("estado").HasMaxLength(20);
+                e.Property(x => x.FechaEnvio).HasColumnName("fecha_envio");
+                e.Property(x => x.CorreoEnvio).HasColumnName("correo_envio").HasMaxLength(200);
+                e.Property(x => x.IdOrdenGenerada).HasColumnName("id_orden_generada");
+                e.Property(x => x.HechoPor).HasColumnName("hecho_por").HasMaxLength(100);
+                e.Property(x => x.IdUsuario).HasColumnName("id_usuario");
+                e.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("GETDATE()");
+                e.Property(x => x.FechaActualizacion).HasColumnName("fecha_actualizacion");
+
+                // Borrar un cliente no debe arrastrarse las cotizaciones.
+                e.HasOne(x => x.Cliente)
+                    .WithMany(c => c.Cotizaciones)
+                    .HasForeignKey(x => x.IdCliente)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // La orden generada (HU-COT-004) queda ligada a la cotizaciÃ³n
+                // que le dio origen.
+                e.HasOne(x => x.OrdenGenerada)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdOrdenGenerada)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.Usuario)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdUsuario)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

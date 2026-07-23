@@ -71,5 +71,11 @@ namespace WinMovers.Models
 
         [Column("fecha_actualizacion")]
         public DateTime? FechaActualizacion { get; set; }
+
+        public ICollection<ClienteHistorial> Historial { get; set; } = new List<ClienteHistorial>();
+
+        public ICollection<OrdenTrabajo> OrdenesTrabajo { get; set; } = new List<OrdenTrabajo>();
+
+        public ICollection<Cotizacion> Cotizaciones { get; set; } = new List<Cotizacion>();
     }
 }

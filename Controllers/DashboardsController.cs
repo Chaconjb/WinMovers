@@ -21,6 +21,7 @@ namespace WinMovers.Controllers
             var viewModel = new DashboardViewModel
             {
                 TotalOrdenes       = await _context.OrdenesTrabajo.CountAsync(),
+                TotalCotizaciones  = await _context.Cotizaciones.CountAsync(),
                 TotalVisitas       = await _context.ControlVisitas.CountAsync(),
                 TotalExportaciones = await _context.Exportaciones.CountAsync(),
                 TotalImportaciones = await _context.Importaciones.CountAsync(),

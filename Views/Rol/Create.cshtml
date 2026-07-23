@@ -1,0 +1,33 @@
+﻿@model WinMovers.Models.CrearRolViewModel
+@{
+    ViewData["Title"] = "Crear rol";
+}
+
+<div class="form-section">
+    <h2 class="content-title"><i class="fas fa-plus-circle"></i> Crear nuevo rol</h2>
+
+    <div class="form-card" style="max-width:500px;">
+        <div asp-validation-summary="ModelOnly" style="color:var(--danger); margin-bottom:10px;"></div>
+
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label asp-for="Nombre"></label>
+                <input asp-for="Nombre" autofocus placeholder="Ej. Supervisor" />
+                <span asp-validation-for="Nombre" style="color:var(--danger); font-size:0.8rem;"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Descripcion"></label>
+                <textarea asp-for="Descripcion" rows="3" placeholder="¿Qué puede hacer este rol?"></textarea>
+                <span asp-validation-for="Descripcion" style="color:var(--danger); font-size:0.8rem;"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Crear rol
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

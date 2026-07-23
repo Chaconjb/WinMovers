@@ -1,0 +1,276 @@
+@model WinMovers.Models.Cotizacion
+
+@{
+    var clientes = ViewBag.Clientes as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+
+    var contenedores = new[] { "20 pies", "40 pies", "40 pies HC", "45 pies HC", "LCL / Carga suelta" };
+    var servicios = new[] { "Puerta a Puerta", "Puerta a Puerto", "Puerto a Puerta", "Mudanza Local", "Solo Empaque" };
+}
+
+<div asp-validation-summary="ModelOnly" class="alert-error"></div>
+
+@* ================= CLIENTE ================= *@
+<div class="form-card">
+    <h3 class="form-subtitle"><i class="fas fa-user"></i> Cliente</h3>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="IdCliente">Cliente registrado</label>
+            <select asp-for="IdCliente" id="selCliente">
+                <option value="">— Cliente nuevo / no registrado —</option>
+                @foreach (var cl in clientes)
+                {
+                    <option value="@cl.IdCliente">@cl.NombreCliente</option>
+                }
+            </select>
+            <span class="form-hint">Si lo seleccionas, se toman sus datos de contacto.</span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="NombreCliente"></label>
+            <input asp-for="NombreCliente" id="txtNombreCliente" />
+            <span asp-validation-for="NombreCliente" class="field-error"></span>
+        </div>
+    </div>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="Compania"></label>
+            <input asp-for="Compania" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Contacto"></label>
+            <input asp-for="Contacto" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TelefonoCelular"></label>
+            <input asp-for="TelefonoCelular" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="CorreoCliente"></label>
+            <input asp-for="CorreoCliente" type="email" placeholder="cliente@ejemplo.com" />
+            <span asp-validation-for="CorreoCliente" class="field-error"></span>
+            <span class="form-hint">A esta dirección se enviará la cotización.</span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="HechoPor"></label>
+            <input asp-for="HechoPor" />
+        </div>
+    </div>
+</div>
+
+@* ================= SERVICIO ================= *@
+<div class="form-card">
+    <h3 class="form-subtitle"><i class="fas fa-ship"></i> Servicio</h3>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="TipoServicio"></label>
+            <select asp-for="TipoServicio">
+                @foreach (var s in servicios)
+                {
+                    <option value="@s">@s</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Origen"></label>
+            <input asp-for="Origen" placeholder="San José, Costa Rica" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Destino"></label>
+            <input asp-for="Destino" placeholder="Puerto de Barcelona, España" />
+        </div>
+    </div>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="VolumenM3"></label>
+            <input asp-for="VolumenM3" type="number" step="0.01" min="0" placeholder="70" />
+            <span asp-validation-for="VolumenM3" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TipoContenedor"></label>
+            <select asp-for="TipoContenedor">
+                <option value="">— Seleccione —</option>
+                @foreach (var ct in contenedores)
+                {
+                    <option value="@ct">@ct</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="CompaniaMaritima"></label>
+            <input asp-for="CompaniaMaritima" />
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group">
+            <label asp-for="Corresponsal"></label>
+            <input asp-for="Corresponsal" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="DiasFrecuenciaSalidas"></label>
+            <input asp-for="DiasFrecuenciaSalidas" type="number" min="0" />
+        </div>
+    </div>
+</div>
+
+@* ================= CRONOGRAMA ================= *@
+<div class="form-card">
+    <h3 class="form-subtitle"><i class="fas fa-calendar-alt"></i> Cronograma</h3>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="DiasEmpaque"></label>
+            <input asp-for="DiasEmpaque" type="number" min="0" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="DiasTransito"></label>
+            <input asp-for="DiasTransito" type="number" min="0" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="DiasDesalmacenaje"></label>
+            <input asp-for="DiasDesalmacenaje" type="number" min="0" />
+        </div>
+    </div>
+</div>
+
+@* ================= COSTOS (HU-COT-001) ================= *@
+<div class="form-card">
+    <h3 class="form-subtitle"><i class="fas fa-calculator"></i> Cálculo de la tarifa</h3>
+
+    <p class="form-hint referencia-machote">
+        <i class="fas fa-info-circle"></i>
+        Referencia del machote: un embarque de <strong>70 m³</strong> en contenedor de
+        <strong>40 pies HC</strong> Puerta a Puerta se cotizó en <strong>US$12,775.00</strong>.
+    </p>
+
+    <div class="form-row two-cols">
+        <div class="form-group monto">
+            <label asp-for="CostoOrigen"></label>
+            <div class="input-monto">
+                <span class="prefijo">US$</span>
+                <input asp-for="CostoOrigen" type="number" step="0.01" min="0" class="js-rubro" />
+            </div>
+            <span asp-validation-for="CostoOrigen" class="field-error"></span>
+        </div>
+
+        <div class="form-group monto">
+            <label asp-for="CostoTramitesAduana"></label>
+            <div class="input-monto">
+                <span class="prefijo">US$</span>
+                <input asp-for="CostoTramitesAduana" type="number" step="0.01" min="0" class="js-rubro" />
+            </div>
+        </div>
+    </div>
+
+    <div class="form-row two-cols">
+        <div class="form-group monto">
+            <label asp-for="CostoFlete"></label>
+            <div class="input-monto">
+                <span class="prefijo">US$</span>
+                <input asp-for="CostoFlete" type="number" step="0.01" min="0" class="js-rubro" />
+            </div>
+        </div>
+
+        <div class="form-group monto">
+            <label asp-for="CostoDestino"></label>
+            <div class="input-monto">
+                <span class="prefijo">US$</span>
+                <input asp-for="CostoDestino" type="number" step="0.01" min="0" class="js-rubro" />
+            </div>
+        </div>
+    </div>
+
+    @* ----- Seguro ----- *@
+    <div class="seguro-bloque">
+        <label class="checkbox-label">
+            <input asp-for="IncluyeSeguro" id="chkSeguro" class="js-rubro" />
+            <span>Incluir seguro Puerta a Puerta</span>
+        </label>
+
+        <div class="form-row two-cols seguro-campos" id="seguroCampos">
+            <div class="form-group monto">
+                <label asp-for="ValorDeclarado"></label>
+                <div class="input-monto">
+                    <span class="prefijo">US$</span>
+                    <input asp-for="ValorDeclarado" type="number" step="0.01" min="0" class="js-rubro" />
+                </div>
+                <span asp-validation-for="ValorDeclarado" class="field-error"></span>
+            </div>
+
+            <div class="form-group monto">
+                <label asp-for="PorcentajeSeguro"></label>
+                <div class="input-monto sufijo-pct">
+                    <input asp-for="PorcentajeSeguro" type="number" step="0.1" min="0" max="100" class="js-rubro" />
+                    <span class="sufijo">%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ----- Resumen calculado ----- *@
+    <div class="resumen-calculo" id="resumenCalculo">
+        <div class="resumen-linea">
+            <span>Subtotal de servicios</span>
+            <strong id="outSubtotal">US$0.00</strong>
+        </div>
+        <div class="resumen-linea" id="lineaSeguro">
+            <span>Seguro</span>
+            <strong id="outSeguro">US$0.00</strong>
+        </div>
+        <div class="resumen-linea total">
+            <span>TARIFA TOTAL</span>
+            <strong id="outTotal">US$0.00</strong>
+        </div>
+        <p class="resumen-letras" id="outLetras"></p>
+    </div>
+</div>
+
+@* ================= CONDICIONES ================= *@
+<div class="form-card">
+    <h3 class="form-subtitle"><i class="fas fa-file-contract"></i> Condiciones comerciales</h3>
+
+    <div class="form-row three-cols">
+        <div class="form-group">
+            <label asp-for="Fecha"></label>
+            <input asp-for="Fecha" type="date" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="VigenciaDias"></label>
+            <input asp-for="VigenciaDias" type="number" min="1" max="365" />
+            <span asp-validation-for="VigenciaDias" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="FormaPago"></label>
+            <input asp-for="FormaPago" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Exclusiones"></label>
+        <textarea asp-for="Exclusiones" rows="3"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Observaciones"></label>
+        <textarea asp-for="Observaciones" rows="3"></textarea>
+    </div>
+</div>

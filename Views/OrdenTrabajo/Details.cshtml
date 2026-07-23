@@ -1,0 +1,25 @@
+﻿@model WinMovers.Models.OrdenTrabajo
+
+<h2>Detalle de la Orden @Model.NumeroOT</h2>
+
+<div class="form-card">
+
+    <p><strong>Cliente:</strong> @Model.NombreCliente</p>
+
+    <p><strong>Fecha Servicio:</strong> @Model.FechaServicio?.ToString("dd/MM/yyyy")</p>
+
+    <p><strong>Estado:</strong> @Model.Estado</p>
+
+    <p><strong>Origen:</strong> @Model.DireccionOrigen</p>
+
+    <p><strong>Destino:</strong> @Model.DireccionDestino</p>
+
+    <p><strong>Detalle:</strong></p>
+
+    <p>@Model.DetalleServicio</p>
+
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">
+    Regresar
+</a>
