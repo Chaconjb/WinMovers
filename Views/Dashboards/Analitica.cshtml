@@ -1,0 +1,107 @@
+@model WinMovers.Models.ViewModels.AnaliticaViewModel
+@{
+    ViewData["Title"] = "Analítica de Importaciones/Exportaciones";
+}
+
+<h2 class="content-title"><i class="fas fa-chart-line"></i> Analítica de Importaciones y Exportaciones</h2>
+
+@if (Model.HuboError)
+{
+    <!-- Escenario 3: error al cargar información -->
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-triangle-exclamation" style="font-size:2.5rem; color:var(--danger); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text); font-weight:500;">@Model.MensajeError</p>
+    </div>
+}
+else if (!Model.HayDatos)
+{
+    <!-- Escenario 2: sin datos disponibles -->
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-chart-simple" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text-muted);">No hay datos de importaciones ni exportaciones disponibles todavía.</p>
+    </div>
+}
+else
+{
+    <!-- Escenario 1: visualización correcta -->
+    <div class="dashboard-stats" style="grid-template-columns: 1fr 1fr;">
+        <div class="stat-card" style="display:block;">
+            <h3 class="content-title" style="font-size:1rem;">Cajas por mes</h3>
+            <canvas id="chartCajas" height="110"></canvas>
+        </div>
+        <div class="stat-card" style="display:block;">
+            <h3 class="content-title" style="font-size:1rem;">Kilos por mes</h3>
+            <canvas id="chartKilos" height="110"></canvas>
+        </div>
+    </div>
+
+    <div class="list-section" style="margin-top:25px;">
+        <h3 class="content-title" style="font-size:1rem;">Top 5 países de origen (importaciones)</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr><th>País</th><th>Cantidad de importaciones</th></tr>
+                </thead>
+                <tbody>
+                    @if (!Model.TopPaises.Any())
+                    {
+                        <tr><td colspan="2" class="no-data">Sin datos de país registrados.</td></tr>
+                    }
+                    @foreach (var p in Model.TopPaises)
+                    {
+                        <tr><td>@p.Pais</td><td>@p.Cantidad</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        const meses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Meses));
+
+        new Chart(document.getElementById('chartCajas'), {
+            type: 'bar',
+            data: {
+                labels: meses,
+                datasets: [
+                    {
+                        label: 'Importación',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CajasImportacion)),
+                        backgroundColor: '#1a73e8'
+                    },
+                    {
+                        label: 'Exportación',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CajasExportacion)),
+                        backgroundColor: '#ff6f00'
+                    }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        new Chart(document.getElementById('chartKilos'), {
+            type: 'line',
+            data: {
+                labels: meses,
+                datasets: [
+                    {
+                        label: 'Importación (kg)',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.KilosImportacion)),
+                        borderColor: '#1a73e8',
+                        backgroundColor: 'rgba(26,115,232,0.1)',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Exportación (kg)',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.KilosExportacion)),
+                        borderColor: '#ff6f00',
+                        backgroundColor: 'rgba(255,111,0,0.1)',
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    </script>
+}
