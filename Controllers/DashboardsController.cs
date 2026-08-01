@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
 using WinMovers.Models;
 using WinMovers.Models.ViewModels;
+using WinMovers.Services;
+
 
 
 namespace WinMovers.Controllers
@@ -11,11 +13,13 @@ namespace WinMovers.Controllers
     {
         private readonly WinMoversContext _context;
         private readonly ILogger<DashboardsController> _logger;
+        private readonly IPronosticoService _pronosticoService;
 
-        public DashboardsController(WinMoversContext context, ILogger<DashboardsController> logger)
+        public DashboardsController(WinMoversContext context, ILogger<DashboardsController> logger, IPronosticoService pronosticoService)
         {
             _context = context;
             _logger = logger;
+            _pronosticoService = pronosticoService;
         }
 
         // DASHBOARD
@@ -243,6 +247,85 @@ namespace WinMovers.Controllers
                 modelo.HuboError = true;
                 modelo.MensajeError = "Ocurrió un error al cargar las estadísticas. Intenta de nuevo más tarde.";
                 _logger.LogError(ex, "Error al cargar Estadisticas del dashboard");
+            }
+
+            return View(modelo);
+        }
+
+        // =====================================================
+        // HU-DAS-003: Pronóstico de transporte (ML.NET)
+        // =====================================================
+        private const int MESES_MINIMOS_PARA_PRONOSTICO = 6;
+        private const int HORIZONTE_MESES = 3;
+
+        public async Task<IActionResult> Pronostico()
+        {
+            var modelo = new PronosticoViewModel
+            {
+                MesesMinimosRequeridos = MESES_MINIMOS_PARA_PRONOSTICO
+            };
+
+            try
+            {
+                // Cajas totales (importación + exportación) agrupadas por mes.
+                var importPorMes = await _context.Importaciones
+                    .Where(i => i.Fecha != null)
+                    .GroupBy(i => new { i.Fecha!.Value.Year, i.Fecha.Value.Month })
+                    .Select(g => new { g.Key.Year, g.Key.Month, Cajas = g.Sum(x => x.Cajas) })
+                    .ToListAsync();
+
+                var exportPorMes = await _context.Exportaciones
+                    .Where(e => e.Fecha != null)
+                    .GroupBy(e => new { e.Fecha!.Value.Year, e.Fecha.Value.Month })
+                    .Select(g => new { g.Key.Year, g.Key.Month, Cajas = g.Sum(x => x.Cajas) })
+                    .ToListAsync();
+
+                var mesesCombinados = importPorMes.Select(x => (x.Year, x.Month, x.Cajas))
+                    .Concat(exportPorMes.Select(x => (x.Year, x.Month, x.Cajas)))
+                    .GroupBy(x => (x.Year, x.Month))
+                    .Select(g => new { g.Key.Year, g.Key.Month, Cajas = g.Sum(x => x.Cajas) })
+                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                    .ToList();
+
+                modelo.MesesHistoricosUsados = mesesCombinados.Count;
+
+                // Escenario 2: no hay suficiente historial para un pronóstico confiable.
+                if (mesesCombinados.Count < MESES_MINIMOS_PARA_PRONOSTICO)
+                {
+                    modelo.HayDatosSuficientes = false;
+                    return View(modelo);
+                }
+
+                modelo.HayDatosSuficientes = true;
+
+                var culturaEs = new System.Globalization.CultureInfo("es-CR");
+                foreach (var mes in mesesCombinados)
+                {
+                    var fecha = new DateTime(mes.Year, mes.Month, 1);
+                    modelo.MesesHistoricos.Add(fecha.ToString("MMM yyyy", culturaEs));
+                    modelo.CajasHistoricas.Add(mes.Cajas);
+                }
+
+                // Generamos las etiquetas de los próximos 3 meses, a partir del
+                // último mes con datos reales.
+                var ultimoMes = new DateTime(mesesCombinados.Last().Year, mesesCombinados.Last().Month, 1);
+                for (int i = 1; i <= HORIZONTE_MESES; i++)
+                {
+                    modelo.MesesProyectados.Add(ultimoMes.AddMonths(i).ToString("MMM yyyy", culturaEs));
+                }
+
+                var resultado = _pronosticoService.GenerarPronostico(modelo.CajasHistoricas.ToArray(), HORIZONTE_MESES);
+
+                modelo.CajasProyectadas = resultado.Forecast.ToList();
+                modelo.LimiteInferior = resultado.LimiteInferior.ToList();
+                modelo.LimiteSuperior = resultado.LimiteSuperior.ToList();
+            }
+            catch (Exception ex)
+            {
+                // Escenario 3: cualquier error en el proceso de cálculo.
+                modelo.HuboError = true;
+                modelo.MensajeError = "Ocurrió un error al generar el pronóstico. Intenta de nuevo más tarde.";
+                _logger.LogError(ex, "Error al generar Pronostico del dashboard");
             }
 
             return View(modelo);

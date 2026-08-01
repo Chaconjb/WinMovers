@@ -15,10 +15,13 @@ builder.Services.AddDbContext<WinMoversContext>(options =>
 builder.Services.Configure<WinMovers.Services.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddTransient<WinMovers.Services.IEmailSender, WinMovers.Services.EmailSenderSmtp>();
 
-// Servicios del m�dulo de Cotizaciones.
+// Servicios del módulo de Cotizaciones.
 builder.Services.AddScoped<WinMovers.Services.IQuoteService, WinMovers.Services.QuoteService>();
 builder.Services.AddScoped<WinMovers.Services.ICotizacionEmailService, WinMovers.Services.CotizacionEmailService>();
 builder.Services.AddScoped<WinMovers.Services.IViewRenderService, WinMovers.Services.ViewRenderService>();
+
+// Servicio de pronósticos con ML.NET (HU-DAS-003).
+builder.Services.AddScoped<WinMovers.Services.IPronosticoService, WinMovers.Services.PronosticoService>();
 
 // =========================================================
 // ASP.NET Identity

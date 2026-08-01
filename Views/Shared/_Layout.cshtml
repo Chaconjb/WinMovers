@@ -14,6 +14,7 @@
 
 	@{
 	var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+	var accion = ViewContext.RouteData.Values["action"]?.ToString();
 	var enGestionUsuarios = ctrl == "Usuario" || ctrl == "Rol";
 	}
 
@@ -80,6 +81,34 @@
                        class="sidebar-link @(ctrl == "Importacion=" ? "active=" : "")">
 						<i class="fas fa-file-import"></i>
 						<span>Importación</span>
+					</a>
+				</li>
+				<li>
+					<a asp-controller="Dashboards" asp-action="Analitica"
+                       class="sidebar-link @(accion == "Analitica=" ? "active=" : "")">
+						<i class="fas fa-chart-line"></i>
+						<span>Analítica</span>
+					</a>
+				</li>
+				<li>
+					<a asp-controller="Dashboards" asp-action="Historico"
+                       class="sidebar-link @(accion == "Historico=" ? "active=" : "")">
+						<i class="fas fa-clock-rotate-left"></i>
+						<span>Histórico</span>
+					</a>
+				</li>
+				<li>
+					<a asp-controller="Dashboards" asp-action="Estadisticas"
+                       class="sidebar-link @(accion == "Estadisticas=" ? "active=" : "")">
+						<i class="fas fa-chart-pie"></i>
+						<span>Estadísticas</span>
+					</a>
+				</li>
+				<li>
+					<a asp-controller="Dashboards" asp-action="Pronostico"
+                       class="sidebar-link @(accion == "Pronostico=" ? "active=" : "")">
+						<i class="fas fa-wand-magic-sparkles"></i>
+						<span>Pronóstico</span>
 					</a>
 				</li>
 				@if (User.IsInRole("Administrador"))

@@ -1,0 +1,134 @@
+@model WinMovers.Models.ViewModels.PronosticoViewModel
+@{
+    ViewData["Title"] = "Pronóstico de Transporte";
+}
+
+<h2 class="content-title"><i class="fas fa-wand-magic-sparkles"></i> Pronóstico de Transporte (próximos 3 meses)</h2>
+
+@if (Model.HuboError)
+{
+    <!-- Escenario 3: error en el cálculo -->
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-triangle-exclamation" style="font-size:2.5rem; color:var(--danger); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text); font-weight:500;">@Model.MensajeError</p>
+    </div>
+}
+else if (!Model.HayDatosSuficientes)
+{
+    <!-- Escenario 2: datos insuficientes -->
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-chart-line" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text); font-weight:500; margin-bottom:6px;">No hay suficientes datos históricos para generar un pronóstico confiable.</p>
+        <p style="color:var(--text-muted); font-size:0.9rem;">
+            Se necesitan al menos <strong>@Model.MesesMinimosRequeridos meses</strong> con registros de importaciones o exportaciones.
+            Actualmente hay <strong>@Model.MesesHistoricosUsados mes(es)</strong> disponibles.
+        </p>
+    </div>
+}
+else
+{
+    <!-- Escenario 1: generación exitosa -->
+    <div class="badge badge-info" style="display:block; padding:10px 14px; font-size:0.85rem; margin-bottom:15px;">
+        <i class="fas fa-info-circle"></i> Pronóstico generado con base en @Model.MesesHistoricosUsados meses de historial, usando ML.NET (análisis de espectro singular).
+    </div>
+
+    <div class="stat-card" style="display:block;">
+        <h3 class="content-title" style="font-size:1rem;">Cajas históricas y proyección</h3>
+        <canvas id="chartPronostico" height="100"></canvas>
+    </div>
+
+    <div class="list-section" style="margin-top:20px;">
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Cajas proyectadas</th>
+                        <th>Rango de confianza (95%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.MesesProyectados.Count; i++)
+                    {
+                        <tr>
+                            <td>@Model.MesesProyectados[i]</td>
+                            <td><strong>@Math.Round(Model.CajasProyectadas[i])</strong></td>
+                            <td>@Math.Round(Model.LimiteInferior[i]) — @Math.Round(Model.LimiteSuperior[i])</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        const mesesHistoricos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MesesHistoricos));
+        const mesesProyectados = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MesesProyectados));
+        const cajasHistoricas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CajasHistoricas));
+        const cajasProyectadas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CajasProyectadas));
+        const limiteInferior = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LimiteInferior));
+        const limiteSuperior = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LimiteSuperior));
+
+        const todosLosMeses = [...mesesHistoricos, ...mesesProyectados];
+
+        // Serie histórica: valores reales, nulls en la parte futura.
+        const serieHistorica = [...cajasHistoricas, ...Array(mesesProyectados.length).fill(null)];
+
+        // Serie proyectada: nulls en el pasado, luego el pronóstico. El último
+        // punto histórico se repite al inicio para que la línea conecte visualmente.
+        const serieProyectada = [
+            ...Array(mesesHistoricos.length - 1).fill(null),
+            cajasHistoricas[cajasHistoricas.length - 1],
+            ...cajasProyectadas
+        ];
+
+        const serieLimiteSuperior = [...Array(mesesHistoricos.length - 1).fill(null), cajasHistoricas[cajasHistoricas.length - 1], ...limiteSuperior];
+        const serieLimiteInferior = [...Array(mesesHistoricos.length - 1).fill(null), cajasHistoricas[cajasHistoricas.length - 1], ...limiteInferior];
+
+        new Chart(document.getElementById('chartPronostico'), {
+            type: 'line',
+            data: {
+                labels: todosLosMeses,
+                datasets: [
+                    {
+                        label: 'Límite superior',
+                        data: serieLimiteSuperior,
+                        borderColor: 'rgba(26,115,232,0.15)',
+                        backgroundColor: 'rgba(26,115,232,0.08)',
+                        fill: '+1',
+                        pointRadius: 0,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Límite inferior',
+                        data: serieLimiteInferior,
+                        borderColor: 'rgba(26,115,232,0.15)',
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Histórico',
+                        data: serieHistorica,
+                        borderColor: '#1a73e8',
+                        backgroundColor: '#1a73e8',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Proyección',
+                        data: serieProyectada,
+                        borderColor: '#ff6f00',
+                        backgroundColor: '#ff6f00',
+                        borderDash: [6, 4],
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    </script>
+}
