@@ -135,6 +135,51 @@ CREATE TABLE [OrdenesTrabajo] (
     CONSTRAINT [PK_OrdenesTrabajo] PRIMARY KEY ([IdOrden])
 );
 
+CREATE TABLE Inventario
+(
+    id_material INT IDENTITY(1,1) PRIMARY KEY,
+
+    nombre_material NVARCHAR(100) NOT NULL,
+
+    descripcion NVARCHAR(250) NULL,
+
+    categoria NVARCHAR(50) NOT NULL,
+
+    unidad NVARCHAR(30) NOT NULL,
+
+    existencias INT NOT NULL
+        CHECK(existencias >= 0),
+
+    stock_minimo INT NOT NULL
+        DEFAULT 0,
+
+    fecha_creacion DATETIME2 NOT NULL
+        DEFAULT GETDATE(),
+
+    fecha_actualizacion DATETIME2 NULL
+);
+
+CREATE TABLE OrdenTrabajoMaterial
+(
+    id_orden_material INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_orden INT NOT NULL,
+
+    id_material INT NOT NULL,
+
+    cantidad INT NOT NULL CHECK(cantidad > 0),
+
+    fecha_asignacion DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_OrdenMaterial_Orden
+        FOREIGN KEY(id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden),
+
+    CONSTRAINT FK_OrdenMaterial_Inventario
+        FOREIGN KEY(id_material)
+        REFERENCES Inventario(id_material)
+);
+
 CREATE TABLE [ExportacionesDocumentos] (
     [IdDocumento] int NOT NULL IDENTITY,
     [IdExportacion] int NOT NULL,

@@ -1,0 +1,150 @@
+﻿@model WinMovers.Models.Inventario
+
+@{
+    ViewData["Title"] = "Nuevo Material";
+}
+
+<div class="form-header">
+
+    <h2 class="content-title">
+
+        <i class="fas fa-plus-circle"></i>
+
+        Nuevo Material
+
+    </h2>
+
+    <a asp-action="Index"
+       class="btn btn-outline">
+
+        <i class="fas fa-list"></i>
+
+        Ver Inventario
+
+    </a>
+
+</div>
+
+<form asp-action="Create"
+      method="post"
+      class="form-card">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger mb-3">
+    </div>
+
+    <div class="form-row two-cols">
+
+        <div class="form-group">
+
+            <label asp-for="NombreMaterial"></label>
+
+            <input asp-for="NombreMaterial"
+                   class="form-control" />
+
+            <span asp-validation-for="NombreMaterial"
+                  class="text-danger"></span>
+
+        </div>
+
+        <div class="form-group">
+
+            <label asp-for="Categoria"></label>
+
+            <select asp-for="Categoria"
+                    class="form-control">
+
+                <option value="">Seleccione...</option>
+
+                <option>Caja</option>
+
+                <option>Embalaje</option>
+
+                <option>Protección</option>
+
+                <option>Herramienta</option>
+
+                <option>Otro</option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <div class="form-group">
+
+        <label asp-for="Descripcion"></label>
+
+        <textarea asp-for="Descripcion"
+                  rows="3"
+                  class="form-control"></textarea>
+
+    </div>
+
+    <div class="form-row three-cols">
+
+        <div class="form-group">
+
+            <label asp-for="Unidad"></label>
+
+            <input asp-for="Unidad"
+                   class="form-control" />
+
+        </div>
+
+        <div class="form-group">
+
+            <label asp-for="Existencias"></label>
+
+            <input asp-for="Existencias"
+                   class="form-control"
+                   type="number"
+                   min="0" />
+
+        </div>
+
+        <div class="form-group">
+
+            <label asp-for="StockMinimo"></label>
+
+            <input asp-for="StockMinimo"
+                   class="form-control"
+                   type="number"
+                   min="0" />
+
+        </div>
+
+    </div>
+
+    <div class="form-actions">
+
+        <button class="btn btn-primary"
+                type="submit">
+
+            <i class="fas fa-save"></i>
+
+            Guardar
+
+        </button>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+
+            Cancelar
+
+        </a>
+
+    </div>
+
+</form>
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

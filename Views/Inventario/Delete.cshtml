@@ -1,0 +1,108 @@
+﻿@model WinMovers.Models.Inventario
+
+@{
+    ViewData["Title"] = "Eliminar Material";
+}
+
+<div class="form-header">
+
+    <h2 class="content-title">
+        <i class="fas fa-trash"></i>
+        Eliminar Material
+    </h2>
+
+</div>
+
+<div class="form-card">
+
+    <h4>
+        ¿Está seguro que desea eliminar este material?
+    </h4>
+
+    <hr />
+
+    <div class="form-row two-cols">
+
+        <div>
+
+            <strong>Material:</strong>
+
+            @Model.NombreMaterial
+
+        </div>
+
+        <div>
+
+            <strong>Categoría:</strong>
+
+            @Model.Categoria
+
+        </div>
+
+        <div>
+
+            <strong>Unidad:</strong>
+
+            @Model.Unidad
+
+        </div>
+
+        <div>
+
+            <strong>Existencias:</strong>
+
+            @Model.Existencias
+
+        </div>
+
+        <div>
+
+            <strong>Stock mínimo:</strong>
+
+            @Model.StockMinimo
+
+        </div>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+    {
+        <div style="margin-top:20px;">
+
+            <strong>Descripción:</strong>
+
+            <p>@Model.Descripcion</p>
+
+        </div>
+    }
+
+    <form asp-action="Delete" method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden"
+               asp-for="IdMaterial" />
+
+        <div class="form-actions">
+
+            <button type="submit"
+                    class="btn btn-danger">
+
+                <i class="fas fa-trash"></i>
+
+                Eliminar
+
+            </button>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+
+                Cancelar
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>

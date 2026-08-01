@@ -99,7 +99,7 @@ namespace WinMovers.Models
         public ICollection<OrdenTrabajoHistorial> Historial { get; set; } = new List<OrdenTrabajoHistorial>();
         public ICollection<OrdenTrabajoNota> Notas { get; set; } = new List<OrdenTrabajoNota>();
 
-
+        public ICollection<OrdenTrabajoMaterial> MaterialesAsignados { get; set; } = new List<OrdenTrabajoMaterial>();
 
     }
 }

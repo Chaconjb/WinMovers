@@ -28,6 +28,8 @@ namespace WinMovers.Data
         public DbSet<AccesoAuditoria> AccesosAuditoria { get; set; }
         public DbSet<RolAuditoria> RolesAuditoria { get; set; }
         public DbSet<Cotizacion> Cotizaciones { get; set; }
+        public DbSet<Inventario> Inventario { get; set; }
+        public DbSet<OrdenTrabajoMaterial> OrdenTrabajoMaterial { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -741,6 +743,79 @@ namespace WinMovers.Data
                     .WithMany()
                     .HasForeignKey(x => x.IdUsuario)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+            // =========================================================
+            // Inventario 
+            // =========================================================
+            modelBuilder.Entity<Inventario>(entity =>
+            {
+                entity.ToTable("Inventario");
+
+                entity.HasKey(e => e.IdMaterial);
+
+                entity.Property(e => e.IdMaterial)
+                    .HasColumnName("id_material");
+
+                entity.Property(e => e.NombreMaterial)
+                    .HasColumnName("nombre_material")
+                    .HasMaxLength(100)
+                    .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(250);
+
+                entity.Property(e => e.Categoria)
+                    .HasColumnName("categoria")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Unidad)
+                    .HasColumnName("unidad")
+                    .HasMaxLength(30);
+
+                entity.Property(e => e.Existencias)
+                    .HasColumnName("existencias");
+
+                entity.Property(e => e.StockMinimo)
+                    .HasColumnName("stock_minimo");
+
+                entity.Property(e => e.FechaCreacion)
+                    .HasColumnName("fecha_creacion");
+
+                entity.Property(e => e.FechaActualizacion)
+                    .HasColumnName("fecha_actualizacion");
+            });
+            // =========================================================
+            // OrdenTrabajoMaterial
+            // =========================================================
+            modelBuilder.Entity<OrdenTrabajoMaterial>(entity =>
+            {
+                entity.ToTable("OrdenTrabajoMaterial");
+
+                entity.HasKey(e => e.IdOrdenMaterial);
+
+                entity.Property(e => e.IdOrdenMaterial)
+                    .HasColumnName("id_orden_material");
+
+                entity.Property(e => e.IdOrden)
+                    .HasColumnName("id_orden");
+
+                entity.Property(e => e.IdMaterial)
+                    .HasColumnName("id_material");
+
+                entity.Property(e => e.Cantidad)
+                    .HasColumnName("cantidad");
+
+                entity.Property(e => e.FechaAsignacion)
+                    .HasColumnName("fecha_asignacion");
+
+                entity.HasOne(e => e.OrdenTrabajo)
+                    .WithMany(o => o.MaterialesAsignados)
+                    .HasForeignKey(e => e.IdOrden);
+
+                entity.HasOne(e => e.Material)
+                    .WithMany(i => i.OrdenesMaterial)
+                    .HasForeignKey(e => e.IdMaterial);
             });
         }
     }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
 using WinMovers.Models;
+using WinMovers.Models.ViewModels;
 
 namespace WinMovers.Controllers
 {
@@ -374,6 +375,81 @@ namespace WinMovers.Controllers
                 return NotFound();
 
             return View(orden);
+        }
+
+        public async Task<IActionResult> Materiales(int id)
+        {
+            var orden = await _context.OrdenesTrabajo
+                .Include(o => o.MaterialesAsignados)
+                    .ThenInclude(m => m.Material)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (orden == null)
+                return NotFound();
+
+            ViewBag.Materiales = await _context.Inventario
+                .OrderBy(m => m.NombreMaterial)
+                .ToListAsync();
+
+            return View(orden);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AsignarMaterial(AsignarMaterialViewModel model)
+        {
+            // 1. Buscar la orden
+            var orden = await _context.OrdenesTrabajo
+                .FirstOrDefaultAsync(o => o.IdOrden == model.IdOrden);
+
+            if (orden == null)
+            {
+                TempData["Error"] = "La orden de trabajo no existe.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 2. Buscar el material
+            var material = await _context.Inventario
+                .FirstOrDefaultAsync(m => m.IdMaterial == model.IdMaterial);
+
+            if (material == null)
+            {
+                TempData["Error"] = "El material seleccionado no existe.";
+                return RedirectToAction(nameof(Materiales),
+                    new { id = model.IdOrden });
+            }
+
+            // 3. Validar stock
+            if (material.Existencias < model.Cantidad)
+            {
+                TempData["Error"] =
+                    $"Stock insuficiente. Disponible: {material.Existencias}";
+
+                return RedirectToAction(nameof(Materiales),
+                    new { id = model.IdOrden });
+            }
+
+            // 4. Registrar asignación
+            var asignacion = new OrdenTrabajoMaterial
+            {
+                IdOrden = model.IdOrden,
+                IdMaterial = model.IdMaterial,
+                Cantidad = model.Cantidad,
+                FechaAsignacion = DateTime.Now
+            };
+
+            _context.OrdenTrabajoMaterial.Add(asignacion);
+
+            // 5. Descontar inventario
+            material.Existencias -= model.Cantidad;
+            material.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Material asignado correctamente.";
+
+            return RedirectToAction(nameof(Materiales),
+                new { id = model.IdOrden });
         }
 
         // GET: /OrdenTrabajo/Notas/5

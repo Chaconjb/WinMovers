@@ -79,6 +79,13 @@
                                 <i class="fas fa-edit"></i>
                             </a>
 
+                            <a asp-action="Materiales"
+                               asp-route-id="@o.IdOrden"
+                               class="btn-icon"
+                               title="Asignar Materiales">
+                                <i class="fas fa-boxes"></i>
+                            </a>
+
                             <form asp-action="Delete"
                                   asp-route-id="@o.IdOrden"
                                   method="post"
