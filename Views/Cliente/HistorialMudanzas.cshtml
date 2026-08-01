@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WinMovers.Models.OrdenTrabajo>
+﻿@model IEnumerable<WinMovers.Models.ViewModels.ClienteMudanzaViewModel>
 
 <table class="data-table">
     <thead>
@@ -33,7 +33,14 @@
 
                     <td>@orden.Estado</td>
 
-                    <td>No disponible</td>
+                    <td>
+                        @(orden.Monto.HasValue
+                            ? $"{orden.Moneda} {orden.Monto.Value:N2}"
+                            : "No disponible")
+                    </td>
+
+                    <td>
+
 
                     <td>
 
