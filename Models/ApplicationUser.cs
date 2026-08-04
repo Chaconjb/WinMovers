@@ -15,6 +15,8 @@ namespace WinMovers.Models
         // Fuerza cambio de contraseña la próxima vez que inicie sesión
         // (usado para el flujo de contraseña temporal, HU-AUT-002 Escenario 3).
         public bool DebeCambiarContrasena { get; set; } = false;
+        public string? clave_autenticador { get; set; }
+
 
         public ICollection<OrdenTrabajoHistorial> HistorialOrdenes { get; set; } = new List<OrdenTrabajoHistorial>();
         public ICollection<ClienteHistorial> HistorialClientes { get; set; } = new List<ClienteHistorial>();

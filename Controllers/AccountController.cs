@@ -5,6 +5,8 @@ using WinMovers.Data;
 using WinMovers.Models;
 using WinMovers.Services;
 using System.Text.Encodings.Web;
+using QRCoder;
+using System.Text;
 
 namespace WinMovers.Controllers
 {
@@ -27,9 +29,7 @@ namespace WinMovers.Controllers
             _emailSender = emailSender;
         }
 
-        // =====================================================
-        // HU-AUT-001: Inicio de sesión
-        // =====================================================
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
@@ -47,35 +47,43 @@ namespace WinMovers.Controllers
 
             var usuario = await _userManager.FindByEmailAsync(modelo.Correo);
 
-            // Escenario 2: credenciales inválidas - nunca revelamos si el correo
-            // existe o no, siempre el mismo mensaje genérico.
+
             if (usuario == null || !usuario.Activo)
             {
                 await RegistrarAuditoriaAsync(null, modelo.Correo, exitoso: false, motivo: "UsuarioNoExisteOInactivo");
                 ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
                 return View(modelo);
             }
-
             var resultado = await _signInManager.PasswordSignInAsync(
                 usuario.UserName!,
                 modelo.Contrasena,
-                modelo.RecordarMe,
+                isPersistent: false,
                 lockoutOnFailure: true);
+
+            //if (resultado.RequiresTwoFactor)
+            //{
+            //    TempData["RecordarMe"] = modelo.RecordarMe;
+            //   return RedirectToAction(nameof(Verificar2FA));
+            //}
+
+            if (resultado.RequiresTwoFactor)
+            {
+                Console.WriteLine("ENTRO AL FLUJO 2FA");
+
+                TempData["RecordarMe"] = modelo.RecordarMe;
+
+                return RedirectToAction(nameof(Verificar2FA));
+            }
 
             if (resultado.Succeeded)
             {
-                await _signInManager.SignInWithClaimsAsync(usuario, modelo.RecordarMe,
-                    new[] { new System.Security.Claims.Claim("NombreCompleto", usuario.NombreCompleto) });
+                await RegistrarAuditoriaAsync(usuario.Id, modelo.Correo, true, "Exitoso");
 
-                await RegistrarAuditoriaAsync(usuario.Id, modelo.Correo, exitoso: true, motivo: "Exitoso");
-
-                // Escenario 3 de HU-AUT-002: contraseña temporal -> forzar cambio.
                 if (usuario.DebeCambiarContrasena)
-                {
                     return RedirectToAction(nameof(CambiarContrasenaTemporal));
-                }
 
-                if (!string.IsNullOrEmpty(modelo.ReturnUrl) && Url.IsLocalUrl(modelo.ReturnUrl))
+                if (!string.IsNullOrEmpty(modelo.ReturnUrl) &&
+                    Url.IsLocalUrl(modelo.ReturnUrl))
                     return Redirect(modelo.ReturnUrl);
 
                 return RedirectToAction("Index", "Dashboards");
@@ -83,14 +91,12 @@ namespace WinMovers.Controllers
 
             if (resultado.IsLockedOut)
             {
-                // Escenario 3: bloqueo temporal por múltiples intentos.
                 await RegistrarAuditoriaAsync(usuario.Id, modelo.Correo, exitoso: false, motivo: "CuentaBloqueada");
                 ModelState.AddModelError(string.Empty,
                     "Tu cuenta ha sido bloqueada temporalmente por múltiples intentos fallidos. Intenta de nuevo más tarde.");
                 return View(modelo);
             }
 
-            // Escenario 2: credenciales inválidas, mensaje genérico.
             await RegistrarAuditoriaAsync(usuario.Id, modelo.Correo, exitoso: false, motivo: "CredencialesInvalidas");
             ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
             return View(modelo);
@@ -121,9 +127,84 @@ namespace WinMovers.Controllers
             await _context.SaveChangesAsync();
         }
 
-        // =====================================================
-        // HU-AUT-002: Recuperación de contraseña
-        // =====================================================
+
+        // Registro de nuevos usuarios
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult CrearCuenta()
+        {
+            return View(new CrearCuentaViewModel());
+        }
+
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearCuenta(CrearCuentaViewModel modelo)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(modelo);
+            }
+
+
+            var usuarioExistente = await _userManager.FindByEmailAsync(modelo.Correo);
+
+            if (usuarioExistente != null)
+            {
+                ModelState.AddModelError(
+                    "Correo",
+                    "Ya existe una cuenta registrada con este correo."
+                );
+
+                return View(modelo);
+            }
+
+
+            var usuario = new ApplicationUser
+            {
+                UserName = modelo.Correo,
+                Email = modelo.Correo,
+                NombreCompleto = modelo.NombreCompleto,
+                Activo = true,
+                EmailConfirmed = false
+            };
+
+
+            var resultado = await _userManager.CreateAsync(
+                usuario,
+                modelo.Contrasena
+            );
+
+
+            if (!resultado.Succeeded)
+            {
+                foreach (var error in resultado.Errors)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        error.Description
+                    );
+                }
+
+                return View(modelo);
+            }
+
+
+            await _userManager.AddToRoleAsync(
+                usuario,
+                Roles.SinRol
+            );
+
+
+            TempData["Success"] = "Cuenta creada correctamente. Ahora puede iniciar sesión.";
+
+
+            return RedirectToAction(nameof(Login));
+        }
+
 
         [HttpGet]
         [AllowAnonymous]
@@ -139,8 +220,7 @@ namespace WinMovers.Controllers
 
             var usuario = await _userManager.FindByEmailAsync(modelo.Correo);
 
-            // Escenario 1 y 2 que muestran el MISMO mensaje genérico a propósito:
-            // así no revelamos si el correo existe o no en el sistema.
+
             if (usuario != null && usuario.Activo)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(usuario);
@@ -194,7 +274,6 @@ namespace WinMovers.Controllers
 
             if (usuario == null)
             {
-                // No revelamos si el correo existe; tratamos igual que token inválido/expirado.
                 return RedirectToAction(nameof(ResetPasswordFallido));
             }
 
@@ -202,17 +281,13 @@ namespace WinMovers.Controllers
 
             if (!resultado.Succeeded)
             {
-                // Si el token específicamente es inválido/expirado, mandamos a
-                // la pantalla de "solicitar nueva recuperación" (Escenario 5).
+
                 bool tokenInvalido = resultado.Errors.Any(e => e.Code == "InvalidToken");
                 if (tokenInvalido)
                 {
                     return RedirectToAction(nameof(ResetPasswordFallido));
                 }
 
-                // Cualquier otro error (ej. contraseña no cumple la política)
-                // se muestra directamente en el mismo formulario, para que el
-                // usuario corrija y lo intente de nuevo sin perder el token.
                 foreach (var error in resultado.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
@@ -223,7 +298,6 @@ namespace WinMovers.Controllers
             usuario.DebeCambiarContrasena = false;
             await _userManager.UpdateAsync(usuario);
 
-            // Escenario 4: mensaje de éxito.
             TempData["Success"] = "La contraseña ha sido cambiada exitosamente.";
             return RedirectToAction(nameof(ResetPasswordConfirmation));
         }
@@ -236,10 +310,6 @@ namespace WinMovers.Controllers
         [AllowAnonymous]
         public IActionResult ResetPasswordFallido() => View();
 
-        // =====================================================
-        // HU-AUT-002 Escenario 3: cambio obligatorio tras
-        // iniciar sesión con contraseña temporal.
-        // =====================================================
 
         [HttpGet]
         [Microsoft.AspNetCore.Authorization.Authorize]
@@ -272,6 +342,136 @@ namespace WinMovers.Controllers
 
             TempData["Success"] = "La contraseña ha sido cambiada exitosamente.";
             return RedirectToAction("Index", "Dashboards");
+        }
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Configurar2FA()
+        {
+            var usuario = await _userManager.GetUserAsync(User);
+
+            if (usuario == null)
+                return RedirectToAction(nameof(Login));
+
+
+            var key = await _userManager.GetAuthenticatorKeyAsync(usuario);
+
+
+            if (string.IsNullOrEmpty(key))
+            {
+                await _userManager.ResetAuthenticatorKeyAsync(usuario);
+
+                key = await _userManager.GetAuthenticatorKeyAsync(usuario);
+            }
+
+
+            var email = await _userManager.GetEmailAsync(usuario);
+
+
+            var uri = $"otpauth://totp/WinMovers:{email}?secret={key}&issuer=WinMovers";
+
+
+            using var qrGenerator = new QRCodeGenerator();
+
+            using var qrCodeData = qrGenerator.CreateQrCode(
+                uri,
+                QRCodeGenerator.ECCLevel.Q
+            );
+
+
+            using var qrCode = new PngByteQRCode(qrCodeData);
+
+
+            var imagen = qrCode.GetGraphic(20);
+
+
+            ViewBag.QRCode =
+                "data:image/png;base64," +
+                Convert.ToBase64String(imagen);
+
+
+            ViewBag.Key = key;
+
+
+            return View("~/Views/DobleFactor/Configurar.cshtml");
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Verificar2FA(Verificar2FAViewModel modelo)
+        {
+            if (!ModelState.IsValid)
+                return View(modelo);
+
+            var recordar = TempData["RecordarMe"] != null &&
+                           Convert.ToBoolean(TempData["RecordarMe"]);
+
+            var resultado = await _signInManager.TwoFactorAuthenticatorSignInAsync(
+                modelo.Codigo.Replace(" ", "").Replace("-", ""),
+                recordar,
+                rememberClient: false);
+
+            if (resultado.Succeeded)
+            {
+                return RedirectToAction("Index", "Dashboards");
+            }
+
+            if (resultado.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Cuenta bloqueada.");
+                return View(modelo);
+            }
+
+            ModelState.AddModelError("", "Código incorrecto.");
+            return View(modelo);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Verificar2FA()
+        {
+            return View(new Verificar2FAViewModel());
+        }
+
+    
+    [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Activar2FA(string codigo)
+        {
+            var usuario = await _userManager.GetUserAsync(User);
+
+            if (usuario == null)
+                return RedirectToAction(nameof(Login));
+
+
+            var valido = await _userManager.VerifyTwoFactorTokenAsync(
+                usuario,
+                TokenOptions.DefaultAuthenticatorProvider,
+                codigo
+            );
+
+
+            if (valido)
+            {
+                usuario.TwoFactorEnabled = true;
+
+                await _userManager.UpdateAsync(usuario);
+
+
+                TempData["Success"] =
+                "Autenticador activado correctamente";
+
+
+                return RedirectToAction(nameof(Login));
+            }
+
+
+            ModelState.AddModelError(
+                "",
+                "Código incorrecto"
+            );
+
+
+            return View("Configurar2FA");
         }
     }
 }

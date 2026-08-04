@@ -1,0 +1,133 @@
+﻿@model WinMovers.Models.CrearCuentaViewModel
+
+@{
+    ViewData["Title"] = "Crear cuenta";
+}
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-6">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h2 class="text-center mb-4">
+                        Crear cuenta
+                    </h2>
+
+
+                    <form asp-action="CrearCuenta" method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label asp-for="NombreCompleto"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="NombreCompleto"
+                                   class="form-control"
+                                   placeholder="Nombre completo" />
+
+                            <span asp-validation-for="NombreCompleto"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="mb-3">
+
+                            <label asp-for="Correo"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Correo"
+                                   class="form-control"
+                                   placeholder="correo@email.com" />
+
+                            <span asp-validation-for="Correo"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="mb-3">
+
+                            <label asp-for="Contrasena"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Contrasena"
+                                   class="form-control"
+                                   placeholder="Contraseña" />
+
+                            <span asp-validation-for="Contrasena"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="mb-3">
+
+                            <label asp-for="ConfirmarContrasena"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="ConfirmarContrasena"
+                                   class="form-control"
+                                   placeholder="Confirmar contraseña" />
+
+                            <span asp-validation-for="ConfirmarContrasena"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            Crear cuenta
+                        </button>
+
+
+                    </form>
+
+
+                    <div class="text-center mt-3">
+
+                        <a asp-action="Login">
+                            ¿Ya tiene una cuenta? Iniciar sesión
+                        </a>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

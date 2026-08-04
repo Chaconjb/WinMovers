@@ -54,6 +54,7 @@ namespace WinMovers.Data
                 e.Property(x => x.PhoneNumber).HasColumnName("telefono");
                 e.Property(x => x.PhoneNumberConfirmed).HasColumnName("telefono_confirmado");
                 e.Property(x => x.TwoFactorEnabled).HasColumnName("doble_factor_habilitado");
+                e.Property(x => x.clave_autenticador).HasColumnName("clave_autenticador");
                 e.Property(x => x.LockoutEnd).HasColumnName("bloqueo_hasta");
                 e.Property(x => x.LockoutEnabled).HasColumnName("bloqueo_habilitado");
                 e.Property(x => x.AccessFailedCount).HasColumnName("intentos_fallidos");

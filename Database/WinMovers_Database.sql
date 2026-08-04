@@ -186,7 +186,7 @@ CREATE TABLE [ExportacionesDocumentos] (
     [NombreDocumento] nvarchar(200) NOT NULL,
     [TipoAgente] nvarchar(20) NOT NULL,
     [Completado] bit NOT NULL,
-    CONSTRAINT [PK_ExportacionesDocumentos] PRIMARY KEY ([IdDocumento]),
+    CONSTRAINT  PRIMARY KEY ([IdDocumento]),
     CONSTRAINT [FK_ExportacionesDocumentos_Exportaciones_IdExportacion] FOREIGN KEY ([IdExportacion]) REFERENCES [Exportaciones] ([IdExportacion]) ON DELETE CASCADE
 );
 
@@ -869,6 +869,9 @@ ADD id_orden INT;
 
 ALTER TABLE [dbo].[Importaciones]
 ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
+
+ALTER TABLE Usuarios
+ADD clave_autenticador nvarchar(max) NULL;
 
 --cambio tabla ordenes de trabajo HU-CLI-004--
 ALTER TABLE Ordenes_Trabajo
