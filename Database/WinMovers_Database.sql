@@ -186,7 +186,7 @@ CREATE TABLE [ExportacionesDocumentos] (
     [NombreDocumento] nvarchar(200) NOT NULL,
     [TipoAgente] nvarchar(20) NOT NULL,
     [Completado] bit NOT NULL,
-    CONSTRAINT  PRIMARY KEY ([IdDocumento]),
+    CONSTRAINT [PK_ExportacionesDocumentos] PRIMARY KEY ([IdDocumento]),
     CONSTRAINT [FK_ExportacionesDocumentos_Exportaciones_IdExportacion] FOREIGN KEY ([IdExportacion]) REFERENCES [Exportaciones] ([IdExportacion]) ON DELETE CASCADE
 );
 
