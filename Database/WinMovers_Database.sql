@@ -135,134 +135,6 @@ CREATE TABLE [OrdenesTrabajo] (
     CONSTRAINT [PK_OrdenesTrabajo] PRIMARY KEY ([IdOrden])
 );
 
-CREATE TABLE Inventario
-(
-    id_material INT IDENTITY(1,1) PRIMARY KEY,
-
-    nombre_material NVARCHAR(100) NOT NULL,
-
-    descripcion NVARCHAR(250) NULL,
-
-    categoria NVARCHAR(50) NOT NULL,
-
-    unidad NVARCHAR(30) NOT NULL,
-
-    existencias INT NOT NULL
-        CHECK(existencias >= 0),
-
-    stock_minimo INT NOT NULL
-        DEFAULT 0,
-
-    fecha_creacion DATETIME2 NOT NULL
-        DEFAULT GETDATE(),
-
-    fecha_actualizacion DATETIME2 NULL
-);
-
-CREATE TABLE OrdenTrabajoMaterial
-(
-    id_orden_material INT IDENTITY(1,1) PRIMARY KEY,
-
-    id_orden INT NOT NULL,
-
-    id_material INT NOT NULL,
-
-    cantidad INT NOT NULL CHECK(cantidad > 0),
-
-    fecha_asignacion DATETIME2 NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT FK_OrdenMaterial_Orden
-        FOREIGN KEY(id_orden)
-        REFERENCES Ordenes_Trabajo(id_orden),
-
-    CONSTRAINT FK_OrdenMaterial_Inventario
-        FOREIGN KEY(id_material)
-        REFERENCES Inventario(id_material)
-);
-
--- HU-INV-003: bienes del cliente transportados en cada orden.
-CREATE TABLE BienesMudanza
-(
-    id_bien INT IDENTITY(1,1) PRIMARY KEY,
-
-    id_orden INT NOT NULL,
-
-    nombre_bien NVARCHAR(150) NOT NULL,
-
-    descripcion NVARCHAR(250) NULL,
-
-    cantidad INT NOT NULL CHECK(cantidad > 0),
-
-    condicion NVARCHAR(50) NOT NULL,
-
-    observaciones NVARCHAR(500) NULL,
-
-    fecha_registro DATETIME2 NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT FK_BienesMudanza_Orden
-        FOREIGN KEY(id_orden)
-        REFERENCES Ordenes_Trabajo(id_orden)
-        ON DELETE CASCADE
-);
-
--- Escenario 2 de HU-INV-003: un bien no puede repetirse en la misma orden.
-CREATE UNIQUE INDEX UX_BienesMudanza_Orden_Nombre
-    ON BienesMudanza(id_orden, nombre_bien);
-
--- HU-INV-002: lista de embalaje que documenta los bienes transportados.
-CREATE TABLE ListasEmbalaje
-(
-    id_lista INT IDENTITY(1,1) PRIMARY KEY,
-
-    id_orden INT NOT NULL,
-
-    numero_lista NVARCHAR(30) NOT NULL,
-
-    responsable NVARCHAR(150) NOT NULL,
-
-    observaciones NVARCHAR(500) NULL,
-
-    estado NVARCHAR(20) NOT NULL,
-
-    fecha_generacion DATETIME2 NOT NULL DEFAULT GETDATE(),
-
-    fecha_actualizacion DATETIME2 NULL,
-
-    CONSTRAINT FK_ListasEmbalaje_Orden
-        FOREIGN KEY(id_orden)
-        REFERENCES Ordenes_Trabajo(id_orden)
-        ON DELETE CASCADE
-);
-
--- Una sola lista de embalaje por orden.
-CREATE UNIQUE INDEX UX_ListasEmbalaje_Orden
-    ON ListasEmbalaje(id_orden);
-
-CREATE TABLE ListasEmbalajeDetalle
-(
-    id_detalle INT IDENTITY(1,1) PRIMARY KEY,
-
-    id_lista INT NOT NULL,
-
-    id_bien INT NOT NULL,
-
-    cantidad INT NOT NULL CHECK(cantidad > 0),
-
-    CONSTRAINT FK_ListasEmbalajeDetalle_Lista
-        FOREIGN KEY(id_lista)
-        REFERENCES ListasEmbalaje(id_lista)
-        ON DELETE CASCADE,
-
-    -- Sin CASCADE a propósito: al borrar un bien de la orden, el renglón se
-    -- quita explícitamente desde la aplicación para avisar al operador.
-    CONSTRAINT FK_ListasEmbalajeDetalle_Bien
-        FOREIGN KEY(id_bien)
-        REFERENCES BienesMudanza(id_bien)
-);
-
--- Un bien no puede aparecer dos veces en la misma lista.
-CREATE UNIQUE INDEX UX_ListasEmbalajeDetalle_Lista_Bien
-    ON ListasEmbalajeDetalle(id_lista, id_bien);
 
 CREATE TABLE [ExportacionesDocumentos] (
     [IdDocumento] int NOT NULL IDENTITY,
@@ -788,43 +660,6 @@ CREATE TABLE [Usuarios_Claims] (
     CONSTRAINT [FK_Usuarios_Claims_Usuarios_UserId] FOREIGN KEY ([UserId]) REFERENCES [Usuarios] ([id_usuario]) ON DELETE CASCADE
 );
 
-CREATE TABLE Clientes_Historial (
-    id_historial INT IDENTITY(1,1) PRIMARY KEY,
-
-    id_cliente INT NOT NULL,
-
-    campo_modificado NVARCHAR(100) NOT NULL,
-
-    valor_anterior NVARCHAR(500) NULL,
-
-    valor_nuevo NVARCHAR(500) NULL,
-
-    usuario NVARCHAR(100) NULL,
-
-    fecha_cambio DATETIME2 NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT FK_ClientesHistorial_Cliente
-        FOREIGN KEY (id_cliente)
-        REFERENCES Clientes(id_cliente)
-        ON DELETE CASCADE
-);
-GO
-
-CREATE NONCLUSTERED INDEX IX_ClientesHistorial_Cliente
-ON Clientes_Historial(id_cliente);
-GO
-
--- HU-ORD-004: Notas y observaciones
-CREATE TABLE Ordenes_Trabajo_Notas (
-    id_nota              INT IDENTITY(1,1) PRIMARY KEY,
-    id_orden             INT             NOT NULL,
-    contenido            NVARCHAR(MAX)   NOT NULL,
-    usuario              NVARCHAR(100)   NULL,       -- texto libre por ahora (sin auth)
-    fecha_creacion       DATETIME2       NOT NULL DEFAULT GETDATE(),
-    fecha_actualizacion  DATETIME2       NULL,
-    CONSTRAINT FK_OTNota_Orden
-        FOREIGN KEY (id_orden)
-        REFERENCES Ordenes_Trabajo(id_orden) ON DELETE CASCADE
 CREATE TABLE [Usuarios_Logins] (
     [LoginProvider] nvarchar(450) NOT NULL,
     [ProviderKey] nvarchar(450) NOT NULL,
@@ -941,277 +776,146 @@ VALUES
     ('SinRol', 'SINROL', 'Rol temporal para usuarios sin un rol asignado (por eliminación de su rol anterior)', NEWID());
 GO
 
----cambios--
-ALTER TABLE Ordenes_Trabajo
-ADD estado NVARCHAR(20) NOT NULL DEFAULT 'Pendiente';
-
-ALTER TABLE Importaciones
-ADD id_orden INT;
-
-ALTER TABLE Exportaciones
-ADD id_orden INT;
-
-ALTER TABLE [dbo].[Importaciones]
-ALTER COLUMN [pais] NVARCHAR(100) NOT NULL;
-
-ALTER TABLE Usuarios
-ADD clave_autenticador nvarchar(max) NULL;
-
---cambio tabla ordenes de trabajo HU-CLI-004--
-ALTER TABLE Ordenes_Trabajo
-ADD id_cliente INT NULL;
-
-ALTER TABLE Ordenes_Trabajo
-ADD CONSTRAINT FK_OrdenTrabajo_Cliente
-FOREIGN KEY (id_cliente)
-REFERENCES Clientes(id_cliente);
-
--- =========================================================
--- TABLAS DE IDENTITY (nombres adaptados a la convención del proyecto)
--- =========================================================
-CREATE TABLE Usuarios (
-    id_usuario                      INT IDENTITY(1,1) PRIMARY KEY,
-    nombre_completo                 NVARCHAR(200)   NOT NULL,
-    activo                          BIT             NOT NULL DEFAULT 1,
-    fecha_creacion                  DATETIME2       NOT NULL DEFAULT GETDATE(),
-    debe_cambiar_contrasena         BIT             NOT NULL DEFAULT 0,
-    nombre_usuario                  NVARCHAR(256)   NULL,
-    nombre_usuario_normalizado      NVARCHAR(256)   NULL,
-    correo                          NVARCHAR(256)   NULL,
-    correo_normalizado              NVARCHAR(256)   NULL,
-    correo_confirmado               BIT             NOT NULL DEFAULT 0,
-    contrasena_hash                 NVARCHAR(MAX)   NULL,
-    telefono                        NVARCHAR(30)    NULL,
-    telefono_confirmado             BIT             NOT NULL DEFAULT 0,
-    doble_factor_habilitado         BIT             NOT NULL DEFAULT 0,
-    bloqueo_hasta                   DATETIMEOFFSET  NULL,
-    bloqueo_habilitado              BIT             NOT NULL DEFAULT 1,
-    intentos_fallidos               INT             NOT NULL DEFAULT 0,
-    security_stamp                  NVARCHAR(MAX)   NULL,
-    concurrency_stamp                NVARCHAR(MAX)   NULL
-);
-CREATE UNIQUE INDEX IX_Usuarios_NombreUsuarioNormalizado ON Usuarios(nombre_usuario_normalizado) WHERE nombre_usuario_normalizado IS NOT NULL;
-CREATE INDEX IX_Usuarios_CorreoNormalizado ON Usuarios(correo_normalizado);
-GO
-
-CREATE TABLE Roles (
-    id_rol                   INT IDENTITY(1,1) PRIMARY KEY,
-    nombre                   NVARCHAR(256)   NULL,
-    nombre_normalizado       NVARCHAR(256)   NULL,
-    descripcion              NVARCHAR(250)   NULL,
-    ConcurrencyStamp         NVARCHAR(MAX)   NULL
-);
-CREATE UNIQUE INDEX IX_Roles_NombreNormalizado ON Roles(nombre_normalizado) WHERE nombre_normalizado IS NOT NULL;
-GO
-
-CREATE TABLE Usuarios_Roles (
-    UserId  INT NOT NULL,
-    RoleId  INT NOT NULL,
-    PRIMARY KEY (UserId, RoleId),
-    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
-    FOREIGN KEY (RoleId) REFERENCES Roles(id_rol) ON DELETE CASCADE
-);
-GO
-
-CREATE TABLE Usuarios_Claims (
-    Id           INT IDENTITY(1,1) PRIMARY KEY,
-    UserId       INT NOT NULL,
-    ClaimType    NVARCHAR(MAX) NULL,
-    ClaimValue   NVARCHAR(MAX) NULL,
-    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
-);
-GO
-
-CREATE TABLE Roles_Claims (
-    Id          INT IDENTITY(1,1) PRIMARY KEY,
-    RoleId      INT NOT NULL,
-    ClaimType   NVARCHAR(MAX) NULL,
-    ClaimValue  NVARCHAR(MAX) NULL,
-    FOREIGN KEY (RoleId) REFERENCES Roles(id_rol) ON DELETE CASCADE
-);
-GO
-
-CREATE TABLE Usuarios_Logins (
-    LoginProvider        NVARCHAR(450) NOT NULL,
-    ProviderKey           NVARCHAR(450) NOT NULL,
-    ProviderDisplayName   NVARCHAR(MAX) NULL,
-    UserId                INT NOT NULL,
-    PRIMARY KEY (LoginProvider, ProviderKey),
-    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
-);
-GO
-
-CREATE TABLE Usuarios_Tokens (
-    UserId          INT NOT NULL,
-    LoginProvider   NVARCHAR(450) NOT NULL,
-    Name            NVARCHAR(450) NOT NULL,
-    Value           NVARCHAR(MAX) NULL,
-    PRIMARY KEY (UserId, LoginProvider, Name),
-    FOREIGN KEY (UserId) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
-);
-GO
-
--- Tabla de auditoría para los accesos al sistema
-CREATE TABLE Accesos_Auditoria (
-    id_auditoria         INT IDENTITY(1,1) PRIMARY KEY,
-    id_usuario           INT             NULL,
-    correo_intentado     NVARCHAR(256)   NOT NULL,
-    exitoso              BIT             NOT NULL,
-    motivo               NVARCHAR(200)   NULL,
-    ip_address           NVARCHAR(45)    NULL,
-    fecha                DATETIME2       NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
-);
-GO
-
--- Cambios en las otras tablas que usaban usuario fijo
--- Tabla de Ordenes_Trabajo_Historial
-ALTER TABLE Ordenes_Trabajo_Historial DROP COLUMN usuario;
-GO
-
-ALTER TABLE Ordenes_Trabajo_Historial ADD id_usuario INT NULL;
-ALTER TABLE Ordenes_Trabajo_Historial
-    ADD CONSTRAINT FK_OrdenesTrabajoHistorial_Usuarios
-    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
-GO
-
--- Tabla de Ordenes_Trabajo_Notas
-ALTER TABLE Ordenes_Trabajo_Notas DROP COLUMN usuario;
-GO
-
-ALTER TABLE Ordenes_Trabajo_Notas ADD id_usuario INT NULL;
-ALTER TABLE Ordenes_Trabajo_Notas
-    ADD CONSTRAINT FK_OrdenesTrabajoNotas_Usuarios
-    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
-GO
-
--- Tabla de Clientes_Historial
-ALTER TABLE Clientes_Historial DROP COLUMN usuario;
-GO
-
-ALTER TABLE Clientes_Historial ADD id_usuario INT NULL;
-ALTER TABLE Clientes_Historial
-    ADD CONSTRAINT FK_ClientesHistorial_Usuarios
-    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
-GO
-
-CREATE TABLE dbo.Cotizaciones
+-- =====================================================================
+-- 2b. MODULO DE INVENTARIO (no gestionado por EF Core; tablas manuales)
+--     Movido aqui: dependen de Ordenes_Trabajo, que EF no deja con su
+--     nombre definitivo hasta que corren los sp_rename de la seccion 2.
+-- =====================================================================
+CREATE TABLE Inventario
 (
-    id_cotizacion INT IDENTITY(1,1) NOT NULL,
+    id_material INT IDENTITY(1,1) PRIMARY KEY,
 
-    numero_cotizacion NVARCHAR(20) NOT NULL,
-    fecha DATETIME2 NOT NULL DEFAULT(GETDATE()),
+    nombre_material NVARCHAR(100) NOT NULL,
 
-    -- Cliente
-    id_cliente INT NULL,
-    nombre_cliente NVARCHAR(200) NOT NULL,
-    compania NVARCHAR(200) NULL,
-    contacto NVARCHAR(200) NULL,
-    correo_cliente NVARCHAR(200) NULL,
-    telefono_celular NVARCHAR(30) NULL,
+    descripcion NVARCHAR(250) NULL,
 
-    -- Servicio
-    tipo_servicio NVARCHAR(50) NOT NULL DEFAULT('Puerta a Puerta'),
-    origen NVARCHAR(200) NULL,
-    destino NVARCHAR(200) NULL,
-    volumen_m3 DECIMAL(10,2) NULL,
-    tipo_contenedor NVARCHAR(30) NULL,
-    compania_maritima NVARCHAR(100) NULL,
-    corresponsal NVARCHAR(100) NULL,
+    categoria NVARCHAR(50) NOT NULL,
 
-    -- Cronograma
-    dias_empaque INT NULL,
-    dias_transito INT NULL,
-    dias_desalmacenaje INT NULL,
-    dias_frecuencia_salidas INT NULL,
+    unidad NVARCHAR(30) NOT NULL,
 
-    -- Costos
-    costo_origen DECIMAL(18,2) NOT NULL DEFAULT(0),
-    costo_tramites_aduana DECIMAL(18,2) NOT NULL DEFAULT(0),
-    costo_flete DECIMAL(18,2) NOT NULL DEFAULT(0),
-    costo_destino DECIMAL(18,2) NOT NULL DEFAULT(0),
+    existencias INT NOT NULL
+        CHECK(existencias >= 0),
 
-    -- Seguro
-    incluye_seguro BIT NOT NULL DEFAULT(0),
-    valor_declarado DECIMAL(18,2) NULL,
-    porcentaje_seguro DECIMAL(5,2) NOT NULL DEFAULT(3.5),
+    stock_minimo INT NOT NULL
+        DEFAULT 0,
 
-    -- Totales
-    subtotal DECIMAL(18,2) NOT NULL DEFAULT(0),
-    monto_seguro DECIMAL(18,2) NOT NULL DEFAULT(0),
-    tarifa_total DECIMAL(18,2) NOT NULL DEFAULT(0),
-    moneda NVARCHAR(3) NOT NULL DEFAULT('USD'),
+    fecha_creacion DATETIME2 NOT NULL
+        DEFAULT GETDATE(),
 
-    -- Condiciones
-    vigencia_dias INT NOT NULL DEFAULT(60),
-    forma_pago NVARCHAR(200) NULL,
-    exclusiones NVARCHAR(MAX) NULL,
-    observaciones NVARCHAR(MAX) NULL,
+    fecha_actualizacion DATETIME2 NULL
+);
 
-    -- Estado
-    estado NVARCHAR(20) NOT NULL DEFAULT('Borrador'),
-    fecha_envio DATETIME2 NULL,
-    correo_envio NVARCHAR(200) NULL,
+CREATE TABLE OrdenTrabajoMaterial
+(
+    id_orden_material INT IDENTITY(1,1) PRIMARY KEY,
 
-    -- Conversión a OT
-    id_orden_generada INT NULL,
+    id_orden INT NOT NULL,
 
-    -- Auditoría
-    hecho_por NVARCHAR(100) NULL,
-    id_usuario INT NULL,
-    fecha_creacion DATETIME2 NOT NULL DEFAULT(GETDATE()),
+    id_material INT NOT NULL,
+
+    cantidad INT NOT NULL CHECK(cantidad > 0),
+
+    fecha_asignacion DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_OrdenMaterial_Orden
+        FOREIGN KEY(id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden),
+
+    CONSTRAINT FK_OrdenMaterial_Inventario
+        FOREIGN KEY(id_material)
+        REFERENCES Inventario(id_material)
+);
+
+-- HU-INV-003: bienes del cliente transportados en cada orden.
+CREATE TABLE BienesMudanza
+(
+    id_bien INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_orden INT NOT NULL,
+
+    nombre_bien NVARCHAR(150) NOT NULL,
+
+    descripcion NVARCHAR(250) NULL,
+
+    cantidad INT NOT NULL CHECK(cantidad > 0),
+
+    condicion NVARCHAR(50) NOT NULL,
+
+    observaciones NVARCHAR(500) NULL,
+
+    fecha_registro DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_BienesMudanza_Orden
+        FOREIGN KEY(id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden)
+        ON DELETE CASCADE
+);
+
+-- Escenario 2 de HU-INV-003: un bien no puede repetirse en la misma orden.
+CREATE UNIQUE INDEX UX_BienesMudanza_Orden_Nombre
+    ON BienesMudanza(id_orden, nombre_bien);
+
+-- HU-INV-002: lista de embalaje que documenta los bienes transportados.
+CREATE TABLE ListasEmbalaje
+(
+    id_lista INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_orden INT NOT NULL,
+
+    numero_lista NVARCHAR(30) NOT NULL,
+
+    responsable NVARCHAR(150) NOT NULL,
+
+    observaciones NVARCHAR(500) NULL,
+
+    estado NVARCHAR(20) NOT NULL,
+
+    fecha_generacion DATETIME2 NOT NULL DEFAULT GETDATE(),
+
     fecha_actualizacion DATETIME2 NULL,
 
-    CONSTRAINT PK_Cotizaciones
-        PRIMARY KEY (id_cotizacion)
+    CONSTRAINT FK_ListasEmbalaje_Orden
+        FOREIGN KEY(id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden)
+        ON DELETE CASCADE
 );
-GO
 
-CREATE UNIQUE INDEX IX_Cotizaciones_NumeroCotizacion
-ON dbo.Cotizaciones(numero_cotizacion);
-GO
+-- Una sola lista de embalaje por orden.
+CREATE UNIQUE INDEX UX_ListasEmbalaje_Orden
+    ON ListasEmbalaje(id_orden);
 
-ALTER TABLE dbo.Cotizaciones
-ADD CONSTRAINT FK_Cotizaciones_Clientes
-FOREIGN KEY(id_cliente)
-REFERENCES dbo.Clientes(id_cliente);
-GO
+CREATE TABLE ListasEmbalajeDetalle
+(
+    id_detalle INT IDENTITY(1,1) PRIMARY KEY,
 
-ALTER TABLE dbo.Cotizaciones
-ADD CONSTRAINT FK_Cotizaciones_OrdenTrabajo
-FOREIGN KEY(id_orden_generada)
-REFERENCES dbo.Ordenes_Trabajo(id_orden);
-GO
+    id_lista INT NOT NULL,
 
-ALTER TABLE dbo.Cotizaciones
-ADD CONSTRAINT FK_Cotizaciones_Usuarios
-FOREIGN KEY(id_usuario)
-REFERENCES dbo.Usuarios(id_usuario);
-GO
+    id_bien INT NOT NULL,
 
--- =========================================================
--- ROLES AUDITORIA (HU-AUT-003)
--- =========================================================
-CREATE TABLE Roles_Auditoria (
-    id_auditoria              INT IDENTITY(1,1) PRIMARY KEY,
-    accion                    NVARCHAR(50)    NOT NULL,
-    nombre_rol                NVARCHAR(256)   NOT NULL,
-    id_usuario_afectado       INT             NULL,
-    id_usuario_responsable    INT             NULL,
-    detalle                   NVARCHAR(MAX)   NULL,
-    fecha                     DATETIME2       NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (id_usuario_afectado) REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
-    FOREIGN KEY (id_usuario_responsable) REFERENCES Usuarios(id_usuario) ON DELETE NO ACTION
+    cantidad INT NOT NULL CHECK(cantidad > 0),
+
+    CONSTRAINT FK_ListasEmbalajeDetalle_Lista
+        FOREIGN KEY(id_lista)
+        REFERENCES ListasEmbalaje(id_lista)
+        ON DELETE CASCADE,
+
+    -- Sin CASCADE a propósito: al borrar un bien de la orden, el renglón se
+    -- quita explícitamente desde la aplicación para avisar al operador.
+    CONSTRAINT FK_ListasEmbalajeDetalle_Bien
+        FOREIGN KEY(id_bien)
+        REFERENCES BienesMudanza(id_bien)
 );
+
+-- Un bien no puede aparecer dos veces en la misma lista.
+CREATE UNIQUE INDEX UX_ListasEmbalajeDetalle_Lista_Bien
+    ON ListasEmbalajeDetalle(id_lista, id_bien);
+
+
+-- Columna agregada manualmente (fuera de EF) para 2FA por autenticador
+ALTER TABLE Usuarios ADD clave_autenticador nvarchar(max) NULL;
 GO
 
--- Inserts iniciales para la tabla de roles de Identity
-INSERT INTO Roles (nombre, nombre_normalizado, descripcion, ConcurrencyStamp)
-VALUES
-    ('Administrador', 'ADMINISTRADOR', 'Acceso total al sistema', NEWID()),
-    ('Empleado', 'EMPLEADO', 'Acceso operativo a órdenes, clientes e importaciones/exportaciones', NEWID()),
-    ('SinRol', 'SINROL', 'Rol temporal para usuarios sin un rol asignado (por eliminación de su rol anterior)', NEWID());
-GO
+
 
 -- Se incluye 'activo' explícitamente: el esquema generado por EF no define
 -- un DEFAULT para esta columna, por lo que el seed debe proveer el valor.
