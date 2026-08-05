@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinMovers.Data;
 
@@ -11,9 +12,11 @@ using WinMovers.Data;
 namespace WinMovers.Migrations
 {
     [DbContext(typeof(WinMoversContext))]
-    partial class WinMoversContextModelSnapshot : ModelSnapshot
+    [Migration("20260805184244_AgregarBienesMudanza")]
+    partial class AgregarBienesMudanza
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -489,7 +492,7 @@ namespace WinMovers.Migrations
 
                     b.HasKey("IdCliente");
 
-                    b.ToTable("Clientes", (string)null);
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("WinMovers.Models.ClienteHistorial", b =>

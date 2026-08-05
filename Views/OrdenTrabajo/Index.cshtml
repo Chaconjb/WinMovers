@@ -86,6 +86,14 @@
                                 <i class="fas fa-boxes"></i>
                             </a>
 
+                            <a asp-controller="BienMudanza"
+                               asp-action="Index"
+                               asp-route-id="@o.IdOrden"
+                               class="btn-icon"
+                               title="Inventario de Bienes">
+                                <i class="fas fa-couch"></i>
+                            </a>
+
                             <form asp-action="Delete"
                                   asp-route-id="@o.IdOrden"
                                   method="post"

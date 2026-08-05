@@ -180,6 +180,35 @@ CREATE TABLE OrdenTrabajoMaterial
         REFERENCES Inventario(id_material)
 );
 
+-- HU-INV-003: bienes del cliente transportados en cada orden.
+CREATE TABLE BienesMudanza
+(
+    id_bien INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_orden INT NOT NULL,
+
+    nombre_bien NVARCHAR(150) NOT NULL,
+
+    descripcion NVARCHAR(250) NULL,
+
+    cantidad INT NOT NULL CHECK(cantidad > 0),
+
+    condicion NVARCHAR(50) NOT NULL,
+
+    observaciones NVARCHAR(500) NULL,
+
+    fecha_registro DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_BienesMudanza_Orden
+        FOREIGN KEY(id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden)
+        ON DELETE CASCADE
+);
+
+-- Escenario 2 de HU-INV-003: un bien no puede repetirse en la misma orden.
+CREATE UNIQUE INDEX UX_BienesMudanza_Orden_Nombre
+    ON BienesMudanza(id_orden, nombre_bien);
+
 CREATE TABLE [ExportacionesDocumentos] (
     [IdDocumento] int NOT NULL IDENTITY,
     [IdExportacion] int NOT NULL,

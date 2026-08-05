@@ -101,5 +101,8 @@ namespace WinMovers.Models
 
         public ICollection<OrdenTrabajoMaterial> MaterialesAsignados { get; set; } = new List<OrdenTrabajoMaterial>();
 
+        // Bienes del cliente transportados en esta orden (HU-INV-003).
+        public ICollection<BienMudanza> Bienes { get; set; } = new List<BienMudanza>();
+
     }
 }

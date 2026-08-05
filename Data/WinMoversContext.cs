@@ -30,6 +30,8 @@ namespace WinMovers.Data
         public DbSet<Cotizacion> Cotizaciones { get; set; }
         public DbSet<Inventario> Inventario { get; set; }
         public DbSet<OrdenTrabajoMaterial> OrdenTrabajoMaterial { get; set; }
+
+        public DbSet<BienMudanza> BienesMudanza { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -817,6 +819,57 @@ namespace WinMovers.Data
                 entity.HasOne(e => e.Material)
                     .WithMany(i => i.OrdenesMaterial)
                     .HasForeignKey(e => e.IdMaterial);
+            });
+            // =========================================================
+            // BienesMudanza (HU-INV-003)
+            // =========================================================
+            modelBuilder.Entity<BienMudanza>(entity =>
+            {
+                entity.ToTable("BienesMudanza");
+
+                entity.HasKey(e => e.IdBien);
+
+                entity.Property(e => e.IdBien)
+                    .HasColumnName("id_bien");
+
+                entity.Property(e => e.IdOrden)
+                    .HasColumnName("id_orden");
+
+                entity.Property(e => e.NombreBien)
+                    .HasColumnName("nombre_bien")
+                    .HasMaxLength(150)
+                    .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(250);
+
+                entity.Property(e => e.Cantidad)
+                    .HasColumnName("cantidad");
+
+                entity.Property(e => e.Condicion)
+                    .HasColumnName("condicion")
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(e => e.Observaciones)
+                    .HasColumnName("observaciones")
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.FechaRegistro)
+                    .HasColumnName("fecha_registro");
+
+                // Escenario 2: un mismo bien no puede repetirse dentro de la
+                // orden. El índice único respalda la validación del controlador
+                // para que una carrera entre dos peticiones tampoco la burle.
+                entity.HasIndex(e => new { e.IdOrden, e.NombreBien })
+                    .IsUnique()
+                    .HasDatabaseName("UX_BienesMudanza_Orden_Nombre");
+
+                entity.HasOne(e => e.OrdenTrabajo)
+                    .WithMany(o => o.Bienes)
+                    .HasForeignKey(e => e.IdOrden)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
