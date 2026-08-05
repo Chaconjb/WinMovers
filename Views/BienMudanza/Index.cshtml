@@ -30,15 +30,6 @@
 
 </div>
 
-@* El _Layout sólo pinta TempData["Success"], así que el aviso de error
-   (bien duplicado, datos inválidos) se renderiza aquí. *@
-@if (TempData["Error"] != null)
-{
-    <div class="toast show error" style="margin-bottom:15px;">
-        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
-    </div>
-}
-
 <!-- Información de la Orden -->
 
 <div class="form-card" style="margin-bottom:20px;">

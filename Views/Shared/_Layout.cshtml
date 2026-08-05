@@ -183,6 +183,17 @@
                 </div>
             }
 
+            @* Mensajes de error. Los toasts son position:fixed en la misma
+               esquina, así que si además hay uno de éxito este se sube para
+               que no queden encimados. *@
+            @if (TempData["Error"] != null)
+            {
+                <div class="toast show error" id="toastErr"
+                     style="bottom:@(TempData["Success"] != null ? "92px" : "30px");">
+                    <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                </div>
+            }
+
             @RenderBody()
         </main>
     </div>
@@ -199,10 +210,10 @@
             document.getElementById('sidebar').classList.toggle('active');
         });
 
-        // Auto-ocultar toast
+        // Auto-ocultar toasts (éxito y error)
         setTimeout(() => {
-            const t = document.getElementById('toastMsg');
-            if (t) t.classList.remove('show');
+            document.querySelectorAll('.toast.show')
+                .forEach(t => t.classList.remove('show'));
         }, 3500);
     </script>
 

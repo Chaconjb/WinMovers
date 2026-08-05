@@ -24,7 +24,7 @@ namespace WinMovers.Controllers
             _userManager = userManager;
         }
 
-        // Obtiene el Id (int) del usuario autenticado actual, o null si no hay sesión.
+        // Obtiene el Id (int) del usuario autenticado actual, o null si no hay sesiï¿½n.
         private int? ObtenerIdUsuarioActual()
         {
             var idTexto = _userManager.GetUserId(User);
@@ -88,7 +88,7 @@ namespace WinMovers.Controllers
             return View(orden);
         }
 
-        // GET: /OrdenTrabajo/Edit/5  — incluye archivos
+        // GET: /OrdenTrabajo/Edit/5  ï¿½ incluye archivos
         public async Task<IActionResult> Edit(int id)
         {
             var orden = await _context.OrdenesTrabajo
@@ -135,7 +135,7 @@ namespace WinMovers.Controllers
                 }
             }
 
-            // Registrar auditoría si cambia fecha_servicio o estado
+            // Registrar auditorï¿½a si cambia fecha_servicio o estado
             var cambios = new List<OrdenTrabajoHistorial>();
 
             var idUsuarioActual = ObtenerIdUsuarioActual();
@@ -214,17 +214,17 @@ namespace WinMovers.Controllers
         {
             if (archivo == null || archivo.Length == 0)
             {
-                return Json(new { ok = false, mensaje = "No se recibió ningún archivo." });
+                return Json(new { ok = false, mensaje = "No se recibiï¿½ ningï¿½n archivo." });
             }
 
             if (archivo.Length > MaxBytes)
             {
-                return Json(new { ok = false, mensaje = "El archivo supera el límite de 10 MB permitido." });
+                return Json(new { ok = false, mensaje = "El archivo supera el lï¿½mite de 10 MB permitido." });
             }
 
             if (!TiposPermitidos.Contains(archivo.ContentType))
             {
-                return Json(new { ok = false, mensaje = "Solo se permiten PDF o imágenes (JPG, PNG, WEBP)." });
+                return Json(new { ok = false, mensaje = "Solo se permiten PDF o imï¿½genes (JPG, PNG, WEBP)." });
             }
 
             var extension = Path.GetExtension(archivo.FileName);
@@ -429,7 +429,7 @@ namespace WinMovers.Controllers
                     new { id = model.IdOrden });
             }
 
-            // 4. Registrar asignación
+            // 4. Registrar asignaciï¿½n
             var asignacion = new OrdenTrabajoMaterial
             {
                 IdOrden = model.IdOrden,
@@ -452,6 +452,41 @@ namespace WinMovers.Controllers
                 new { id = model.IdOrden });
         }
 
+        // POST: /OrdenTrabajo/EliminarMaterial
+        // La vista Materiales.cshtml ya publicaba a esta acciÃ³n, que no existÃ­a.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarMaterial(int idOrdenMaterial)
+        {
+            var asignacion = await _context.OrdenTrabajoMaterial
+                .Include(a => a.Material)
+                .FirstOrDefaultAsync(a => a.IdOrdenMaterial == idOrdenMaterial);
+
+            if (asignacion == null)
+            {
+                TempData["Error"] = "La asignaciÃ³n de material ya no existe.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var idOrden = asignacion.IdOrden;
+
+            // Devolver al inventario lo que AsignarMaterial habÃ­a descontado.
+            if (asignacion.Material != null)
+            {
+                asignacion.Material.Existencias += asignacion.Cantidad;
+                asignacion.Material.FechaActualizacion = DateTime.Now;
+            }
+
+            _context.OrdenTrabajoMaterial.Remove(asignacion);
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] =
+                $"Material \"{asignacion.Material?.NombreMaterial}\" eliminado y devuelto al inventario.";
+
+            return RedirectToAction(nameof(Materiales), new { id = idOrden });
+        }
+
         // GET: /OrdenTrabajo/Notas/5
         public async Task<IActionResult> Notas(int id)
         {
@@ -471,7 +506,7 @@ namespace WinMovers.Controllers
         {
             if (string.IsNullOrWhiteSpace(contenido))
             {
-                TempData["Error"] = "La nota no puede estar vacía.";
+                TempData["Error"] = "La nota no puede estar vacï¿½a.";
                 return RedirectToAction(nameof(Notas), new { id = idOrden });
             }
 
@@ -497,7 +532,7 @@ namespace WinMovers.Controllers
         {
             if (string.IsNullOrWhiteSpace(contenido))
             {
-                TempData["Error"] = "La nota no puede estar vacía.";
+                TempData["Error"] = "La nota no puede estar vacï¿½a.";
                 return RedirectToAction(nameof(Notas), new { id = idOrden });
             }
 

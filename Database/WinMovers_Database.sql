@@ -1213,19 +1213,6 @@ VALUES
     ('SinRol', 'SINROL', 'Rol temporal para usuarios sin un rol asignado (por eliminación de su rol anterior)', NEWID());
 GO
 
-INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion) VALUES
-    ('Reporte de Visita Previa',            1, 0, 1, 1, 1),
-    ('Cotización',                          1, 1, 1, 0, 2),
-    ('Lista de inventario para el seguro',  1, 1, 1, 1, 3),
-    ('Cotización con firma de aceptación',  1, 1, 1, 0, 4),
-    ('Hoja de Trabajo',                     1, 1, 1, 1, 5),
-    ('Pre-Aviso al agente de destino',      1, 0, 1, 1, 6),
-    ('Instrucciones del Embarque',          1, 1, 1, 1, 7),
-    ('Carte de porte, AWA o B-L',           1, 1, 1, 1, 8),
-    ('Certificado del seguro',              1, 1, 1, 1, 9),
-    ('Lista de empaque firmada',            1, 1, 1, 1, 10),
-    ('Factura',                             1, 1, 1, 1, 11),
-    ('Confirmación de Entrega',             1, 1, 1, 1, 12);
 -- Se incluye 'activo' explícitamente: el esquema generado por EF no define
 -- un DEFAULT para esta columna, por lo que el seed debe proveer el valor.
 INSERT INTO Catalogo_Documentos (nombre, aplica_exportacion, aplica_importacion, aplica_winmovers, aplica_otro_agente, orden_presentacion, activo) VALUES
