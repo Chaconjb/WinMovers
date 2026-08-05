@@ -1,0 +1,386 @@
+@model WinMovers.Models.OrdenTrabajo
+
+@{
+    ViewData["Title"] = "Lista de Embalaje";
+
+    var lista = ViewBag.Lista as WinMovers.Models.ListaEmbalaje;
+    var disponibles = ViewBag.BienesDisponibles as List<WinMovers.Models.BienMudanza>
+                      ?? new List<WinMovers.Models.BienMudanza>();
+}
+
+<div class="form-header">
+
+    <h2 class="content-title">
+        <i class="fas fa-clipboard-list"></i>
+        Lista de Embalaje
+    </h2>
+
+    <a asp-controller="OrdenTrabajo" asp-action="Index" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i>
+        Volver
+    </a>
+
+</div>
+
+@* El _Layout sólo pinta TempData["Success"]; el error se renderiza aquí. *@
+@if (TempData["Error"] != null)
+{
+    <div class="toast show error" style="margin-bottom:15px;">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+    </div>
+}
+
+<!-- Información de la Orden -->
+
+<div class="form-card" style="margin-bottom:20px;">
+
+    <div class="form-row three-cols">
+
+        <div>
+            <strong>O.T.:</strong>
+            @Model.NumeroOT
+        </div>
+
+        <div>
+            <strong>Cliente:</strong>
+            @Model.NombreCliente
+        </div>
+
+        <div>
+            <strong>Fecha Servicio:</strong>
+            @(Model.FechaServicio?.ToString("dd/MM/yyyy") ?? "—")
+        </div>
+
+        <div>
+            <strong>Bienes registrados:</strong>
+            @Model.Bienes.Count
+        </div>
+
+    </div>
+
+</div>
+
+@if (lista == null)
+{
+    <!-- Escenario 1: aún no existe la lista -->
+
+    <div class="form-card">
+
+        <h4 style="margin-bottom:20px;">
+            Generar lista de embalaje
+        </h4>
+
+        @if (!Model.Bienes.Any())
+        {
+            <div class="toast show error" style="margin-bottom:15px;">
+                <i class="fas fa-exclamation-circle"></i>
+                Esta orden no tiene bienes registrados. Regístrelos antes de generar la lista.
+            </div>
+        }
+
+        <form asp-controller="ListaEmbalaje" asp-action="Generar" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="idOrden" value="@Model.IdOrden" />
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Responsable <span style="color:#c00;">*</span></label>
+
+                    <input type="text"
+                           name="responsable"
+                           maxlength="150"
+                           placeholder="Quién embala"
+                           class="form-control" />
+
+                </div>
+
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Observaciones</label>
+
+                    <textarea name="observaciones"
+                              maxlength="500"
+                              rows="2"
+                              class="form-control"></textarea>
+
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-clipboard-check"></i>
+                Generar lista de embalaje
+            </button>
+
+            <a asp-controller="BienMudanza"
+               asp-action="Index"
+               asp-route-id="@Model.IdOrden"
+               class="btn btn-outline">
+                <i class="fas fa-couch"></i>
+                Registrar bienes
+            </a>
+
+        </form>
+
+    </div>
+}
+else
+{
+    <!-- Escenario 3: la lista existe y se edita -->
+
+    <div class="form-card">
+
+        <div class="form-row three-cols" style="margin-bottom:15px;">
+
+            <div>
+                <strong>N° de lista:</strong>
+                @lista.NumeroLista
+            </div>
+
+            <div>
+                <strong>Generada:</strong>
+                @lista.FechaGeneracion.ToString("dd/MM/yyyy HH:mm")
+            </div>
+
+            <div>
+                <strong>Estado:</strong>
+                @if (lista.Estado == WinMovers.Models.EstadosListaEmbalaje.Finalizada)
+                {
+                    <span class="badge bg-success">Finalizada</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Borrador</span>
+                }
+            </div>
+
+            <div>
+                <strong>Actualizada:</strong>
+                @(lista.FechaActualizacion?.ToString("dd/MM/yyyy HH:mm") ?? "—")
+            </div>
+
+        </div>
+
+        <form asp-controller="ListaEmbalaje" asp-action="Guardar" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="idLista" value="@lista.IdLista" />
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Responsable <span style="color:#c00;">*</span></label>
+
+                    <input type="text"
+                           name="responsable"
+                           maxlength="150"
+                           value="@lista.Responsable"
+                           class="form-control" />
+
+                </div>
+
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Observaciones</label>
+
+                    <textarea name="observaciones"
+                              maxlength="500"
+                              rows="2"
+                              class="form-control">@lista.Observaciones</textarea>
+
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Guardar cambios
+            </button>
+
+            @if (lista.Estado != WinMovers.Models.EstadosListaEmbalaje.Finalizada)
+            {
+                <button type="submit"
+                        name="finalizar"
+                        value="true"
+                        class="btn btn-outline"
+                        onclick="return confirm('¿Finalizar la lista de embalaje?')">
+                    <i class="fas fa-check"></i>
+                    Finalizar
+                </button>
+            }
+
+        </form>
+
+    </div>
+
+    <!-- Agregar bienes a la lista -->
+
+    <div class="form-card" style="margin-top:20px;">
+
+        <h4 style="margin-bottom:20px;">
+            Agregar bien a la lista
+        </h4>
+
+        @if (!disponibles.Any())
+        {
+            <p class="no-data" style="margin:0;">
+                Todos los bienes registrados en la orden ya están en la lista.
+            </p>
+        }
+        else
+        {
+            <form asp-controller="ListaEmbalaje" asp-action="AgregarBien" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="idLista" value="@lista.IdLista" />
+
+                <div class="form-row three-cols">
+
+                    <div class="form-group">
+
+                        <label>Bien</label>
+
+                        <select name="idBien" class="form-control">
+
+                            @foreach (var bien in disponibles)
+                            {
+                                <option value="@bien.IdBien">
+                                    @bien.NombreBien (@bien.Cantidad · @bien.Condicion)
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Cantidad</label>
+
+                        <input type="number"
+                               name="cantidad"
+                               min="1"
+                               value="1"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="form-group" style="display:flex; align-items:end;">
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Agregar
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+        }
+
+    </div>
+
+    <!-- Bienes de la lista -->
+
+    <div class="table-container" style="margin-top:25px;">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Bien</th>
+
+                    <th>Descripción</th>
+
+                    <th>Condición</th>
+
+                    <th>Cantidad embalada</th>
+
+                    <th>Acciones</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @if (!lista.Detalles.Any())
+                {
+                    <tr>
+
+                        <td colspan="5" class="no-data">
+
+                            La lista no tiene bienes. Agregue al menos uno antes de guardarla.
+
+                        </td>
+
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var detalle in lista.Detalles)
+                    {
+                        <tr>
+
+                            <td>@detalle.Bien.NombreBien</td>
+
+                            <td>@(string.IsNullOrWhiteSpace(detalle.Bien.Descripcion) ? "—" : detalle.Bien.Descripcion)</td>
+
+                            <td>@detalle.Bien.Condicion</td>
+
+                            <td>@detalle.Cantidad</td>
+
+                            <td>
+
+                                <form asp-controller="ListaEmbalaje"
+                                      asp-action="EliminarBien"
+                                      method="post"
+                                      style="display:inline;">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden" name="idDetalle" value="@detalle.IdDetalle" />
+
+                                    <input type="hidden" name="idOrden" value="@Model.IdOrden" />
+
+                                    <button type="submit"
+                                            class="btn-icon delete"
+                                            title="Quitar de la lista"
+                                            onclick="return confirm('¿Quitar &quot;@detalle.Bien.NombreBien&quot; de la lista de embalaje?')">
+
+                                        <i class="fas fa-trash"></i>
+
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+}

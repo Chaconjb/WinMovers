@@ -32,6 +32,10 @@ namespace WinMovers.Data
         public DbSet<OrdenTrabajoMaterial> OrdenTrabajoMaterial { get; set; }
 
         public DbSet<BienMudanza> BienesMudanza { get; set; }
+
+        public DbSet<ListaEmbalaje> ListasEmbalaje { get; set; }
+
+        public DbSet<ListaEmbalajeDetalle> ListasEmbalajeDetalle { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -870,6 +874,98 @@ namespace WinMovers.Data
                     .WithMany(o => o.Bienes)
                     .HasForeignKey(e => e.IdOrden)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+            // =========================================================
+            // ListasEmbalaje (HU-INV-002)
+            // =========================================================
+            modelBuilder.Entity<ListaEmbalaje>(entity =>
+            {
+                entity.ToTable("ListasEmbalaje");
+
+                entity.HasKey(e => e.IdLista);
+
+                entity.Property(e => e.IdLista)
+                    .HasColumnName("id_lista");
+
+                entity.Property(e => e.IdOrden)
+                    .HasColumnName("id_orden");
+
+                entity.Property(e => e.NumeroLista)
+                    .HasColumnName("numero_lista")
+                    .HasMaxLength(30)
+                    .IsRequired();
+
+                entity.Property(e => e.Responsable)
+                    .HasColumnName("responsable")
+                    .HasMaxLength(150)
+                    .IsRequired();
+
+                entity.Property(e => e.Observaciones)
+                    .HasColumnName("observaciones")
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.Estado)
+                    .HasColumnName("estado")
+                    .HasMaxLength(20)
+                    .IsRequired();
+
+                entity.Property(e => e.FechaGeneracion)
+                    .HasColumnName("fecha_generacion");
+
+                entity.Property(e => e.FechaActualizacion)
+                    .HasColumnName("fecha_actualizacion");
+
+                // Una sola lista de embalaje por orden: los escenarios de la
+                // HU hablan siempre de "la lista" en singular, y el flujo de
+                // edición asume que generar dos veces no duplica el documento.
+                entity.HasIndex(e => e.IdOrden)
+                    .IsUnique()
+                    .HasDatabaseName("UX_ListasEmbalaje_Orden");
+
+                entity.HasOne(e => e.OrdenTrabajo)
+                    .WithMany(o => o.ListasEmbalaje)
+                    .HasForeignKey(e => e.IdOrden)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            // =========================================================
+            // ListasEmbalajeDetalle (HU-INV-002)
+            // =========================================================
+            modelBuilder.Entity<ListaEmbalajeDetalle>(entity =>
+            {
+                entity.ToTable("ListasEmbalajeDetalle");
+
+                entity.HasKey(e => e.IdDetalle);
+
+                entity.Property(e => e.IdDetalle)
+                    .HasColumnName("id_detalle");
+
+                entity.Property(e => e.IdLista)
+                    .HasColumnName("id_lista");
+
+                entity.Property(e => e.IdBien)
+                    .HasColumnName("id_bien");
+
+                entity.Property(e => e.Cantidad)
+                    .HasColumnName("cantidad");
+
+                // Un bien no puede aparecer dos veces en la misma lista.
+                entity.HasIndex(e => new { e.IdLista, e.IdBien })
+                    .IsUnique()
+                    .HasDatabaseName("UX_ListasEmbalajeDetalle_Lista_Bien");
+
+                entity.HasOne(e => e.Lista)
+                    .WithMany(l => l.Detalles)
+                    .HasForeignKey(e => e.IdLista)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Restrict y no Cascade: si se borra un bien de la orden, el
+                // detalle debe quitarse antes de forma explícita para que la
+                // lista no pierda renglones sin que nadie se entere. El
+                // controlador de bienes lo maneja al eliminar.
+                entity.HasOne(e => e.Bien)
+                    .WithMany(b => b.DetallesLista)
+                    .HasForeignKey(e => e.IdBien)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

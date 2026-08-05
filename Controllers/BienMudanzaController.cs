@@ -124,6 +124,7 @@ namespace WinMovers.Controllers
         public async Task<IActionResult> Eliminar(int idBien, int idOrden)
         {
             var bien = await _context.BienesMudanza
+                .Include(b => b.DetallesLista)
                 .FirstOrDefaultAsync(b => b.IdBien == idBien &&
                                           b.IdOrden == idOrden);
 
@@ -133,11 +134,21 @@ namespace WinMovers.Controllers
                 return RedirectToAction(nameof(Index), new { id = idOrden });
             }
 
+            // La FK con la lista de embalaje es Restrict, así que los renglones
+            // que referencian al bien se quitan primero. Se avisa al operador
+            // porque su lista de embalaje cambia como efecto secundario.
+            var estabaEnLista = bien.DetallesLista.Any();
+
+            if (estabaEnLista)
+                _context.ListasEmbalajeDetalle.RemoveRange(bien.DetallesLista);
+
             _context.BienesMudanza.Remove(bien);
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Bien \"{bien.NombreBien}\" eliminado de la orden.";
+            TempData["Success"] = estabaEnLista
+                ? $"Bien \"{bien.NombreBien}\" eliminado de la orden y de su lista de embalaje."
+                : $"Bien \"{bien.NombreBien}\" eliminado de la orden.";
 
             return RedirectToAction(nameof(Index), new { id = idOrden });
         }

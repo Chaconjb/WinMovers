@@ -209,6 +209,61 @@ CREATE TABLE BienesMudanza
 CREATE UNIQUE INDEX UX_BienesMudanza_Orden_Nombre
     ON BienesMudanza(id_orden, nombre_bien);
 
+-- HU-INV-002: lista de embalaje que documenta los bienes transportados.
+CREATE TABLE ListasEmbalaje
+(
+    id_lista INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_orden INT NOT NULL,
+
+    numero_lista NVARCHAR(30) NOT NULL,
+
+    responsable NVARCHAR(150) NOT NULL,
+
+    observaciones NVARCHAR(500) NULL,
+
+    estado NVARCHAR(20) NOT NULL,
+
+    fecha_generacion DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    fecha_actualizacion DATETIME2 NULL,
+
+    CONSTRAINT FK_ListasEmbalaje_Orden
+        FOREIGN KEY(id_orden)
+        REFERENCES Ordenes_Trabajo(id_orden)
+        ON DELETE CASCADE
+);
+
+-- Una sola lista de embalaje por orden.
+CREATE UNIQUE INDEX UX_ListasEmbalaje_Orden
+    ON ListasEmbalaje(id_orden);
+
+CREATE TABLE ListasEmbalajeDetalle
+(
+    id_detalle INT IDENTITY(1,1) PRIMARY KEY,
+
+    id_lista INT NOT NULL,
+
+    id_bien INT NOT NULL,
+
+    cantidad INT NOT NULL CHECK(cantidad > 0),
+
+    CONSTRAINT FK_ListasEmbalajeDetalle_Lista
+        FOREIGN KEY(id_lista)
+        REFERENCES ListasEmbalaje(id_lista)
+        ON DELETE CASCADE,
+
+    -- Sin CASCADE a propósito: al borrar un bien de la orden, el renglón se
+    -- quita explícitamente desde la aplicación para avisar al operador.
+    CONSTRAINT FK_ListasEmbalajeDetalle_Bien
+        FOREIGN KEY(id_bien)
+        REFERENCES BienesMudanza(id_bien)
+);
+
+-- Un bien no puede aparecer dos veces en la misma lista.
+CREATE UNIQUE INDEX UX_ListasEmbalajeDetalle_Lista_Bien
+    ON ListasEmbalajeDetalle(id_lista, id_bien);
+
 CREATE TABLE [ExportacionesDocumentos] (
     [IdDocumento] int NOT NULL IDENTITY,
     [IdExportacion] int NOT NULL,

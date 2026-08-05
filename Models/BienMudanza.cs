@@ -38,6 +38,10 @@ namespace WinMovers.Models
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
 
         public OrdenTrabajo OrdenTrabajo { get; set; } = null!;
+
+        // Renglones de lista de embalaje que referencian este bien (HU-INV-002).
+        public ICollection<ListaEmbalajeDetalle> DetallesLista { get; set; }
+            = new List<ListaEmbalajeDetalle>();
     }
 
     // Valores admitidos para BienMudanza.Condicion. Se dejan como constantes
