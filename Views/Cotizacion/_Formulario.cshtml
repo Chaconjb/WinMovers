@@ -217,7 +217,13 @@
             <div class="form-group monto">
                 <label asp-for="PorcentajeSeguro"></label>
                 <div class="input-monto sufijo-pct">
-                    <input asp-for="PorcentajeSeguro" type="number" step="0.1" min="0" max="100" class="js-rubro" />
+                    <input asp-for="PorcentajeSeguro"
+                       type="number"
+                       step="any"
+                       min="0"
+                       max="100"
+                       class="js-rubro" />
+
                     <span class="sufijo">%</span>
                 </div>
             </div>

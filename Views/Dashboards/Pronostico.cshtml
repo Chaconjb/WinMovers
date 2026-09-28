@@ -66,9 +66,16 @@ else
         const mesesHistoricos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MesesHistoricos));
         const mesesProyectados = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MesesProyectados));
         const cajasHistoricas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CajasHistoricas));
-        const cajasProyectadas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CajasProyectadas));
-        const limiteInferior = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LimiteInferior));
-        const limiteSuperior = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LimiteSuperior));
+        const cajasProyectadas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.CajasProyectadas.Select(x => Math.Round(x))
+        ));
+        const limiteInferior = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.LimiteInferior.Select(x => Math.Round(x))
+        ));
+
+        const limiteSuperior = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.LimiteSuperior.Select(x => Math.Round(x))
+        ));
 
         const todosLosMeses = [...mesesHistoricos, ...mesesProyectados];
 
