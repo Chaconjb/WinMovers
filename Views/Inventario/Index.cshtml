@@ -1,0 +1,161 @@
+﻿@model IEnumerable<WinMovers.Models.Inventario>
+
+@{
+    ViewData["Title"] = "Inventario";
+}
+
+<div class="form-header">
+
+    <h2 class="content-title">
+        <i class="fas fa-boxes"></i>
+        Inventario de Materiales
+    </h2>
+
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Nuevo Material
+    </a>
+
+</div>
+
+<form asp-action="Index" method="get" class="search-container">
+
+    <div class="form-card" style="margin-bottom:20px;">
+        <form asp-action="Index" method="get">
+
+            <div class="form-row two-cols">
+
+                <div class="form-group">
+                    <label>Buscar material</label>
+
+                    <input type="text"
+                           name="buscar"
+                           value="@ViewBag.Buscar"
+                           class="form-control"
+                           placeholder="Ingrese el nombre del material" />
+                </div>
+
+                <div class="form-group" style="align-self:end;">
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Buscar
+                        </button>
+
+                        <a asp-action="Index" class="btn btn-secondary">
+                            Limpiar
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+
+</form>
+
+<div class="table-container">
+
+    <table class="data-table">
+
+        <thead>
+
+            <tr>
+
+                <th>Material</th>
+
+                <th>Categoría</th>
+
+                <th>Unidad</th>
+
+                <th>Existencias</th>
+
+                <th>Stock Mínimo</th>
+
+                <th>Estado</th>
+
+                <th>Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @if (!Model.Any())
+            {
+                <tr>
+
+                    <td colspan="7" class="no-data">
+
+                        No existen materiales registrados.
+
+                    </td>
+
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>@item.NombreMaterial</td>
+
+                        <td>@item.Categoria</td>
+
+                        <td>@item.Unidad</td>
+
+                        <td>@item.Existencias</td>
+
+                        <td>@item.StockMinimo</td>
+
+                        <td>
+
+                            @if (item.Existencias <= item.StockMinimo)
+                            {
+                                <span class="badge badge-danger">
+                                    Bajo Stock
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-success">
+                                    Disponible
+                                </span>
+                            }
+
+                        </td>
+
+                        <td>
+
+                            <a asp-action="Edit"
+                               asp-route-id="@item.IdMaterial"
+                               class="btn-icon edit"
+                               title="Editar">
+
+                                <i class="fas fa-edit"></i>
+
+                            </a>
+
+                            <a asp-action="Delete"
+                               asp-route-id="@item.IdMaterial"
+                               class="btn-icon delete"
+                               title="Eliminar">
+
+                                <i class="fas fa-trash"></i>
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+                }
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

@@ -1,0 +1,48 @@
+﻿@model WinMovers.Models.Verificar2FAViewModel
+
+@{
+    ViewData["Title"] = "Verificación de dos pasos";
+    Layout = "_LayoutAuth";
+}
+
+<h2>Verificación de dos pasos</h2>
+
+<p class="auth-subtitle">
+Introduzca el código de 6 digitos </p>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="auth-error-summary">
+        <div asp-validation-summary="ModelOnly"></div>
+    </div>
+}
+
+<form asp-action="Verificar2FA" method="post">
+
+    <div class="form-group">
+
+        <label asp-for="Codigo"></label>
+
+        <input asp-for="Codigo"
+               maxlength="6"
+               autocomplete="one-time-code"
+               class="text-center" />
+
+        <span asp-validation-for="Codigo"
+              class="auth-field-error"></span>
+
+    </div>
+
+    <label class="auth-checkbox">
+
+        <input asp-for="RecordarMe" />
+
+        <span>Recordar este dispositivo</span>
+
+    </label>
+
+    <button type="submit" class="auth-btn">
+        Verificar código
+    </button>
+
+</form>

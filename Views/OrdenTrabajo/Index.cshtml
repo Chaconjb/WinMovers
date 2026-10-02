@@ -79,6 +79,29 @@
                                 <i class="fas fa-edit"></i>
                             </a>
 
+                            <a asp-action="Materiales"
+                               asp-route-id="@o.IdOrden"
+                               class="btn-icon"
+                               title="Asignar Materiales">
+                                <i class="fas fa-boxes"></i>
+                            </a>
+
+                            <a asp-controller="BienMudanza"
+                               asp-action="Index"
+                               asp-route-id="@o.IdOrden"
+                               class="btn-icon"
+                               title="Inventario de Bienes">
+                                <i class="fas fa-couch"></i>
+                            </a>
+
+                            <a asp-controller="ListaEmbalaje"
+                               asp-action="Index"
+                               asp-route-id="@o.IdOrden"
+                               class="btn-icon"
+                               title="Lista de Embalaje">
+                                <i class="fas fa-clipboard-list"></i>
+                            </a>
+
                             <form asp-action="Delete"
                                   asp-route-id="@o.IdOrden"
                                   method="post"

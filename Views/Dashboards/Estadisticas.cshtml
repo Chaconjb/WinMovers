@@ -1,0 +1,104 @@
+@model WinMovers.Models.ViewModels.EstadisticasViewModel
+@{
+    ViewData["Title"] = "Estadísticas de Transporte";
+}
+
+<h2 class="content-title"><i class="fas fa-chart-pie"></i> Estadísticas de Objetos Transportados</h2>
+
+@if (Model.HuboError)
+{
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-triangle-exclamation" style="font-size:2.5rem; color:var(--danger); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text); font-weight:500;">@Model.MensajeError</p>
+    </div>
+}
+else if (!Model.HayDatos)
+{
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-chart-simple" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text-muted);">No hay datos de importaciones ni exportaciones disponibles todavía.</p>
+    </div>
+}
+else
+{
+    <section class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue"><i class="fas fa-box"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalCajasImportacion</h3>
+                <p>Cajas importadas (@Model.PorcentajeCajasImportacion%)</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-orange"><i class="fas fa-box"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalCajasExportacion</h3>
+                <p>Cajas exportadas (@Model.PorcentajeCajasExportacion%)</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-green"><i class="fas fa-weight-hanging"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalKilosImportacion.ToString("N0")</h3>
+                <p>Kilos importados</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-pink"><i class="fas fa-weight-hanging"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalKilosExportacion.ToString("N0")</h3>
+                <p>Kilos exportados</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="dashboard-stats" style="grid-template-columns: 1fr 1fr; margin-top:20px;">
+        <div class="stat-card" style="display:block;">
+            <h3 class="content-title" style="font-size:1rem;">Distribución de cajas</h3>
+            <canvas id="chartDona" height="180"></canvas>
+        </div>
+
+        <div class="stat-card" style="display:block;">
+            <h3 class="content-title" style="font-size:1rem;">Cotizaciones por tipo de servicio</h3>
+            @if (!Model.PorTipoServicio.Any())
+            {
+                <p style="color:var(--text-muted); text-align:center; padding:30px 0;">Sin cotizaciones registradas todavía.</p>
+            }
+            else
+            {
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Tipo de servicio</th><th>Cantidad</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in Model.PorTipoServicio)
+                            {
+                                <tr>
+                                    <td>@t.TipoServicio</td>
+                                    <td>@t.Cantidad</td>
+                                    <td>@t.Porcentaje%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        new Chart(document.getElementById('chartDona'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Importación', 'Exportación'],
+                datasets: [{
+                    data: [@Model.TotalCajasImportacion, @Model.TotalCajasExportacion],
+                    backgroundColor: ['#1a73e8', '#ff6f00']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    </script>
+}

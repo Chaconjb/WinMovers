@@ -1,0 +1,89 @@
+@model WinMovers.Models.ViewModels.HistoricoViewModel
+@{
+    ViewData["Title"] = "Histórico de Órdenes de Trabajo";
+}
+
+<h2 class="content-title"><i class="fas fa-clock-rotate-left"></i> Histórico de Órdenes de Trabajo</h2>
+
+<form asp-action="Historico" method="get" class="form-card" style="display:flex; gap:15px; align-items:end; flex-wrap:wrap; margin-bottom:20px;">
+    <div class="form-group" style="margin-bottom:0;">
+        <label>Desde</label>
+        <input type="date" name="fechaInicio" value="@Model.FechaInicio.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+        <label>Hasta</label>
+        <input type="date" name="fechaFin" value="@Model.FechaFin.ToString("yyyy-MM-dd")" />
+    </div>
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-filter"></i> Filtrar
+    </button>
+</form>
+
+@if (Model.HuboError)
+{
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-triangle-exclamation" style="font-size:2.5rem; color:var(--danger); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text); font-weight:500;">@Model.MensajeError</p>
+    </div>
+}
+else if (!Model.HayDatos)
+{
+    <div class="table-container" style="padding:40px; text-align:center;">
+        <i class="fas fa-chart-simple" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px; display:block;"></i>
+        <p style="color:var(--text-muted);">No hay órdenes de trabajo registradas en el período seleccionado.</p>
+    </div>
+}
+else
+{
+    <section class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue"><i class="fas fa-clipboard-list"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalOrdenesPeriodo</h3>
+                <p>Órdenes en el período</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-green"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalCompletadasPeriodo</h3>
+                <p>Completadas</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-orange"><i class="fas fa-percent"></i></div>
+            <div class="stat-info">
+                <h3>@Model.PorcentajeCompletado%</h3>
+                <p>Tasa de finalización</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="stat-card" style="display:block; margin-top:10px;">
+        <h3 class="content-title" style="font-size:1rem;">Órdenes creadas vs completadas por mes</h3>
+        <canvas id="chartOrdenes" height="90"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        new Chart(document.getElementById('chartOrdenes'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Meses)),
+                datasets: [
+                    {
+                        label: 'Creadas',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdenesCreadas)),
+                        backgroundColor: '#1a73e8'
+                    },
+                    {
+                        label: 'Completadas',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdenesCompletadas)),
+                        backgroundColor: '#28a745'
+                    }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    </script>
+}

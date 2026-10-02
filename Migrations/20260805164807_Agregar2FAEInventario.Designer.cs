@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinMovers.Data;
 
@@ -11,9 +12,11 @@ using WinMovers.Data;
 namespace WinMovers.Migrations
 {
     [DbContext(typeof(WinMoversContext))]
-    partial class WinMoversContextModelSnapshot : ModelSnapshot
+    [Migration("20260805164807_Agregar2FAEInventario")]
+    partial class Agregar2FAEInventario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -318,58 +321,6 @@ namespace WinMovers.Migrations
                         .HasFilter("[nombre_usuario_normalizado] IS NOT NULL");
 
                     b.ToTable("Usuarios", (string)null);
-                });
-
-            modelBuilder.Entity("WinMovers.Models.BienMudanza", b =>
-                {
-                    b.Property<int>("IdBien")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id_bien");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdBien"));
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int")
-                        .HasColumnName("cantidad");
-
-                    b.Property<string>("Condicion")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("condicion");
-
-                    b.Property<string>("Descripcion")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)")
-                        .HasColumnName("descripcion");
-
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("fecha_registro");
-
-                    b.Property<int>("IdOrden")
-                        .HasColumnType("int")
-                        .HasColumnName("id_orden");
-
-                    b.Property<string>("NombreBien")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)")
-                        .HasColumnName("nombre_bien");
-
-                    b.Property<string>("Observaciones")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("observaciones");
-
-                    b.HasKey("IdBien");
-
-                    b.HasIndex("IdOrden", "NombreBien")
-                        .IsUnique()
-                        .HasDatabaseName("UX_BienesMudanza_Orden_Nombre");
-
-                    b.ToTable("BienesMudanza", (string)null);
                 });
 
             modelBuilder.Entity("WinMovers.Models.CatalogoDocumento", b =>
@@ -1251,91 +1202,6 @@ namespace WinMovers.Migrations
                     b.ToTable("Inventario", (string)null);
                 });
 
-            modelBuilder.Entity("WinMovers.Models.ListaEmbalaje", b =>
-                {
-                    b.Property<int>("IdLista")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id_lista");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdLista"));
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("estado");
-
-                    b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("fecha_actualizacion");
-
-                    b.Property<DateTime>("FechaGeneracion")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("fecha_generacion");
-
-                    b.Property<int>("IdOrden")
-                        .HasColumnType("int")
-                        .HasColumnName("id_orden");
-
-                    b.Property<string>("NumeroLista")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)")
-                        .HasColumnName("numero_lista");
-
-                    b.Property<string>("Observaciones")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("observaciones");
-
-                    b.Property<string>("Responsable")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)")
-                        .HasColumnName("responsable");
-
-                    b.HasKey("IdLista");
-
-                    b.HasIndex("IdOrden")
-                        .IsUnique()
-                        .HasDatabaseName("UX_ListasEmbalaje_Orden");
-
-                    b.ToTable("ListasEmbalaje", (string)null);
-                });
-
-            modelBuilder.Entity("WinMovers.Models.ListaEmbalajeDetalle", b =>
-                {
-                    b.Property<int>("IdDetalle")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id_detalle");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDetalle"));
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int")
-                        .HasColumnName("cantidad");
-
-                    b.Property<int>("IdBien")
-                        .HasColumnType("int")
-                        .HasColumnName("id_bien");
-
-                    b.Property<int>("IdLista")
-                        .HasColumnType("int")
-                        .HasColumnName("id_lista");
-
-                    b.HasKey("IdDetalle");
-
-                    b.HasIndex("IdBien");
-
-                    b.HasIndex("IdLista", "IdBien")
-                        .IsUnique()
-                        .HasDatabaseName("UX_ListasEmbalajeDetalle_Lista_Bien");
-
-                    b.ToTable("ListasEmbalajeDetalle", (string)null);
-                });
-
             modelBuilder.Entity("WinMovers.Models.OrdenTrabajo", b =>
                 {
                     b.Property<int>("IdOrden")
@@ -1729,17 +1595,6 @@ namespace WinMovers.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("WinMovers.Models.BienMudanza", b =>
-                {
-                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenTrabajo")
-                        .WithMany("Bienes")
-                        .HasForeignKey("IdOrden")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OrdenTrabajo");
-                });
-
             modelBuilder.Entity("WinMovers.Models.ClienteHistorial", b =>
                 {
                     b.HasOne("WinMovers.Models.Cliente", "Cliente")
@@ -1860,36 +1715,6 @@ namespace WinMovers.Migrations
                     b.Navigation("TipoDocumento");
                 });
 
-            modelBuilder.Entity("WinMovers.Models.ListaEmbalaje", b =>
-                {
-                    b.HasOne("WinMovers.Models.OrdenTrabajo", "OrdenTrabajo")
-                        .WithMany("ListasEmbalaje")
-                        .HasForeignKey("IdOrden")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OrdenTrabajo");
-                });
-
-            modelBuilder.Entity("WinMovers.Models.ListaEmbalajeDetalle", b =>
-                {
-                    b.HasOne("WinMovers.Models.BienMudanza", "Bien")
-                        .WithMany("DetallesLista")
-                        .HasForeignKey("IdBien")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("WinMovers.Models.ListaEmbalaje", "Lista")
-                        .WithMany("Detalles")
-                        .HasForeignKey("IdLista")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Bien");
-
-                    b.Navigation("Lista");
-                });
-
             modelBuilder.Entity("WinMovers.Models.OrdenTrabajo", b =>
                 {
                     b.HasOne("WinMovers.Models.Cliente", "Cliente")
@@ -1992,11 +1817,6 @@ namespace WinMovers.Migrations
                     b.Navigation("Notas");
                 });
 
-            modelBuilder.Entity("WinMovers.Models.BienMudanza", b =>
-                {
-                    b.Navigation("DetallesLista");
-                });
-
             modelBuilder.Entity("WinMovers.Models.Cliente", b =>
                 {
                     b.Navigation("Cotizaciones");
@@ -2025,20 +1845,11 @@ namespace WinMovers.Migrations
                     b.Navigation("OrdenesMaterial");
                 });
 
-            modelBuilder.Entity("WinMovers.Models.ListaEmbalaje", b =>
-                {
-                    b.Navigation("Detalles");
-                });
-
             modelBuilder.Entity("WinMovers.Models.OrdenTrabajo", b =>
                 {
                     b.Navigation("Archivos");
 
-                    b.Navigation("Bienes");
-
                     b.Navigation("Historial");
-
-                    b.Navigation("ListasEmbalaje");
 
                     b.Navigation("MaterialesAsignados");
 

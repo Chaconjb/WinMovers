@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
 using WinMovers.Models;
+using WinMovers.Models.ViewModels;
 
 namespace WinMovers.Controllers
 {
@@ -269,10 +270,23 @@ namespace WinMovers.Controllers
             if (cliente == null)
                 return NotFound();
 
-            var ordenes = await _context.OrdenesTrabajo
-                .Where(o => o.IdCliente == id)
-                .OrderByDescending(o => o.FechaServicio)
-                .ToListAsync();
+            var ordenes = await (
+            from o in _context.OrdenesTrabajo
+            join c in _context.Cotizaciones
+                on o.IdOrden equals c.IdOrdenGenerada into cotizaciones
+            from c in cotizaciones.DefaultIfEmpty()
+            where o.IdCliente == id
+            orderby o.FechaServicio descending
+            select new ClienteMudanzaViewModel
+            {
+                IdOrden = o.IdOrden,
+                NumeroOT = o.NumeroOT,
+                FechaServicio = o.FechaServicio,
+                Estado = o.Estado,
+                Monto = c != null ? c.TarifaTotal : null,
+                Moneda = c != null ? c.Moneda : "USD"
+            }
+        ).ToListAsync();
 
             ViewBag.Cliente = cliente;
 

@@ -1,0 +1,51 @@
+﻿@model WinMovers.Models.DobleFactorViewModel
+
+@{
+    ViewData["Title"] = "Configurar Doble Factor";
+}
+
+<div class="container mt-4">
+
+    <h2>Configurar autenticación de doble factor</h2>
+
+    <hr />
+
+    <p>
+        Escanee el siguiente código QR con Google Authenticator o Microsoft Authenticator.
+    </p>
+
+    <div class="text-center mb-4">
+        <img src="@Model.ImagenCodigoQR"
+             alt="Código QR"
+             style="width:250px;height:250px;" />
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Clave manual:</strong><br />
+        @Model.ClaveCompartida
+    </div>
+
+    <form asp-action="Activar" method="post">
+        <div class="mb-3">
+            <label asp-for="CodigoVerificacion"></label>
+
+            <input asp-for="CodigoVerificacion"
+                   class="form-control" />
+
+            <span asp-validation-for="CodigoVerificacion"
+                  class="text-danger"></span>
+        </div>
+
+        <button class="btn btn-primary" type="submit">
+            Activar doble factor
+        </button>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

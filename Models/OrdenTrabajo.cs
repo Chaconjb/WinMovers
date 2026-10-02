@@ -99,7 +99,15 @@ namespace WinMovers.Models
         public ICollection<OrdenTrabajoHistorial> Historial { get; set; } = new List<OrdenTrabajoHistorial>();
         public ICollection<OrdenTrabajoNota> Notas { get; set; } = new List<OrdenTrabajoNota>();
 
+        public ICollection<OrdenTrabajoMaterial> MaterialesAsignados { get; set; } = new List<OrdenTrabajoMaterial>();
 
+        // Bienes del cliente transportados en esta orden (HU-INV-003).
+        public ICollection<BienMudanza> Bienes { get; set; } = new List<BienMudanza>();
+
+        // Lista de embalaje de la orden (HU-INV-002). Es una sola, pero se
+        // modela como colección para que EF configure la relación 1-a-muchos
+        // restringida por el índice único sobre id_orden.
+        public ICollection<ListaEmbalaje> ListasEmbalaje { get; set; } = new List<ListaEmbalaje>();
 
     }
 }

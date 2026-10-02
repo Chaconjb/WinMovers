@@ -1,0 +1,205 @@
+﻿@model WinMovers.Models.OrdenTrabajo
+
+@{
+    ViewData["Title"] = "Asignación de Materiales";
+}
+
+<div class="form-header">
+
+    <h2 class="content-title">
+        <i class="fas fa-boxes"></i>
+        Asignación de Materiales
+    </h2>
+
+    <a asp-action="Index" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i>
+        Volver
+    </a>
+
+</div>
+
+<!-- Información de la Orden -->
+
+<div class="form-card" style="margin-bottom:20px;">
+
+    <div class="form-row three-cols">
+
+        <div>
+            <strong>O.T.:</strong>
+            @Model.NumeroOT
+        </div>
+
+        <div>
+            <strong>Cliente:</strong>
+            @Model.NombreCliente
+        </div>
+
+        <div>
+            <strong>Fecha Servicio:</strong>
+            @(Model.FechaServicio?.ToString("dd/MM/yyyy") ?? "—")
+        </div>
+
+        <div>
+            <strong>Estado:</strong>
+            @Model.Estado
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Materiales -->
+
+<div class="form-card">
+
+    <h4 style="margin-bottom:20px;">
+        Materiales de Embalaje
+    </h4>
+
+    <form asp-action="AsignarMaterial" method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden"
+               name="idOrden"
+               value="@Model.IdOrden" />
+
+        <div class="form-row three-cols">
+
+            <div class="form-group">
+
+                <label>Material</label>
+
+                <select name="idMaterial"
+                        class="form-control">
+
+                    <option value="">
+                        -- Seleccione un material --
+                    </option>
+
+                    @foreach (var material in ViewBag.Materiales)
+                    {
+                        <option value="@material.IdMaterial">
+
+                            @material.NombreMaterial
+                            (@material.Existencias @material.Unidad)
+
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Cantidad</label>
+
+                <input type="number"
+                       name="cantidad"
+                       min="1"
+                       class="form-control" />
+
+            </div>
+
+            <div class="form-group"
+                 style="display:flex;
+                align-items:end;">
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="fas fa-plus"></i>
+                    Asignar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+<!-- Materiales Asignados -->
+
+<div class="table-container" style="margin-top:25px;">
+
+    <table class="data-table">
+
+        <thead>
+
+            <tr>
+
+                <th>Material</th>
+
+                <th>Cantidad</th>
+
+                <th>Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @if (Model.MaterialesAsignados == null || !Model.MaterialesAsignados.Any())
+            {
+                <tr>
+
+                    <td colspan="3" class="no-data">
+
+                        No hay materiales asignados.
+
+                    </td>
+
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Model.MaterialesAsignados)
+                {
+                    <tr>
+
+                        <td>
+                            @item.Material.NombreMaterial
+                        </td>
+
+                        <td>
+                            @item.Cantidad
+                        </td>
+
+                        <td>
+
+                            <form asp-action="EliminarMaterial"
+                                  method="post"
+                                  style="display:inline;">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="idOrdenMaterial"
+                                       value="@item.IdOrdenMaterial" />
+
+                                <button type="submit"
+                                        class="btn-icon delete"
+                                        onclick="return confirm('¿Desea eliminar este material?')">
+
+                                    <i class="fas fa-trash"></i>
+
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+                }
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

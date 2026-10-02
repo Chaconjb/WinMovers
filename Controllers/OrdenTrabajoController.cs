@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
 using WinMovers.Models;
+using WinMovers.Models.ViewModels;
 
 namespace WinMovers.Controllers
 {
@@ -23,7 +24,7 @@ namespace WinMovers.Controllers
             _userManager = userManager;
         }
 
-        // Obtiene el Id (int) del usuario autenticado actual, o null si no hay sesión.
+        // Obtiene el Id (int) del usuario autenticado actual, o null si no hay sesiï¿½n.
         private int? ObtenerIdUsuarioActual()
         {
             var idTexto = _userManager.GetUserId(User);
@@ -87,7 +88,7 @@ namespace WinMovers.Controllers
             return View(orden);
         }
 
-        // GET: /OrdenTrabajo/Edit/5  — incluye archivos
+        // GET: /OrdenTrabajo/Edit/5  ï¿½ incluye archivos
         public async Task<IActionResult> Edit(int id)
         {
             var orden = await _context.OrdenesTrabajo
@@ -134,7 +135,7 @@ namespace WinMovers.Controllers
                 }
             }
 
-            // Registrar auditoría si cambia fecha_servicio o estado
+            // Registrar auditorï¿½a si cambia fecha_servicio o estado
             var cambios = new List<OrdenTrabajoHistorial>();
 
             var idUsuarioActual = ObtenerIdUsuarioActual();
@@ -213,17 +214,17 @@ namespace WinMovers.Controllers
         {
             if (archivo == null || archivo.Length == 0)
             {
-                return Json(new { ok = false, mensaje = "No se recibió ningún archivo." });
+                return Json(new { ok = false, mensaje = "No se recibiï¿½ ningï¿½n archivo." });
             }
 
             if (archivo.Length > MaxBytes)
             {
-                return Json(new { ok = false, mensaje = "El archivo supera el límite de 10 MB permitido." });
+                return Json(new { ok = false, mensaje = "El archivo supera el lï¿½mite de 10 MB permitido." });
             }
 
             if (!TiposPermitidos.Contains(archivo.ContentType))
             {
-                return Json(new { ok = false, mensaje = "Solo se permiten PDF o imágenes (JPG, PNG, WEBP)." });
+                return Json(new { ok = false, mensaje = "Solo se permiten PDF o imï¿½genes (JPG, PNG, WEBP)." });
             }
 
             var extension = Path.GetExtension(archivo.FileName);
@@ -376,6 +377,116 @@ namespace WinMovers.Controllers
             return View(orden);
         }
 
+        public async Task<IActionResult> Materiales(int id)
+        {
+            var orden = await _context.OrdenesTrabajo
+                .Include(o => o.MaterialesAsignados)
+                    .ThenInclude(m => m.Material)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (orden == null)
+                return NotFound();
+
+            ViewBag.Materiales = await _context.Inventario
+                .OrderBy(m => m.NombreMaterial)
+                .ToListAsync();
+
+            return View(orden);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AsignarMaterial(AsignarMaterialViewModel model)
+        {
+            // 1. Buscar la orden
+            var orden = await _context.OrdenesTrabajo
+                .FirstOrDefaultAsync(o => o.IdOrden == model.IdOrden);
+
+            if (orden == null)
+            {
+                TempData["Error"] = "La orden de trabajo no existe.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 2. Buscar el material
+            var material = await _context.Inventario
+                .FirstOrDefaultAsync(m => m.IdMaterial == model.IdMaterial);
+
+            if (material == null)
+            {
+                TempData["Error"] = "El material seleccionado no existe.";
+                return RedirectToAction(nameof(Materiales),
+                    new { id = model.IdOrden });
+            }
+
+            // 3. Validar stock
+            if (material.Existencias < model.Cantidad)
+            {
+                TempData["Error"] =
+                    $"Stock insuficiente. Disponible: {material.Existencias}";
+
+                return RedirectToAction(nameof(Materiales),
+                    new { id = model.IdOrden });
+            }
+
+            // 4. Registrar asignaciï¿½n
+            var asignacion = new OrdenTrabajoMaterial
+            {
+                IdOrden = model.IdOrden,
+                IdMaterial = model.IdMaterial,
+                Cantidad = model.Cantidad,
+                FechaAsignacion = DateTime.Now
+            };
+
+            _context.OrdenTrabajoMaterial.Add(asignacion);
+
+            // 5. Descontar inventario
+            material.Existencias -= model.Cantidad;
+            material.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Material asignado correctamente.";
+
+            return RedirectToAction(nameof(Materiales),
+                new { id = model.IdOrden });
+        }
+
+        // POST: /OrdenTrabajo/EliminarMaterial
+        // La vista Materiales.cshtml ya publicaba a esta acciÃ³n, que no existÃ­a.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarMaterial(int idOrdenMaterial)
+        {
+            var asignacion = await _context.OrdenTrabajoMaterial
+                .Include(a => a.Material)
+                .FirstOrDefaultAsync(a => a.IdOrdenMaterial == idOrdenMaterial);
+
+            if (asignacion == null)
+            {
+                TempData["Error"] = "La asignaciÃ³n de material ya no existe.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var idOrden = asignacion.IdOrden;
+
+            // Devolver al inventario lo que AsignarMaterial habÃ­a descontado.
+            if (asignacion.Material != null)
+            {
+                asignacion.Material.Existencias += asignacion.Cantidad;
+                asignacion.Material.FechaActualizacion = DateTime.Now;
+            }
+
+            _context.OrdenTrabajoMaterial.Remove(asignacion);
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] =
+                $"Material \"{asignacion.Material?.NombreMaterial}\" eliminado y devuelto al inventario.";
+
+            return RedirectToAction(nameof(Materiales), new { id = idOrden });
+        }
+
         // GET: /OrdenTrabajo/Notas/5
         public async Task<IActionResult> Notas(int id)
         {
@@ -395,7 +506,7 @@ namespace WinMovers.Controllers
         {
             if (string.IsNullOrWhiteSpace(contenido))
             {
-                TempData["Error"] = "La nota no puede estar vacía.";
+                TempData["Error"] = "La nota no puede estar vacï¿½a.";
                 return RedirectToAction(nameof(Notas), new { id = idOrden });
             }
 
@@ -421,7 +532,7 @@ namespace WinMovers.Controllers
         {
             if (string.IsNullOrWhiteSpace(contenido))
             {
-                TempData["Error"] = "La nota no puede estar vacía.";
+                TempData["Error"] = "La nota no puede estar vacï¿½a.";
                 return RedirectToAction(nameof(Notas), new { id = idOrden });
             }
 
