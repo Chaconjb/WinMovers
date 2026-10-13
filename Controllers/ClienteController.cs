@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
@@ -7,6 +8,7 @@ using WinMovers.Models.ViewModels;
 
 namespace WinMovers.Controllers
 {
+    [Authorize(Roles = $"{Roles.Administrador},{Roles.Empleado}")]
     public class ClienteController : Controller
     {
         private readonly WinMoversContext _context;

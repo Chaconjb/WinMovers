@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
@@ -9,6 +10,7 @@ using WinMovers.Services;
 
 namespace WinMovers.Controllers
 {
+    [Authorize(Roles = $"{Roles.Administrador},{Roles.Empleado}")]
     public class DashboardsController : Controller
     {
         private readonly WinMoversContext _context;

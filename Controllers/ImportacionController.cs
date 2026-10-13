@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WinMovers.Data;
@@ -5,6 +6,7 @@ using WinMovers.Models;
 
 namespace WinMovers.Controllers
 {
+    [Authorize(Roles = $"{Roles.Administrador},{Roles.Empleado}")]
     public class ImportacionController : Controller
     {
         private readonly WinMoversContext _context;
@@ -151,6 +153,20 @@ namespace WinMovers.Controllers
             TempData["Success"] = "Checklist actualizado correctamente.";
             return RedirectToAction(nameof(Checklist), new { id });
         }
+
+        // GET: /Importacion/Edit
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var importacion = await _context.Importaciones
+                .FirstOrDefaultAsync(i => i.IdImportacion == id);
+
+            if (importacion == null)
+                return NotFound();
+
+            return View(importacion);
+        }
+
         // POST: /Importacion/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]

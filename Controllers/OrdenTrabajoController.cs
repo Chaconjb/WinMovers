@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using WinMovers.Models.ViewModels;
 
 namespace WinMovers.Controllers
 {
+    [Authorize(Roles = $"{Roles.Administrador},{Roles.Empleado}")]
     public class OrdenTrabajoController : Controller
     {
         private readonly WinMoversContext _context;
